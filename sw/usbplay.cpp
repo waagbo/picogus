@@ -21,6 +21,9 @@
 #include "tusb.h"
 #include "mouse/8250uart.h"
 #include "mouse/sermouse.h"
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
 
 #ifdef CDROM
 #include "hardware/pwm.h"
@@ -123,6 +126,9 @@ void play_usb() {
         send_midi_bytes(8);
 #endif
         tuh_task();
+#ifdef PGDFS
+        dfs_tasks();
+#endif
         sermouse_core1_task();
         uartemu_core1_task();
     }

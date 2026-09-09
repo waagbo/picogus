@@ -46,6 +46,9 @@ extern uint LED_PIN;
 #ifdef USB_STACK
 #include "tusb.h"
 #endif
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
 #if defined(USB_MOUSE) || defined(SOUND_MPU)
 #include "system/pico_pic.h"
 #endif
@@ -178,6 +181,9 @@ void play_psg() {
 #ifdef USB_STACK
         // Service TinyUSB events
         tuh_task();
+#endif
+#ifdef PGDFS
+        dfs_tasks();
 #endif
 #ifdef USB_MOUSE
         // mouse task

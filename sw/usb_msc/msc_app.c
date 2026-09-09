@@ -34,7 +34,12 @@
 
 #include "msc_app.h"
 
+#ifdef CDROM
 #include "cdrom_image_manager.h"
+#endif
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
 
 //------------- Elm Chan FatFS -------------//
 static FATFS fatfs; // for simplicity only support 1 device
@@ -81,13 +86,19 @@ static bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const 
     }
 
     // get the drive serial so we can detect if it is reinserted
-    uint32_t serial;
-    if (FR_OK != f_getlabel("", NULL, &serial)) {
-        return false;
+    uint32_t serial = 0;
+    bool have_serial = (FR_OK == f_getlabel("", NULL, &serial));
+#ifdef CDROM
+    if (have_serial) {
+        cdman_set_serial(&cdrom, serial);
     }
-    cdman_set_serial(&cdrom, serial);
+#endif
+#ifdef PGDFS
+    // The volume is mounted: let the file server refresh its drive info
+    dfs_on_drive_mounted();
+#endif
 
-    return true;
+    return have_serial;
 }
 
 //------------- IMPLEMENTATION -------------//
@@ -115,9 +126,15 @@ void tuh_msc_umount_cb(uint8_t dev_addr)
     // printf("A MassStorage device is unmounted\r\n");
     mounted_dev = 0;
 
+#ifdef PGDFS
+    // Invalidate the file server's open handles before the volume goes away
+    dfs_on_drive_unmounted();
+#endif
     f_unmount("");
 
+#ifdef CDROM
     cdman_unload_image(&cdrom);
+#endif
 }
 
 //--------------------------------------------------------------------+
@@ -207,6 +224,16 @@ DRESULT disk_write (
     return _disk_error ? RES_ERROR : RES_OK;
 }
 
+#endif
+
+#if FF_FS_READONLY == 0 && FF_FS_NORTC == 0
+/* FatFs needs a clock for timestamps in read-write builds. The PGDFS server
+ * provides the real one (DOS time from the driver); this weak fallback keeps
+ * builds without PGDFS linking and gives them a fixed 2026-01-01 stamp. */
+__attribute__((weak)) DWORD get_fattime(void)
+{
+    return ((DWORD)(2026 - 1980) << 25) | ((DWORD)1 << 21) | ((DWORD)1 << 16);
+}
 #endif
 
 DRESULT disk_ioctl (

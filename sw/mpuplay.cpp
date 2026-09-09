@@ -26,6 +26,9 @@ extern Settings settings;
 #ifdef USB_STACK
 #include "tusb.h"
 #endif
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
 
 #include "mpu401/export.h"
 
@@ -48,6 +51,9 @@ void play_mpu() {
 #ifdef USB_STACK
         // Service TinyUSB events
         tuh_task();
+#endif
+#ifdef PGDFS
+        dfs_tasks();
 #endif
     }
 }

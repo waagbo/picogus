@@ -62,6 +62,9 @@ extern cms_buffer_t opl_cmd_buffer;
 #ifdef USB_STACK
 #include "tusb.h"
 #endif
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
 #ifdef USB_MOUSE
 #include "mouse/8250uart.h"
 #include "mouse/sermouse.h"
@@ -339,6 +342,9 @@ void play_adlib() {
 #endif
 #ifdef CDROM
         cdrom_tasks(&cdrom);
+#endif
+#ifdef PGDFS
+        dfs_tasks();
 #endif
     }
 }

@@ -35,6 +35,9 @@
 #ifdef USB_STACK
 #include "tusb.h"
 #endif
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
 
 #ifdef PSRAM
 #include "psram_spi.h"
@@ -178,6 +181,9 @@ void play_gus() {
 #ifdef USB_STACK
         // Service TinyUSB events
         tuh_task();
+#endif
+#ifdef PGDFS
+        dfs_tasks();
 #endif
 #ifdef SOUND_MPU
         send_midi_bytes(8);

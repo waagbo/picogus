@@ -37,6 +37,10 @@
 
 #include "../common/picogus.h"
 
+#ifdef PGDFS
+#include "dfs/dfs.h"
+#endif
+
 board_type_t BOARD_TYPE;
 
 #ifdef PSRAM
@@ -279,6 +283,24 @@ __force_inline void select_picogus(uint8_t value) {
     case CMD_FLASH: // Firmware write mode
         pico_firmware_start();
         break;
+#ifdef PGDFS
+    case CMD_DFSREQ: // open the request buffer for DFS_DATA_PORT writes
+        dfs_ctl_select_req();
+        break;
+    case CMD_DFSRESP: // rewind the answer buffer for DFS_DATA_PORT reads
+        dfs_ctl_select_resp();
+        break;
+    case CMD_DFSINFO: // drive info string
+        dfs_ctl_info_rewind();
+        break;
+    case CMD_DFSTIME: // DOS time, 4 bytes
+        dfs_ctl_time_rewind();
+        break;
+    case CMD_DFSSTAT:
+    case CMD_DFSEXEC:
+    case CMD_DFSMAXLEN:
+        break;
+#endif // PGDFS
     default:
         control_active = false;
         break;
@@ -524,6 +546,17 @@ __force_inline void write_picogus_high(uint8_t value) {
     case CMD_FLASH: // Firmware write
         pico_firmware_write(value);
         break;
+#ifdef PGDFS
+    case CMD_DFSSTAT: // any write aborts the transaction
+        dfs_ctl_abort();
+        break;
+    case CMD_DFSEXEC: // execute the request in the buffer
+        dfs_ctl_exec();
+        break;
+    case CMD_DFSTIME: // DOS time lo, hi, date lo, hi
+        dfs_ctl_time_write(value);
+        break;
+#endif // PGDFS
     }
 }
 
@@ -549,6 +582,10 @@ __force_inline uint8_t read_picogus_low(void) {
         return settings.NE2K.basePort == 0xFFFF ? 0 : (settings.NE2K.basePort & 0xFF);
     case CMD_CDPORT: // SB Base port
         return settings.CD.basePort == 0xFFFF ? 0 : (settings.CD.basePort & 0xFF);
+#ifdef PGDFS
+    case CMD_DFSMAXLEN: // max frame payload, low byte
+        return dfs_ctl_max_payload() & 0xFF;
+#endif // PGDFS
     default:
         return 0x0;
     }
@@ -677,6 +714,14 @@ __force_inline uint8_t read_picogus_high(void) {
         return settings.Volume.gusVol;
     case CMD_PSGVOL: // PSG volume
         return settings.Volume.psgVol;
+#ifdef PGDFS
+    case CMD_DFSSTAT: // dfs_status_t
+        return dfs_ctl_status();
+    case CMD_DFSINFO: // drive info string, 0 terminated
+        return dfs_ctl_info_read();
+    case CMD_DFSMAXLEN: // max frame payload, high byte
+        return dfs_ctl_max_payload() >> 8;
+#endif // PGDFS
     case CMD_HWTYPE: // Hardware version
         return BOARD_TYPE;
     case CMD_FLASH:
@@ -1002,6 +1047,14 @@ __force_inline void handle_iow(void) {
     } else
 #endif // SOUND_MPU
     // PicoGUS control
+#ifdef PGDFS
+    if (port == DFS_DATA_PORT) {
+        // PGDFS request byte stream (rep outsb). IOCHRDY-stalled like CONTROL_PORT
+        // so the PIO FIFO can never overflow; dfs_data_write() is O(1).
+        pio_sm_put(pio0, IOW_PIO_SM, IO_WAIT);
+        dfs_data_write(iow_read & 0xFF);
+    } else
+#endif // PGDFS
     if (port == CONTROL_PORT) {
         pio_sm_put(pio0, IOW_PIO_SM, IO_WAIT);
         // printf("iow control port: %x %d\n", iow_read & 0xff, control_active);
@@ -1163,6 +1216,13 @@ __force_inline void handle_ior(void) {
         }
     } else
 #endif // SOUND_CMS
+#ifdef PGDFS
+    if (port == DFS_DATA_PORT) {
+        // PGDFS answer byte stream (rep insb); dfs_data_read() is O(1)
+        pio_sm_put(pio0, IOR_PIO_SM, IO_WAIT);
+        pio_sm_put(pio0, IOR_PIO_SM, IOR_SET_VALUE | dfs_data_read());
+    } else
+#endif // PGDFS
     if (port == CONTROL_PORT) {
         // Tell PIO to wait for data
         pio_sm_put(pio0, IOR_PIO_SM, IO_WAIT);
@@ -1340,6 +1400,11 @@ int main()
 #endif // PSRAM
 #endif // PSRAM_CORE0
 
+
+#ifdef PGDFS
+    // PGDFS transport + file server state: must exist before core 1 starts
+    dfs_init();
+#endif // PGDFS
 
 #ifdef SOUND_SB
 #ifdef SOUND_WSS
