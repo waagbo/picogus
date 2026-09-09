@@ -1275,6 +1275,44 @@ static void printMultiMode()
     }
 }
 
+static void printPGDFSStatus()
+{
+    // Only firmware with PGDFS answers CMD_DFSMAXLEN with a sane value
+    uint16_t maxlen = ctrlGetUint16(CMD_DFSMAXLEN);
+    if (maxlen < 128 || maxlen > 32768u) {
+        return;
+    }
+    char info[256] = {0};
+    outp(CONTROL_PORT, CMD_DFSINFO);
+    for (uint8_t i = 0; i < 255; ++i) {
+        info[i] = inp(DATA_PORT_HIGH);
+        if (!info[i]) {
+            break;
+        }
+    }
+    if (!info[0]) {
+        printf("USB drive: none inserted (PGDFS ready)\n");
+        return;
+    }
+    // "LABEL|FS|<size MB>|<serial hex>", label may be empty
+    char *label = info, *fs = "", *mb = "";
+    char *p = strchr(info, '|');
+    if (p) {
+        *p++ = 0;
+        fs = p;
+        p = strchr(p, '|');
+    }
+    if (p) {
+        *p++ = 0;
+        mb = p;
+        p = strchr(p, '|');
+        if (p) {
+            *p = 0;
+        }
+    }
+    printf("USB drive: %s, %s, %s MB (PGDFS ready)\n", label[0] ? label : "(no label)", fs, mb);
+}
+
 static void printVolume()
 {
     printf("Volume: ");
@@ -1414,6 +1452,7 @@ int main(int argc, char* argv[]) {
         break;
     }
     printMultiMode();
+    printPGDFSStatus();
     printf("PicoGUS initialized!\n");
 
     if (permanent) {

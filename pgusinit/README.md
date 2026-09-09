@@ -152,6 +152,15 @@ that do not require an IRQ: AdLib, CMS, Tandy, and USB.
 * `/cdauto 1|0` - auto-advance loaded image when same USB drive is reinserted
 * `/cdvol x` - sets the volume of the CD audio output to x percent.
 
+## PGDFS (USB drive as a DOS drive letter)
+
+Firmware with PGDFS support serves the FAT-formatted USB drive plugged into
+the PicoGUS to DOS as a network drive letter. pgusinit shows the state of that
+drive on a `USB drive:` line in its normal status output (label, file system
+and size, or `none inserted`) when the firmware supports it. The DOS driver
+itself is a separate TSR, `PGDFS.EXE`, which comes with its own test tool
+`PGDFSTST.EXE`; see `pgdfs/README.md` for usage and requirements.
+
 ## Compiling
 
 PicoGUSinit can be compiled with OpenWatcom 1.9 or 2.0. Run `wmake` to compile.
