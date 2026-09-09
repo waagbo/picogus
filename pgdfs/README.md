@@ -78,6 +78,8 @@ is the first thing to run on new firmware.
 
 ## Limitations
 
+- `COPY` does not preserve timestamps: a file copied to the drive gets the time of the copy (from the DOS clock pushed at install or with `/T`). EtherDFS behaves the same; DOS sets the source time on the handle and expects the redirector to apply it at close, which PGDFS does not do yet.
+
 * DOS sees 8.3 names only. Long file names on the USB drive appear as their
   short aliases (`LONGNA~1.EXT`); files created from DOS get plain 8.3
   names.

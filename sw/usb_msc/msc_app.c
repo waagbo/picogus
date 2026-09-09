@@ -23,6 +23,18 @@
  *
  */
 
+/*
+ * USB mass storage glue: mounts the single USB drive as the FatFs volume ""
+ * for CD-ROM image emulation and/or the PGDFS file service.
+ *
+ * TinyUSB delivers mount/unmount events from tuh_task(), and tuh_task() is
+ * also pumped from wait_for_disk_io() underneath a live FatFs call. So the
+ * callbacks only record what happened; the FatFs mount/unmount work and the
+ * consumer hooks run from msc_app_task(), which every core 1 loop calls at
+ * top level, never inside FatFs. A transfer whose device disappears fails
+ * immediately instead of waiting for the timeout.
+ */
+
 #include <ctype.h>
 #include "tusb.h"
 /* #include "bsp/board_api.h" */
@@ -45,7 +57,10 @@
 static FATFS fatfs; // for simplicity only support 1 device
 static volatile bool _disk_busy;
 static volatile bool _disk_error;
-static uint8_t mounted_dev;
+static volatile uint8_t mounted_dev;      // USB address of the attached drive, 0 = none
+static volatile uint8_t pending_mount;    // drive whose INQUIRY completed, waiting for f_mount()
+static volatile bool pending_unmount;     // the mounted drive went away, f_unmount() pending
+static bool fs_mounted;                   // FatFs volume state, core 1 loop only
 
 // define the buffer to be place in USB/DMA memory with correct alignment/cache line size
 CFG_TUH_MEM_SECTION static struct {
@@ -61,44 +76,18 @@ bool msc_app_init(void)
 }
 
 static bool inquiry_complete_cb(uint8_t dev_addr, tuh_msc_complete_data_t const * cb_data) {
-    msc_cbw_t const* cbw = cb_data->cbw;
     msc_csw_t const* csw = cb_data->csw;
 
     if (csw->status != 0) {
         // printf("Inquiry failed\r\n");
         return false;
     }
-
-    // Print out Vendor ID, Product ID and Rev
-    // printf("%.8s %.16s rev %.4s\r\n", scsi_resp.inquiry.vendor_id, scsi_resp.inquiry.product_id, scsi_resp.inquiry.product_rev);
-
-    // Get capacity of device
-    uint32_t const block_count = tuh_msc_get_block_count(dev_addr, cbw->lun);
-    uint32_t const block_size = tuh_msc_get_block_size(dev_addr, cbw->lun);
-
-    // printf("Disk Size: %" PRIu32 " MB\r\n", block_count / ((1024*1024)/block_size));
-    // printf("Block Count = %lu, Block Size: %lu\r\n", block_count, block_size);
-
-    // For simplicity: we only mount 1 device
-    if (f_mount(&fatfs, "", 1) != FR_OK) {
-        ERR_PUTS("mount failed");
-        return false;
+    if (dev_addr != mounted_dev) {
+        return false;                         // gone again before we got here
     }
-
-    // get the drive serial so we can detect if it is reinserted
-    uint32_t serial = 0;
-    bool have_serial = (FR_OK == f_getlabel("", NULL, &serial));
-#ifdef CDROM
-    if (have_serial) {
-        cdman_set_serial(&cdrom, serial);
-    }
-#endif
-#ifdef PGDFS
-    // The volume is mounted: let the file server refresh its drive info
-    dfs_on_drive_mounted();
-#endif
-
-    return have_serial;
+    // Mounting the volume touches FatFs and the disk: defer it to msc_app_task()
+    pending_mount = dev_addr;
+    return true;
 }
 
 //------------- IMPLEMENTATION -------------//
@@ -125,23 +114,62 @@ void tuh_msc_umount_cb(uint8_t dev_addr)
 
     // printf("A MassStorage device is unmounted\r\n");
     mounted_dev = 0;
+    pending_mount = 0;
+    pending_unmount = true;
+    // Fail any transfer that is waiting on this device right now
+    _disk_error = true;
+    _disk_busy = false;
+}
 
+/* Core 1 loop: apply recorded mount/unmount events outside of any FatFs call */
+void msc_app_task(void)
+{
+    if (pending_unmount) {
+        pending_unmount = false;
+        if (fs_mounted) {
+            fs_mounted = false;
 #ifdef PGDFS
-    // Invalidate the file server's open handles before the volume goes away
-    dfs_on_drive_unmounted();
+            // Invalidate the file server's open handles before the volume goes away
+            dfs_on_drive_unmounted();
 #endif
-    f_unmount("");
-
+            f_unmount("");
 #ifdef CDROM
-    cdman_unload_image(&cdrom);
+            cdman_unload_image(&cdrom);
 #endif
+        }
+    }
+
+    uint8_t dev = pending_mount;
+    if (dev && dev == mounted_dev) {
+        pending_mount = 0;
+        if (f_mount(&fatfs, "", 1) != FR_OK) {
+            ERR_PUTS("mount failed");
+            return;
+        }
+        fs_mounted = true;
+
+        // get the drive serial so we can detect if it is reinserted
+        uint32_t serial = 0;
+        bool have_serial = (FR_OK == f_getlabel("", NULL, &serial));
+#ifdef CDROM
+        if (have_serial) {
+            cdman_set_serial(&cdrom, serial);
+        }
+#else
+        (void)have_serial;
+#endif
+#ifdef PGDFS
+        // The volume is mounted: let the file server refresh its drive info
+        dfs_on_drive_mounted();
+#endif
+    }
 }
 
 //--------------------------------------------------------------------+
 // DiskIO
 //--------------------------------------------------------------------+
 
-static void wait_for_disk_io(void)
+static void wait_for_disk_io(uint8_t dev)
 {
     /* 2-second timeout — prevents a hung or disconnected USB drive from
      * locking the firmware forever.  At 44100 Hz stereo, 2 s is far longer
@@ -149,6 +177,12 @@ static void wait_for_disk_io(void)
     uint32_t deadline = time_us_32() + 2000000u;
     while (_disk_busy) {
         tuh_task();
+        if (mounted_dev != dev) {
+            /* the drive went away (or was replaced) under this transfer */
+            _disk_busy = false;
+            _disk_error = true;
+            return;
+        }
         if ((int32_t)(time_us_32() - deadline) >= 0) {
             DBG_PRINTF("disk_io: timeout waiting for USB transfer\n");
             _disk_busy = false;
@@ -174,8 +208,9 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-  uint8_t dev_addr = pdrv + 1;
-  return tuh_msc_mounted(dev_addr) ? 0 : STA_NODISK;
+  (void) pdrv;
+  uint8_t dev = mounted_dev;
+  return (dev && tuh_msc_mounted(dev)) ? 0 : STA_NODISK;
 }
 
 DSTATUS disk_initialize (
@@ -195,11 +230,16 @@ DRESULT disk_read (
 {
     (void)pdrv;
     uint8_t const lun = 0;
+    uint8_t dev = mounted_dev;
+    if (!dev) return RES_NOTRDY;
 
     _disk_busy = true;
     _disk_error = false;
-    tuh_msc_read10(mounted_dev, lun, buff, sector, (uint16_t) count, disk_io_complete, 0);
-    wait_for_disk_io();
+    if (!tuh_msc_read10(dev, lun, buff, sector, (uint16_t) count, disk_io_complete, 0)) {
+        _disk_busy = false;
+        return RES_ERROR;
+    }
+    wait_for_disk_io(dev);
 
     return _disk_error ? RES_ERROR : RES_OK;
 }
@@ -215,11 +255,16 @@ DRESULT disk_write (
 {
     (void)pdrv;
     uint8_t const lun = 0;
+    uint8_t dev = mounted_dev;
+    if (!dev) return RES_NOTRDY;
 
     _disk_busy = true;
     _disk_error = false;
-    tuh_msc_write10(mounted_dev, lun, buff, sector, (uint16_t) count, disk_io_complete, 0);
-    wait_for_disk_io();
+    if (!tuh_msc_write10(dev, lun, buff, sector, (uint16_t) count, disk_io_complete, 0)) {
+        _disk_busy = false;
+        return RES_ERROR;
+    }
+    wait_for_disk_io(dev);
 
     return _disk_error ? RES_ERROR : RES_OK;
 }
@@ -239,22 +284,24 @@ __attribute__((weak)) DWORD get_fattime(void)
 DRESULT disk_ioctl (
 	BYTE pdrv,		/* Physical drive nmuber (0..) */
 	BYTE cmd,		/* Control code */
-	void *buff		/* Buffer to send/receive control data */
+	void *buff		/* Control code */
 )
 {
     (void)pdrv;
     uint8_t const lun = 0;
+    uint8_t dev = mounted_dev;
+    if (!dev) return RES_NOTRDY;
     switch (cmd) {
     case CTRL_SYNC:
         // nothing to do since we do blocking
         return RES_OK;
 
     case GET_SECTOR_COUNT:
-        *((DWORD*) buff) = (WORD) tuh_msc_get_block_count(mounted_dev, lun);
+        *((DWORD*) buff) = (WORD) tuh_msc_get_block_count(dev, lun);
         return RES_OK;
 
     case GET_SECTOR_SIZE:
-        *((WORD*) buff) = (WORD) tuh_msc_get_block_size(mounted_dev, lun);
+        *((WORD*) buff) = (WORD) tuh_msc_get_block_size(dev, lun);
         return RES_OK;
 
     case GET_BLOCK_SIZE:

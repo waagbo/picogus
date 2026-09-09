@@ -34,7 +34,8 @@ extern "C" {
  */
 
 #define DFS_MAX_FILES   8       /* open-file table, ids 1..DFS_MAX_FILES     */
-#define DFS_MAX_DIRS    8       /* directory-id table for FINDFIRST/FINDNEXT */
+#define DFS_MAX_DIRS    32      /* directory-id table for FINDFIRST/FINDNEXT; XCOPY /S
+                                 * keeps one open search per level in both trees      */
 #define DFS_PATH_MAX    128     /* DOS canonical path without "X:", incl. NUL */
 
 /* DOS error codes returned in AX */

@@ -24,6 +24,9 @@
 #ifdef PGDFS
 #include "dfs/dfs.h"
 #endif
+#ifdef USB_MSC
+#include "usb_msc/msc_app.h"
+#endif // USB_MSC
 
 #ifdef CDROM
 #include "hardware/pwm.h"
@@ -126,6 +129,9 @@ void play_usb() {
         send_midi_bytes(8);
 #endif
         tuh_task();
+#ifdef USB_MSC
+        msc_app_task();   // mount/unmount the USB drive outside of FatFs calls
+#endif // USB_MSC
 #ifdef PGDFS
         dfs_tasks();
 #endif

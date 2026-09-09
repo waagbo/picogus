@@ -24,10 +24,11 @@ extern "C" {
 uint16_t dfs_process(uint8_t *buf, uint16_t req_len, uint16_t buf_size);
 
 /*
- * Core notes: dfs_server_init() runs on core 0 at boot. dfs_server_drive_present(),
- * dfs_server_info_string() and dfs_server_set_dos_time() are called from core 0
- * inside an ISA bus cycle: O(1), no FatFs, no loops. The info string may be
- * replaced by core 1 while core 0 iterates over it (a torn read is harmless).
+ * Core notes: dfs_server_init() runs on core 0 at boot. dfs_server_drive_present()
+ * and dfs_server_info_string() are called from core 0 inside an ISA bus cycle:
+ * O(1), no FatFs, no loops. The info string may be replaced by core 1 while
+ * core 0 iterates over it (a torn read is harmless). dfs_server_set_dos_time()
+ * is called from dfs_tasks() on core 1, so the server's clock state is core 1 only.
  * dfs_server_drive_unmounted() can be invoked from inside dfs_process() (a USB
  * unplug surfaces through tuh_task() while FatFs waits on disk I/O), so it must
  * only mark state and never touch the frame being processed.

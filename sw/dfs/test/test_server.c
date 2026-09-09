@@ -12,6 +12,7 @@
 #include "ff.h"
 #include "dfs.h"          /* DFS_BUF_SIZE, DFS_MAX_PAYLOAD */
 #include "dfs_server.h"
+#include "dfs_fs.h"        /* DFS_MAX_DIRS */
 #include "ramdisk_diskio.h"
 
 /* ---- platform stub --------------------------------------------------------- */
@@ -669,12 +670,12 @@ static void test_find(void) {
         CHECK(axr == 0 && memcmp(saved.name, s.name, 11) == 0 && saved.pos == s.pos, "resume from an older position");
     }
 
-    /* directory id eviction: 8 slots, the 9th directory evicts the oldest */
+    /* directory id eviction: DFS_MAX_DIRS slots, one more evicts the oldest */
     {
         search_t first;
         uint16_t axe = op_findfirst(0x10, "\\FF\\????????.???", &first);
         CHECK(axe == 0, "eviction: search in \\FF");
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < DFS_MAX_DIRS; i++) {
             char p[32];
             snprintf(p, sizeof(p), "\\FF\\E%d", i);
             CHECK(run_str(AL_MKDIR, p) == 0, "mkdir %s", p);
@@ -684,11 +685,42 @@ static void test_find(void) {
         }
         axe = op_findnext(&first);
         CHECK(axe == 0x12, "evicted id -> 12h, got %04X", axe);
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < DFS_MAX_DIRS; i++) {
             char p[32];
             snprintf(p, sizeof(p), "\\FF\\E%d", i);
             CHECK(run_str(AL_RMDIR, p) == 0, "rmdir %s", p);
         }
+    }
+
+    /* deleting the entry just returned, with a search in another directory
+     * in between (DELTREE recursing, installers), must not skip the next
+     * entry: positions are directory slots, not counts of live entries */
+    {
+        search_t a, b;
+        int visited = 0, ok = 1;
+        uint16_t axd;
+        CHECK(run_str(AL_MKDIR, "\\DL") == 0, "mkdir \\DL");
+        for (i = 0; i < 6; i++) {
+            char p[32];
+            uint16_t fid;
+            snprintf(p, sizeof(p), "\\DL\\D%d.TMP", i);
+            CHECK(op_open(AL_CREATE, 0, 0, 0, p, &fid, NULL) == 0, "create %s", p);
+            CHECK(op_close(fid) == 0, "close %s", p);
+        }
+        axd = op_findfirst(0x00, "\\DL\\????????.TMP", &a);
+        while (axd == 0 && visited < 10) {
+            char p[32];
+            snprintf(p, sizeof(p), "\\DL\\%c%c.TMP", a.name[0], a.name[1]);
+            if (run_str(AL_DELETE, p) != 0) ok = 0;
+            visited++;
+            /* another directory's search reopens the cached DIR */
+            op_findfirst(0x10, "\\FF\\????????.???", &b);
+            axd = op_findnext(&a);
+        }
+        CHECK(ok && visited == 6 && axd == 0x12, "delete while searching visits every file: %d, ok=%d, end=%04X", visited, ok, axd);
+        axd = op_findfirst(0x00, "\\DL\\????????.???", &a);
+        CHECK(axd == 0x12, "\\DL is empty afterwards, got %04X", axd);
+        CHECK(run_str(AL_RMDIR, "\\DL") == 0, "rmdir \\DL");
     }
 
     /* volume label */

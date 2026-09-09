@@ -274,12 +274,16 @@ static void test_abort_while_busy(void) {
     CHECK_EQ(dfs_ctl_status(), DFS_STATUS_BUSY);
 
     dfs_ctl_abort();                                     /* out 1D2h, 0 on CMD_DFSSTAT */
-    CHECK_EQ(dfs_ctl_status(), DFS_STATUS_ABORTED);
+    /* core 1 still owns the buffer: the status stays BUSY so the driver's
+     * next request waits instead of streaming into a buffer being written */
+    CHECK_EQ(dfs_ctl_status(), DFS_STATUS_BUSY);
+    dfs_ctl_select_req();                                /* all ignored while BUSY */
+    dfs_data_write(0x55);
+    dfs_ctl_exec();
+    CHECK_EQ(dfs_ctl_status(), DFS_STATUS_BUSY);
     int calls = stub_process_calls;
-    dfs_tasks();                                        /* core 1 gets to it late */
-    /* the transport may or may not have let core 1 run dfs_process(); either
-     * way the result must be dropped and the status must stay ABORTED */
-    CHECK(stub_process_calls == calls || stub_process_calls == calls + 1);
+    dfs_tasks();                                        /* core 1 finishes and drops the result */
+    CHECK_EQ(stub_process_calls, calls + 1);
     CHECK_EQ(dfs_ctl_status(), DFS_STATUS_ABORTED);
     CHECK_EQ(dfs_data_read(), 0xFF);
     dfs_ctl_select_resp();
@@ -364,6 +368,7 @@ static void test_time_write(void) {
     dfs_ctl_time_write(0x78);                            /* date lo */
     CHECK_EQ(stub_time_calls, calls);                    /* not yet */
     dfs_ctl_time_write(0x56);                            /* date hi */
+    dfs_tasks();                                        /* core 1 applies it */
     CHECK_EQ(stub_time_calls, calls + 1);
     CHECK_EQ(stub_dos_time, 0x1234);
     CHECK_EQ(stub_dos_date, 0x5678);
@@ -372,6 +377,7 @@ static void test_time_write(void) {
     dfs_ctl_time_write(0x02);
     dfs_ctl_time_write(0x03);
     dfs_ctl_time_write(0x04);
+    dfs_tasks();
     CHECK_EQ(stub_time_calls, calls + 2);
     CHECK_EQ(stub_dos_time, 0x0201);
     CHECK_EQ(stub_dos_date, 0x0403);
@@ -383,6 +389,7 @@ static void test_time_write(void) {
     dfs_ctl_time_write(0x22);
     dfs_ctl_time_write(0x33);
     dfs_ctl_time_write(0x44);
+    dfs_tasks();
     CHECK_EQ(stub_time_calls, calls + 3);
     CHECK_EQ(stub_dos_time, 0x2211);
     CHECK_EQ(stub_dos_date, 0x4433);

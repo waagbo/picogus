@@ -34,12 +34,17 @@
  * status"; the reader does "read status, barrier, read everything".
  *
  * Abort while BUSY: core 0 cannot stop core 1, so it bumps a generation
- * counter and marks the transaction aborted. When dfs_process() returns,
- * core 1 compares the generation it snapshotted and drops the result on a
- * mismatch. Core 0 additionally keeps a sticky "aborted" flag until the next
- * CMD_DFSREQ so that a READY written by core 1 in the tiny window between
- * its generation check and its status write can never be mistaken for a
- * valid answer.
+ * counter, sets a sticky "aborted" flag and leaves the status at BUSY: the
+ * buffer still belongs to core 1 and the driver's next request must wait
+ * for it (the driver polls BUSY). When dfs_process() returns, core 1
+ * compares the generation it snapshotted, drops the result on a mismatch
+ * and moves the status to ABORTED itself. The sticky flag also covers a
+ * READY written by core 1 in the tiny window between its generation check
+ * and its status write: the status reads ABORTED and the data port stays
+ * dead until the next CMD_DFSREQ.
+ *
+ * The DOS clock (CMD_DFSTIME) is collected on core 0 but handed to the
+ * server from dfs_tasks() on core 1, where the FatFs clock state lives.
  */
 
 #include <string.h>
@@ -70,6 +75,8 @@ static bool     dfs_overflow;               /* a byte arrived with the buffer fu
 static uint8_t  dfs_info_idx;               /* CMD_DFSINFO string cursor */
 static uint8_t  dfs_time_idx;               /* CMD_DFSTIME byte counter, 0..3 */
 static uint8_t  dfs_time_bytes[4];          /* time lo, time hi, date lo, date hi */
+static volatile bool dfs_time_pending;      /* a complete time/date pair waits for core 1 */
+static uint16_t dfs_time_val, dfs_date_val; /* the pair (core 0 -> core 1) */
 
 /* ---- core 0: boot ---------------------------------------------------------- */
 
@@ -84,6 +91,8 @@ void dfs_init(void) {
     dfs_info_idx = 0;
     dfs_time_idx = 0;
     memset(dfs_time_bytes, 0, sizeof(dfs_time_bytes));
+    dfs_time_pending = false;
+    dfs_time_val = dfs_date_val = 0;
     dfs_server_init();
 }
 
@@ -128,16 +137,27 @@ void dfs_ctl_exec(void) {
 
 /* CMD_DFSSTAT written: abort. Sticky ABORTED until the next CMD_DFSREQ. */
 void dfs_ctl_abort(void) {
-    if (dfs_state == DFS_STATUS_BUSY) {
-        dfs_gen++;                          /* core 1 will drop its result */
-    }
     dfs_aborted = true;
+    if (dfs_state == DFS_STATUS_BUSY) {
+        /* Core 1 owns the buffer until dfs_process() returns; it sees the
+         * generation change, drops its result and moves to ABORTED itself.
+         * BUSY stays in place so the next CMD_DFSREQ cannot open the buffer
+         * while core 1 is still writing into it. */
+        dfs_gen++;
+        return;
+    }
     dfs_state = DFS_STATUS_ABORTED;
 }
 
 /* CMD_DFSSTAT read. */
 uint8_t dfs_ctl_status(void) {
-    uint8_t s = dfs_aborted ? (uint8_t)DFS_STATUS_ABORTED : dfs_state;
+    uint8_t s = dfs_state;
+    if (s == DFS_STATUS_BUSY) {
+        return s;                           /* BUSY wins, even after an abort: the driver waits */
+    }
+    if (dfs_aborted) {
+        s = DFS_STATUS_ABORTED;
+    }
     if ((s == DFS_STATUS_IDLE || s == DFS_STATUS_ABORTED) && !dfs_server_drive_present()) {
         return DFS_STATUS_NODRIVE;
     }
@@ -198,15 +218,21 @@ void dfs_ctl_time_write(uint8_t v) {
     dfs_time_bytes[dfs_time_idx++] = v;
     if (dfs_time_idx >= 4) {
         dfs_time_idx = 0;
-        dfs_server_set_dos_time(
-            (uint16_t)(dfs_time_bytes[0] | ((uint16_t)dfs_time_bytes[1] << 8)),
-            (uint16_t)(dfs_time_bytes[2] | ((uint16_t)dfs_time_bytes[3] << 8)));
+        dfs_time_val = (uint16_t)(dfs_time_bytes[0] | ((uint16_t)dfs_time_bytes[1] << 8));
+        dfs_date_val = (uint16_t)(dfs_time_bytes[2] | ((uint16_t)dfs_time_bytes[3] << 8));
+        DFS_DMB();
+        dfs_time_pending = true;            /* applied by core 1 in dfs_tasks() */
     }
 }
 
 /* ---- core 1: serving ------------------------------------------------------- */
 
 void dfs_tasks(void) {
+    if (dfs_time_pending) {
+        DFS_DMB();
+        dfs_server_set_dos_time(dfs_time_val, dfs_date_val);
+        dfs_time_pending = false;
+    }
     if (dfs_state != DFS_STATUS_BUSY) {
         return;
     }
@@ -220,7 +246,9 @@ void dfs_tasks(void) {
     uint16_t req_len = dfs_frame_len;
     uint16_t ans_len = dfs_process(dfs_buf, req_len, DFS_BUF_SIZE);
     if (dfs_gen != gen) {
-        return;                             /* aborted meanwhile: drop, state stays as abort left it */
+        DFS_DMB();                          /* aborted meanwhile: drop the result, buffer back to core 0 */
+        dfs_state = DFS_STATUS_ABORTED;
+        return;
     }
     dfs_frame_len = ans_len;
     DFS_DMB();                              /* answer + length visible before READY */

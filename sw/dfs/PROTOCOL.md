@@ -61,9 +61,12 @@ or FatFs inside a bus cycle; the DOS side waits on the status byte instead.
   an unknown register, so the driver must check `CMD_DFSMAXLEN` and the
   protocol version at install, not this byte.
 
-A write to `CMD_DFSSTAT` while BUSY lets core 1 finish, but its result is
-dropped (generation counter); the status reads ABORTED until the next
-`CMD_DFSREQ`, which starts a fresh transaction (RECEIVING).
+A write to `CMD_DFSSTAT` while BUSY cannot stop core 1: the status keeps
+reading BUSY until core 1 finishes, then it becomes ABORTED (the result is
+dropped through a generation counter). A driver that gave up on a request
+therefore sees BUSY on its next transaction and simply waits for it; it
+never streams a new frame into a buffer the card is still writing. A
+`CMD_DFSREQ` or `CMD_DFSEXEC` arriving while BUSY is ignored.
 
 ## Frame format
 
@@ -99,7 +102,7 @@ out 1D2h, 01h
 out 1D0h, 80h          ; CMD_DFSSTAT
 loop: in al, 1D2h
       3 -> ready, FEh -> aborted, FFh -> no drive, else keep polling
-      give up after ~5 s (BIOS tick count): abort via out 1D2h, 0 and fail with error 15h
+      give up after ~30 s (BIOS tick count): abort via out 1D2h, 0 and fail with error 15h
 out 1D0h, 83h          ; CMD_DFSRESP
 mov dx, 1D3h
 insb x4                ; header: length, AX
@@ -107,8 +110,12 @@ rep insb               ; length-4 payload bytes
 ```
 
 The driver never re-sends a request that got READY. On ABORTED it re-sends
-once (the only realistic cause is a lost byte during a bus glitch); a second
-ABORTED is reported to DOS as error 15h (drive not ready).
+once (a lost byte during a bus glitch, or the card finishing a request the
+driver had already given up on); a second ABORTED is reported to DOS as
+error 15h (drive not ready). The poll timeout is about 30 s: an unplugged
+drive is reported at once as NODRIVE, so the timeout only matters for hangs,
+and legal work such as a wildcard DELETE over hundreds of files can take
+several seconds.
 
 The knock plus register select is part of every transaction because another
 program (pgusinit) may have changed the selected register in between.
@@ -116,8 +123,8 @@ program (pgusinit) may have changed the selected register in between.
 ## Time
 
 At install, and on `PGDFS /T`, the driver writes the DOS clock through
-`CMD_DFSTIME`. The card keeps `dos_time + elapsed` and returns it from
-`get_fattime()`. Without it, files created from DOS carry the FatFs default
+`CMD_DFSTIME`. Core 0 collects the four bytes and hands them to core 1,
+which keeps `dos_time + elapsed` and returns it from `get_fattime()`. Without it, files created from DOS carry the FatFs default
 timestamp (1 Jan 1980 or the firmware's fixed value).
 
 ## Drive info

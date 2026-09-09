@@ -748,8 +748,10 @@ void process2f(void) {
       }
       dta->par_clstr = ((unsigned short *)answer)[10];
       dta->dir_entry = ((unsigned short *)answer)[11];
-      /* then 32 bytes as in the found_file record */
-      copybytes(dta + 0x15, &(glob_sdaptr->found_file), 32);
+      /* the 32-byte directory entry at DTA+15h is the SDA's found_file, which
+       * DOS itself copies to the caller's DTA; the original EtherDFS line here
+       * did struct-pointer arithmetic (dta + 0x15 = +441 bytes) and wrote past
+       * the SDB, so it is gone. */
       }
       break;
     case AL_SKFMEND: /*** 21h: SKFMEND **************************************/

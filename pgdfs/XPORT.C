@@ -158,10 +158,13 @@ int xport_transact(unsigned char *buf, unsigned short bufsize) {
     start = xport_ticks();
     polls = 0;
     for (;;) {
+      unsigned short now;
       st = inp(DATA_PORT_HIGH);
       if ((st == DFS_STATUS_READY) || (st == DFS_STATUS_ABORTED) || (st == DFS_STATUS_NODRIVE)) break;
       polls++;
-      if (((unsigned short)(xport_ticks() - start) >= XPORT_TIMEOUT_TICKS) || ((polls & 0x00FFFFFFul) == 0)) {
+      now = xport_ticks();
+      if (now < start) start = now; /* the BIOS resets the tick count at midnight */
+      if (((unsigned short)(now - start) >= XPORT_TIMEOUT_TICKS) || ((polls & 0x00FFFFFFul) == 0)) {
         xport_last_status = st;
         xport_abort();
         return(XPORT_TIMEOUT);

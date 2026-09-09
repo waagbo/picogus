@@ -26,8 +26,11 @@
 #define XPORT_MAX_PAYLOAD DFS_DEFAULT_MAX_PAYLOAD
 #define XPORT_FRAME_SIZE (DFS_HDR_LEN + XPORT_MAX_PAYLOAD)
 
-/* how long to wait for the card to answer: BIOS ticks at 18.2 Hz, ~5 s */
-#define XPORT_TIMEOUT_TICKS 91
+/* how long to wait for the card to answer: BIOS ticks at 18.2 Hz, ~30 s.
+ * Legal work can take a while (a wildcard DELETE over hundreds of files,
+ * a directory rescan on a large volume); an unplugged drive is reported
+ * immediately as NODRIVE, so this only delays true hangs. */
+#define XPORT_TIMEOUT_TICKS 546
 
 /* CMD_DFSMAXLEN outside this range means "no PGDFS in this firmware" */
 #define XPORT_MAXLEN_MIN 128

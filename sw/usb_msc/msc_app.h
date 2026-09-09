@@ -28,8 +28,17 @@
 
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool msc_app_init(void);
+/* Core 1 loop: applies USB drive mount/unmount events outside of any FatFs call */
 void msc_app_task(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

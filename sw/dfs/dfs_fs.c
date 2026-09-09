@@ -55,7 +55,7 @@ static uint16_t    dir_next_id = 1;
 static struct {
     DIR      dir;
     uint16_t id;                /* directory id the DIR is positioned in */
-    uint32_t next;              /* index of the entry the next f_readdir() yields */
+    uint32_t next;              /* directory slot the next f_readdir() reads */
     bool     valid;
 } cache;
 
@@ -561,21 +561,68 @@ static bool attr_ok(uint8_t fattrib, uint8_t mask) {
     return ((fattrib & (AM_HID | AM_SYS | AM_DIR)) & (uint8_t)~mask) == 0;
 }
 
-/* Return the first entry at index >= start of directory dir_id that matches.
- * Index 0 and 1 are '.' and '..' in non-root directories; the rest counts
- * f_readdir() items whether they match or not, so a position can be resumed
- * by skipping. */
+/* A search position is the 32-byte slot index of the entry inside the FAT
+ * directory (FatFs DIR.dptr / 32), so it stays valid when earlier entries
+ * are deleted between calls: DELTREE and installers delete while iterating,
+ * and DIR /S, XCOPY interleave searches so the cached DIR gets reopened.
+ * In a non-root directory slots 0 and 1 are the on-disk '.' and '..'
+ * entries, which f_readdir() hides; they are synthesized here under those
+ * same positions. */
+
+/* f_readdir() wrapper that also reports the slot of the entry it returned.
+ * After a read, dptr points at the next slot, unless the table ended right
+ * there (sect == 0), in which case it still points at the entry itself. */
+static FRESULT read_entry(uint32_t *slot) {
+    FRESULT fr = f_readdir(&cache.dir, &fno);
+    if (fr == FR_OK && fno.fname[0]) {
+        *slot = (cache.dir.sect == 0) ? (cache.dir.dptr / 32) : (cache.dir.dptr / 32 - 1);
+    }
+    return fr;
+}
+
+/* fno -> info if the entry passes the attribute mask and the FCB mask */
+static bool entry_matches(uint8_t attr, const char *fcbmask, dfs_finfo_t *info) {
+    if (!attr_ok(fno.fattrib, attr)) return false;
+    dfs_name2fcb(info->fcb, fno.altname[0] ? fno.altname : fno.fname);
+    if (!dfs_fcb_match(fcbmask, info->fcb)) return false;
+    info->size = (uint32_t)fno.fsize;
+    info->time = fno.ftime;
+    info->date = fno.fdate;
+    info->attr = fno.fattrib;
+    return true;
+}
+
+/* Return the first matching entry at slot >= start of directory dir_id. */
 static uint16_t search(uint16_t dir_id, uint32_t start, uint8_t attr, const char *fcbmask,
                        dfs_finfo_t *info, uint16_t *pos, bool first) {
-    int slot = dir_slot_by_id(dir_id);
+    int di = dir_slot_by_id(dir_id);
     const char *path;
-    uint32_t dots, idx;
+    uint32_t dots, slot = 0;
+    bool have = false;                              /* fno holds an unconsumed candidate */
     FRESULT fr;
 
-    if (slot < 0) return DFS_ERR_NOMORE;            /* evicted or bogus id */
-    path = dirs[slot].path;
+    if (di < 0) return DFS_ERR_NOMORE;              /* evicted or bogus id */
+    path = dirs[di].path;
     dots = (path[0] == 0) ? 0 : 2;
-    dirs[slot].stamp = ++dir_clock;
+    dirs[di].stamp = ++dir_clock;
+
+    /* synthesized '.' and '..' at positions 0 and 1 of a non-root directory */
+    for (; start < dots; start++) {
+        if (!(attr & AM_DIR)) continue;
+        dfs_name2fcb(info->fcb, start == 0 ? "." : "..");
+        if (!dfs_fcb_match(fcbmask, info->fcb)) continue;
+        info->attr = DFS_ATTR_DIR;
+        info->size = 0;
+        info->time = 0;
+        info->date = 0;
+        if (f_stat(path, &fno) == FR_OK) {          /* the directory's own stamp */
+            info->time = fno.ftime;
+            info->date = fno.fdate;
+        }
+        *pos = (uint16_t)start;
+        return DFS_ERR_OK;
+    }
+    if (start > 0xFFFF) return DFS_ERR_NOMORE;
 
     if (!(cache.valid && cache.id == dir_id && cache.next == start)) {
         cache.valid = false;
@@ -588,45 +635,34 @@ static uint16_t search(uint16_t dir_id, uint32_t start, uint8_t attr, const char
         }
         cache.valid = true;
         cache.id = dir_id;
-        for (idx = dots; idx < start; idx++) {      /* skip to the resume point */
-            fr = f_readdir(&cache.dir, &fno);
+        /* walk forward to the requested slot; entries deleted since the last
+         * call are skipped by f_readdir() itself, and the first entry landing
+         * at or past the slot is the resume candidate */
+        while (cache.dir.dptr / 32 < start) {
+            fr = read_entry(&slot);
             if (fr != FR_OK || fno.fname[0] == 0) {
                 cache.valid = false;
                 return DFS_ERR_NOMORE;
             }
+            if (slot >= start) {
+                have = true;
+                break;
+            }
         }
-        cache.next = start;
     }
 
-    for (idx = start; idx <= 0xFFFF; idx++) {
-        if (idx < dots) {                           /* synthesized '.' and '..' */
-            cache.next = idx + 1;
-            if (!(attr & AM_DIR)) continue;
-            dfs_name2fcb(info->fcb, idx == 0 ? "." : "..");
-            if (!dfs_fcb_match(fcbmask, info->fcb)) continue;
-            info->attr = DFS_ATTR_DIR;
-            info->size = 0;
-            info->time = 0;
-            info->date = 0;
-            if (f_stat(path, &fno) == FR_OK) {      /* the directory's own stamp */
-                info->time = fno.ftime;
-                info->date = fno.fdate;
-            }
-            *pos = (uint16_t)idx;
+    for (;;) {
+        if (!have) {
+            fr = read_entry(&slot);
+            if (fr != FR_OK || fno.fname[0] == 0) break;
+        }
+        have = false;
+        cache.next = slot + 1;
+        if (slot > 0xFFFF) break;
+        if (entry_matches(attr, fcbmask, info)) {
+            *pos = (uint16_t)slot;
             return DFS_ERR_OK;
         }
-        fr = f_readdir(&cache.dir, &fno);
-        if (fr != FR_OK || fno.fname[0] == 0) break;
-        cache.next = idx + 1;
-        if (!attr_ok(fno.fattrib, attr)) continue;
-        dfs_name2fcb(info->fcb, fno.altname[0] ? fno.altname : fno.fname);
-        if (!dfs_fcb_match(fcbmask, info->fcb)) continue;
-        info->size = (uint32_t)fno.fsize;
-        info->time = fno.ftime;
-        info->date = fno.fdate;
-        info->attr = fno.fattrib;
-        *pos = (uint16_t)idx;
-        return DFS_ERR_OK;
     }
     cache.valid = false;
     return DFS_ERR_NOMORE;

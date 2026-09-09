@@ -1279,6 +1279,9 @@ static void printPGDFSStatus()
 {
     // Only firmware with PGDFS answers CMD_DFSMAXLEN with a sane value
     uint16_t maxlen = ctrlGetUint16(CMD_DFSMAXLEN);
+    // Firmware without PGDFS deactivates the control port on an unknown register:
+    // knock again so the settings writes that follow are not ignored
+    outp(CONTROL_PORT, 0xCC);
     if (maxlen < 128 || maxlen > 32768u) {
         return;
     }
