@@ -1,3 +1,14 @@
+# Unreleased
+
+## New features
+
+### PGDFS: the USB drive as a DOS drive letter (all modes with the USB stack)
+
+- The USB drive plugged into the PicoGUS can now be mapped to a DOS drive letter with the new `PGDFS.EXE` TSR, in the same spirit as PicoMEM's PMDFS: `PGDFS E:` gives you `E:` backed by the FAT32 drive, with read and write access, from plain DOS 5.0+. Copy files to and from the drive, run programs from it, edit files on it, in any firmware mode that carries the USB host stack (GUS, AdLib, SB, MPU-401, PSG, USB). CD-ROM emulation keeps working alongside it; both share the card's FatFs volume.
+- PGDFS is a DOS network redirector derived from [EtherDFS](https://mateusz.fr/etherdfs/) (MIT) and speaks the same EDF5 request format, so the card-side server is the ethersrv code on FatFs. The transport is new: request/answer frames stream through I/O port 1D3h, driven by seven new control-port registers (see `sw/dfs/PROTOCOL.md`). `PGDFSTST.EXE` exercises the transport and protocol for diagnostics and throughput measurement.
+- The control-port protocol version is now 5. `pgusinit` shows the mounted USB drive (label, filesystem, size) in its status output.
+- Firmware built with `-DPGDFS=OFF` omits all of this and keeps the previous behaviour.
+
 # v4.1.1
 
 ## Fixes/improvements
