@@ -74,6 +74,10 @@ add_compile_definitions(
     PICO_DEFAULT_UART_RX_PIN=-1
     PICO_DEFAULT_UART_BAUD_RATE=230400
     PICO_STDIO_USB_CONNECT_WAIT_TIMEOUT_MS=250
+    # Core 1 runs FatFs and the USB host stack (CD-ROM images, PGDFS); the SDK's
+    # default 2 KB core 1 stack leaves little margin under a CUE load or a
+    # PGDFS request. Nothing else uses SCRATCH_X, so give it the whole 4 KB bank.
+    PICO_CORE1_STACK_SIZE=0x1000
 )
 
 ################################################################################
