@@ -153,7 +153,7 @@ changes: the `DGROUP` size must not exceed `DATASEGSZ` in `globals.h`.
   http://etherdfs.sourceforge.net
 * PMDFS in the PicoMEM project by FreddyV, the model for serving EtherDFS
   requests from a FatFs volume on an ISA card.
-* `CHINT086.ASM` contains code from the Open Watcom project (Sybase Open
+* `chint086.asm` contains code from the Open Watcom project (Sybase Open
   Watcom Public License).
 
 See `LICENSE` in this directory.
