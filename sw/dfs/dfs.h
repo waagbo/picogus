@@ -30,6 +30,14 @@
  *     cdrom_tasks()/tuh_task(). FatFs is single-threaded and lives on core 1.
  *   - The single frame buffer is owned by core 0 while the status is
  *     RECEIVING or READY, and by core 1 while it is BUSY.
+ *
+ * Data port: two consecutive I/O ports at an even base (settings.DFS.basePort,
+ * default DFS_DEFAULT_DATA_PORT, 0 = disabled). Both feed the same byte
+ * stream, so a 16-bit rep insw/outsw from DOS, which the motherboard splits
+ * into two 8-bit cycles for this 8-bit card, delivers stream byte n through
+ * the base port and n+1 through base+1. picogus.cpp decodes the window and
+ * calls dfs_data_write()/dfs_data_read() once per 8-bit cycle whichever of
+ * the two ports it hits.
  */
 
 #include <stdint.h>
@@ -52,8 +60,8 @@ void    dfs_ctl_select_resp(void);      /* CMD_DFSRESP selected                *
 void    dfs_ctl_exec(void);             /* CMD_DFSEXEC written                 */
 void    dfs_ctl_abort(void);            /* CMD_DFSSTAT written                 */
 uint8_t dfs_ctl_status(void);           /* CMD_DFSSTAT read (dfs_status_t)     */
-void    dfs_data_write(uint8_t value);  /* DFS_DATA_PORT write                 */
-uint8_t dfs_data_read(void);            /* DFS_DATA_PORT read                  */
+void    dfs_data_write(uint8_t value);  /* data window write, either port      */
+uint8_t dfs_data_read(void);            /* data window read, either port       */
 void    dfs_ctl_info_rewind(void);      /* CMD_DFSINFO selected                */
 uint8_t dfs_ctl_info_read(void);        /* CMD_DFSINFO read, 0 ends + rewinds  */
 void    dfs_ctl_time_rewind(void);      /* CMD_DFSTIME selected                */

@@ -61,6 +61,10 @@ endfunction()
 
 option(PGDEBUG "Enable debug printf framework" OFF)
 option(PGDFS "Build the PGDFS USB-drive file service into USB-capable firmwares" ON)
+set(FATFS_CODE_PAGE 437 CACHE STRING "FatFs OEM code page for file names (437 US, 850 Western Europe, 865 Nordic, ...)")
+if(NOT FATFS_CODE_PAGE MATCHES "^(437|720|737|771|775|850|852|855|857|860|861|862|863|864|865|866|869|932|936|949|950)$")
+    message(FATAL_ERROR "FATFS_CODE_PAGE must be one FatFs OEM code page (437, 850, 865, ...); 0 (runtime f_setcp) is not supported")
+endif()
 find_package(Python3 COMPONENTS Interpreter QUIET)
 
 # Global definitions across all targets
@@ -145,8 +149,13 @@ function(config_target TARGET_NAME MULTIFW)
         )
     endif()
     if(USB_MSC)
-        # USB mass storage glue + FatFs, shared by the CD-ROM emulation and PGDFS
-        target_compile_definitions(${TARGET_NAME} PRIVATE USB_MSC=1)
+        # USB mass storage glue + FatFs, shared by the CD-ROM emulation and PGDFS.
+        # FF_CODE_PAGE is #ifndef-guarded in fatfs/source/ffconf.h, so the OEM code
+        # page FatFs uses to convert long file names for DOS follows FATFS_CODE_PAGE.
+        target_compile_definitions(${TARGET_NAME} PRIVATE
+            USB_MSC=1
+            FF_CODE_PAGE=${FATFS_CODE_PAGE}
+        )
         target_sources(${TARGET_NAME} PRIVATE
             usb_msc/msc_app.c
             ${CMAKE_CURRENT_LIST_DIR}/fatfs/source/ff.c

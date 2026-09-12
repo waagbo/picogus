@@ -39,6 +39,17 @@
 
 #ifdef PGDFS
 #include "dfs/dfs.h"
+// PGDFS data port window: two consecutive ports at an even base, decoded as
+// (port & ~1) == dfs_port_test. 0xFFFF matches nothing: PGDFS disabled, and
+// the value until processSettings() has run (the card must never answer a
+// read of port 0/1 while the BIOS programs the DMA controller at boot).
+static uint16_t dfs_port_test = 0xFFFF;
+// CMD_DFSPORT / settings rule: an even base in 100h..3FEh whose 2-port window
+// does not overlap the control ports 1D0h-1D3h. The window can therefore never
+// shadow CONTROL_PORT/DATA_PORT_LOW/DATA_PORT_HIGH nor be shadowed by them.
+static inline bool dfs_port_valid(uint16_t base) {
+    return base >= 0x100 && base <= 0x3FE && !(base + 1 >= 0x1D0 && base <= 0x1D3);
+}
 #endif
 
 board_type_t BOARD_TYPE;
@@ -284,10 +295,10 @@ __force_inline void select_picogus(uint8_t value) {
         pico_firmware_start();
         break;
 #ifdef PGDFS
-    case CMD_DFSREQ: // open the request buffer for DFS_DATA_PORT writes
+    case CMD_DFSREQ: // open the request buffer for data window writes
         dfs_ctl_select_req();
         break;
-    case CMD_DFSRESP: // rewind the answer buffer for DFS_DATA_PORT reads
+    case CMD_DFSRESP: // rewind the answer buffer for data window reads
         dfs_ctl_select_resp();
         break;
     case CMD_DFSINFO: // drive info string
@@ -295,6 +306,9 @@ __force_inline void select_picogus(uint8_t value) {
         break;
     case CMD_DFSTIME: // DOS time, 4 bytes
         dfs_ctl_time_rewind();
+        break;
+    case CMD_DFSPORT: // data port window base
+        basePort_low = 0;
         break;
     case CMD_DFSSTAT:
     case CMD_DFSEXEC:
@@ -322,6 +336,11 @@ __force_inline void write_picogus_low(uint8_t value) {
     case CMD_MOUSESEN:  // USB Mouse Sensitivity (8.8 fixedpoint)
         mouseSensitivity_low = value;
         break;
+#ifdef PGDFS
+    case CMD_DFSPORT: // PGDFS data port window base (0 - disabled)
+        basePort_low = value;
+        break;
+#endif // PGDFS
     }
 }
 
@@ -556,6 +575,14 @@ __force_inline void write_picogus_high(uint8_t value) {
     case CMD_DFSTIME: // DOS time lo, hi, date lo, hi
         dfs_ctl_time_write(value);
         break;
+    case CMD_DFSPORT: { // data port window base: even, 100h..3FEh, clear of 1D0h-1D3h; 0 disables
+        uint16_t base = (uint16_t)(((value << 8) | basePort_low) & ~1u);
+        if (base == 0 || dfs_port_valid(base)) {    // otherwise keep the previous value
+            settings.DFS.basePort = base;
+            dfs_port_test = base ? base : 0xFFFF;
+        }
+        break;
+    }
 #endif // PGDFS
     }
 }
@@ -583,8 +610,10 @@ __force_inline uint8_t read_picogus_low(void) {
     case CMD_CDPORT: // SB Base port
         return settings.CD.basePort == 0xFFFF ? 0 : (settings.CD.basePort & 0xFF);
 #ifdef PGDFS
-    case CMD_DFSMAXLEN: // max frame payload, low byte
-        return dfs_ctl_max_payload() & 0xFF;
+    case CMD_DFSMAXLEN: // max frame payload, low byte; 0 when PGDFS is disabled
+        return settings.DFS.basePort ? (dfs_ctl_max_payload() & 0xFF) : 0;
+    case CMD_DFSPORT: // data port window base, low byte (0 when disabled)
+        return settings.DFS.basePort & 0xFF;
 #endif // PGDFS
     default:
         return 0x0;
@@ -719,8 +748,10 @@ __force_inline uint8_t read_picogus_high(void) {
         return dfs_ctl_status();
     case CMD_DFSINFO: // drive info string, 0 terminated
         return dfs_ctl_info_read();
-    case CMD_DFSMAXLEN: // max frame payload, high byte
-        return dfs_ctl_max_payload() >> 8;
+    case CMD_DFSMAXLEN: // max frame payload, high byte; 0 when PGDFS is disabled
+        return settings.DFS.basePort ? (dfs_ctl_max_payload() >> 8) : 0;
+    case CMD_DFSPORT: // data port window base, high byte (0 when disabled)
+        return settings.DFS.basePort >> 8;
 #endif // PGDFS
     case CMD_HWTYPE: // Hardware version
         return BOARD_TYPE;
@@ -774,6 +805,16 @@ void processSettings(void) {
     cdrom_port_test = settings.CD.basePort >> 4;
     DBG_PRINTF("cdrom base port: %x\n", settings.CD.basePort);
     cdman_set_autoadvance(settings.CD.autoAdvance);
+#endif
+#ifdef PGDFS
+    // The stored value may predate this rule (or be corrupt): force it even, and
+    // fall back to the default for anything invalid other than "disabled" (0).
+    settings.DFS.basePort = (uint16_t)(settings.DFS.basePort & ~1u);
+    if (settings.DFS.basePort != 0 && !dfs_port_valid(settings.DFS.basePort)) {
+        settings.DFS.basePort = DFS_DEFAULT_DATA_PORT;
+    }
+    dfs_port_test = settings.DFS.basePort ? settings.DFS.basePort : 0xFFFF;
+    DBG_PRINTF("pgdfs data port: %x\n", settings.DFS.basePort);
 #endif
     if (BOARD_TYPE == PICOGUS_2) {
         m62429->setVolume(M62429_BOTH, settings.Global.waveTableVolume);
@@ -1048,8 +1089,10 @@ __force_inline void handle_iow(void) {
 #endif // SOUND_MPU
     // PicoGUS control
 #ifdef PGDFS
-    if (port == DFS_DATA_PORT) {
-        // PGDFS request byte stream (rep outsb). IOCHRDY-stalled like CONTROL_PORT
+    if ((port & ~1u) == dfs_port_test) {
+        // PGDFS request byte stream through the 2-port data window: a rep outsw
+        // reaches this 8-bit card as two 8-bit cycles per word (base, then base+1)
+        // and both ports feed the same stream. IOCHRDY-stalled like CONTROL_PORT
         // so the PIO FIFO can never overflow; dfs_data_write() is O(1).
         pio_sm_put(pio0, IOW_PIO_SM, IO_WAIT);
         dfs_data_write(iow_read & 0xFF);
@@ -1217,8 +1260,9 @@ __force_inline void handle_ior(void) {
     } else
 #endif // SOUND_CMS
 #ifdef PGDFS
-    if (port == DFS_DATA_PORT) {
-        // PGDFS answer byte stream (rep insb); dfs_data_read() is O(1)
+    if ((port & ~1u) == dfs_port_test) {
+        // PGDFS answer byte stream through the 2-port data window (rep insw: two
+        // 8-bit cycles per word, both ports feed the stream); dfs_data_read() is O(1)
         pio_sm_put(pio0, IOR_PIO_SM, IO_WAIT);
         pio_sm_put(pio0, IOR_PIO_SM, IOR_SET_VALUE | dfs_data_read());
     } else

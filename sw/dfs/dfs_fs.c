@@ -59,8 +59,17 @@ static struct {
     bool     valid;
 } cache;
 
-static DIR     scan_dir;        /* wildcard DELETE */
+static DIR     scan_dir;        /* wildcard DELETE, LONGNAME scan */
 static FILINFO fno;             /* shared scratch, ~280 bytes */
+
+/* LONGNAME resume point: scan_dir stays open on lname.dir between lookups so a
+ * listing tool asking for a directory's entries in order pays about one
+ * f_readdir() per name instead of a scan from the start. Dropped whenever
+ * scan_dir is reused, a directory may have gone, or the drive is unmounted. */
+static struct {
+    bool valid;
+    char dir[DFS_PATH_MAX];
+} lname;
 static char    scan_path[DFS_PATH_MAX + 14];
 static char    label_buf[24];
 
@@ -163,6 +172,7 @@ static FIL *get_file(uint16_t id) {
 void dfs_fs_invalidate(void) {
     file_used = 0;              /* the volume is gone: no f_close(), just forget */
     cache.valid = false;
+    lname.valid = false;
     memset(dirs, 0, sizeof(dirs));
 }
 
@@ -448,6 +458,49 @@ uint16_t dfs_fs_stat(const char *path, dfs_finfo_t *info) {
     return DFS_ERR_OK;
 }
 
+uint16_t dfs_fs_longname(const char *dir, const char *fcbmask, const char **name) {
+    FRESULT fr;
+    char fcb[11];
+    int passes;
+
+    if (strlen(dir) >= DFS_PATH_MAX) return DFS_ERR_PATH;
+    if (lname.valid && path_eq(lname.dir, dir)) {
+        /* resume after the previous hit; wrap around once if it is behind us */
+        passes = (scan_dir.dptr == 0) ? 1 : 2;
+    } else {
+        lname.valid = false;
+        fr = f_opendir(&scan_dir, dir);
+        if (fr != FR_OK) return (fr == FR_NO_FILE) ? DFS_ERR_PATH : dfs_fr2dos(fr);
+        strcpy(lname.dir, dir);
+        lname.valid = true;
+        passes = 1;
+    }
+    /* f_stat() cannot do this: it reports the name it was asked for, not the
+     * entry's stored long name; only f_readdir() loads the LFN entries. */
+    while (passes-- > 0) {
+        for (;;) {
+            fr = f_readdir(&scan_dir, &fno);
+            if (fr != FR_OK) {
+                lname.valid = false;
+                return dfs_fr2dos(fr);
+            }
+            if (fno.fname[0] == 0) break;                   /* end of directory */
+            dfs_name2fcb(fcb, fno.altname[0] ? fno.altname : fno.fname);
+            if (dfs_fcb_match(fcbmask, fcb)) {
+                /* fname: the long name in the OEM code page (FF_CODE_PAGE);
+                 * FatFs substitutes the short name when the long one has
+                 * characters the code page cannot express, and for entries
+                 * without a long name it is the short name with the NT
+                 * lower-case bits applied. */
+                *name = fno.fname;
+                return DFS_ERR_OK;
+            }
+        }
+        f_rewinddir(&scan_dir);
+    }
+    return DFS_ERR_FILE;
+}
+
 uint16_t dfs_fs_chmod(const char *path, uint8_t attr) {
     const uint8_t mask = DFS_ATTR_RDO | DFS_ATTR_HID | DFS_ATTR_SYS | DFS_ATTR_ARC;
     if (dfs_path_is_root(path)) return DFS_ERR_ACCESS;
@@ -466,6 +519,7 @@ uint16_t dfs_fs_rmdir(const char *path) {
     if (fr != FR_OK) return (fr == FR_NO_FILE) ? DFS_ERR_PATH : dfs_fr2dos(fr);
     if (!(fno.fattrib & AM_DIR)) return DFS_ERR_PATH;
     cache.valid = false;                /* the cached DIR may sit in it */
+    lname.valid = false;
     return dfs_fr2dos(f_unlink(path));  /* FR_DENIED when not empty or read-only */
 }
 
@@ -478,6 +532,7 @@ uint16_t dfs_fs_chdir(const char *path) {
 uint16_t dfs_fs_rename(const char *from, const char *to) {
     if (dfs_path_is_root(from) || dfs_path_is_root(to)) return DFS_ERR_ACCESS;
     cache.valid = false;
+    lname.valid = false;
     return dfs_fr2dos(f_rename(from, to));   /* FR_EXIST -> access denied */
 }
 
@@ -498,6 +553,7 @@ uint16_t dfs_fs_delete_wild(const char *dir, const char *fcbmask) {
     char fcb[11];
 
     if (dlen >= DFS_PATH_MAX) return DFS_ERR_PATH;
+    lname.valid = false;                /* scan_dir is reused here */
     fr = f_opendir(&scan_dir, dir);
     if (fr != FR_OK) return (fr == FR_NO_FILE) ? DFS_ERR_PATH : dfs_fr2dos(fr);
     for (;;) {

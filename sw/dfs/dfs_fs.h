@@ -108,6 +108,13 @@ uint16_t dfs_fs_utime(uint16_t id, uint16_t dos_time, uint16_t dos_date);
 
 /* ---- paths ---------------------------------------------------------------- */
 uint16_t dfs_fs_stat(const char *path, dfs_finfo_t *info);   /* root is synthesized as a directory */
+/* Long file name of the entry in dir ("" for the root) whose 8.3 name matches
+ * fcbmask (DFS_AL_LONGNAME). *name points at static scratch, valid until the next
+ * dfs_fs_* call: the long name in the FatFs OEM code page, or the short name
+ * itself (with the case Windows recorded) when the entry has none. DFS_ERR_PATH
+ * when dir does not exist, DFS_ERR_FILE when no entry matches. Scans dir with
+ * f_readdir() and resumes the scan on the next call for the same dir. */
+uint16_t dfs_fs_longname(const char *dir, const char *fcbmask, const char **name);
 uint16_t dfs_fs_chmod(const char *path, uint8_t attr);
 uint16_t dfs_fs_mkdir(const char *path);
 uint16_t dfs_fs_rmdir(const char *path);

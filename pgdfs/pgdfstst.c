@@ -10,9 +10,10 @@
  * conformance check for the firmware, so every failure is reported with the
  * status byte, AX and the lengths involved.
  *
- *   PGDFSTST /INFO            card, protocol, max frame payload, drive info
+ *   PGDFSTST /INFO            card, protocol, data port, max payload, drive info
  *   PGDFSTST /ECHO [n]        echo 64/512/4096-byte payloads n times, verify
  *   PGDFSTST /DIR [path]      FINDFIRST/FINDNEXT listing
+ *   PGDFSTST /LDIR [path]     the same listing with long file names (LONGNAME)
  *   PGDFSTST /TYPE file       READ a file to stdout
  *   PGDFSTST /GET remote local  copy a file from the USB drive
  *   PGDFSTST /PUT local remote  copy a file to the USB drive
@@ -38,7 +39,8 @@
 #define AL_CREATE     0x17
 #define AL_FINDFIRST  0x1B
 #define AL_FINDNEXT   0x1C
-#define AL_ECHO       0xF0  /* PGDFS extension */
+#define AL_ECHO       0xF0  /* PGDFS extension (DFS_AL_ECHO in sw/dfs/dfs_server.h) */
+#define AL_LONGNAME   0xF1  /* PGDFS extension (DFS_AL_LONGNAME): 8.3 path in, long name out */
 
 #define TICKS_PER_SEC 18.2065
 
@@ -50,7 +52,7 @@ static const char *xport_errname(int r) {
     case XPORT_OK: return "ok";
     case XPORT_NODRIVE: return "NODRIVE (no USB drive mounted, or no PGDFS)";
     case XPORT_ABORTED: return "ABORTED twice (request rejected by the card)";
-    case XPORT_TIMEOUT: return "TIMEOUT (no READY status within 5 s)";
+    case XPORT_TIMEOUT: return "TIMEOUT (no READY status within 30 s)";
     case XPORT_BADLEN: return "BADLEN (answer header announces an impossible length)";
     case XPORT_TOOLONG: return "TOOLONG (request does not fit the buffer)";
   }
@@ -109,35 +111,56 @@ static int query_ok(unsigned char al, const void *payload, unsigned short plen, 
   return len;
 }
 
-/* card presence, protocol version and CMD_DFSMAXLEN check shared by every
- * command. returns 0 when PGDFS is usable. */
+/* card presence, protocol version, CMD_DFSMAXLEN and CMD_DFSPORT checks
+ * shared by every command. returns 0 when PGDFS is usable; then the data
+ * window base is in xport_data_port and the payload size in chunk. */
 static int checkcard(int verbose) {
   unsigned char proto, st;
-  unsigned short maxlen;
+  unsigned short maxlen, port;
   xport_detect_cpu();
-  if (verbose) printf("CPU: %s\n", xport_cpu186 ? "80186 or later (using REP INSB/OUTSB)" : "8086/8088 (using IN/OUT loops)");
+  if (verbose) printf("CPU: %s\n", xport_cpu186 ? "80186 or later (using REP INSW/OUTSW)" : "8086/8088 (using IN AX,DX / OUT DX,AX loops)");
   if (!xport_present()) {
     printf("ERROR: PicoGUS not detected (CMD_MAGIC on port %03Xh/%03Xh did not answer DDh)\n", CONTROL_PORT, DATA_PORT_HIGH);
     return 1;
   }
   proto = xport_read8(CMD_PROTOCOL);
   maxlen = xport_read16(CMD_DFSMAXLEN);
+  port = xport_read16(CMD_DFSPORT);
   st = xport_status();
   if (verbose) {
     printf("PicoGUS detected, protocol version %u (need >= %u)\n", proto, PICOGUS_PROTOCOL_VER);
     printf("CMD_DFSMAXLEN: %u (%04Xh)\n", maxlen, maxlen);
+    printf("CMD_DFSPORT:   %04Xh%s\n", port, (port == 0) ? " (PGDFS disabled)" : "");
     printf("CMD_DFSSTAT:   %02Xh (%s)\n", st, statusname(st));
   }
   if (proto < PICOGUS_PROTOCOL_VER) {
     printf("ERROR: firmware protocol %u is too old for PGDFS (need %u)\n", proto, PICOGUS_PROTOCOL_VER);
     return 1;
   }
+  /* PGDFS switched off (pgusinit /dfsport 0) reports both registers as 0 */
+  if ((port == 0) && (maxlen == 0)) {
+    printf("ERROR: PGDFS is disabled on this PicoGUS (enable it with pgusinit /dfsport 1D4)\n");
+    return 1;
+  }
   if ((maxlen < XPORT_MAXLEN_MIN) || (maxlen > XPORT_MAXLEN_MAX)) {
     printf("ERROR: CMD_DFSMAXLEN=%u is outside %u..%u: this firmware has no PGDFS support\n", maxlen, XPORT_MAXLEN_MIN, XPORT_MAXLEN_MAX);
     return 1;
   }
+  if (port == 0) {
+    printf("ERROR: PGDFS is disabled on this PicoGUS (enable it with pgusinit /dfsport 1D4)\n");
+    return 1;
+  }
+  port &= 0xFFFEu; /* even base, the card ignores bit 0 */
+  if ((port < 0x100) || (port > 0x3FE)) {
+    printf("ERROR: CMD_DFSPORT=%04Xh is not a usable data port: PGDFS firmware older than this tool?\n", port);
+    return 1;
+  }
+  xport_data_port = port;
   if (maxlen < chunk) chunk = maxlen;
-  if (verbose) printf("Frame payload used by this tool: %u bytes\n", chunk);
+  if (verbose) {
+    printf("Data port:     %03Xh-%03Xh (word transfers, low byte from %03Xh)\n", port, port + 1, port);
+    printf("Frame payload used by this tool: %u bytes\n", chunk);
+  }
   return 0;
 }
 
@@ -267,9 +290,48 @@ static void printentry(const unsigned char *e) {
          (dt >> 9) + 1980, (dt >> 5) & 15, dt & 31, tm >> 11, (tm >> 5) & 63, (tm & 31) * 2);
 }
 
-static int cmd_dir(const char *path) {
+/* prints one FIND entry in the /LDIR format: short name, size, date, time
+ * and the long name the card returns for \DIR\SHORT.EXT (DFS_AL_LONGNAME).
+ * e is a private copy of the 24-byte entry, since the query reuses the
+ * frame buffer. The long name bytes are passed to the screen exactly as
+ * the card returns them (FatFs code page). Errors are shown per entry. */
+static void printlongentry(const char *dir, const unsigned char *e) {
+  char name[13], full[160];
+  unsigned char attr = e[0];
+  unsigned short tm = e[12] | (e[13] << 8), dt = e[14] | (e[15] << 8), ax = 0;
+  unsigned long size = (unsigned long)e[16] | ((unsigned long)e[17] << 8) | ((unsigned long)e[18] << 16) | ((unsigned long)e[19] << 24);
+  int lnlen = -1, asked = 0;
+  fcb2name(e + 1, name);
+  /* "." and ".." have no long name; anything else is asked for by the 8.3
+   * path DOS would use, e.g. \DIR\LONGNA~1.TXT */
+  if ((strcmp(name, ".") != 0) && (strcmp(name, "..") != 0)) {
+    asked = 1;
+    sprintf(full, "%s\\%s", (strcmp(dir, "\\") == 0) ? "" : dir, name);
+    memcpy(buf + DFS_HDR_LEN, full, strlen(full));
+    lnlen = query(AL_LONGNAME, NULL, strlen(full), &ax); /* -1: reported already */
+  }
+  printf("%-12s ", name);
+  if (attr & 0x10) printf("     <DIR> "); else printf("%10lu ", size);
+  printf("%04u-%02u-%02u %02u:%02u  ",
+         (dt >> 9) + 1980, (dt >> 5) & 15, dt & 31, tm >> 11, (tm >> 5) & 63);
+  if (!asked) {
+    /* nothing to show */
+  } else if (lnlen < 0) {
+    printf("(LONGNAME request failed, see above)");
+  } else if (ax != 0) {
+    printf("(LONGNAME error: AX=%04Xh, DOS error %u)", ax, ax);
+  } else {
+    fwrite(buf + DFS_HDR_LEN, 1, lnlen, stdout);
+  }
+  printf("\n");
+}
+
+/* /DIR (longnames == 0) and /LDIR (longnames != 0): walk a directory with
+ * FINDFIRST/FINDNEXT, attribute mask 16h (files, directories, hidden,
+ * system) like DOS DIR does */
+static int cmd_dir(const char *path, int longnames) {
   char dir[128], mask[160];
-  unsigned char req[32];
+  unsigned char req[32], entry[24];
   unsigned short ax, dirid, pos;
   int len, n = 0;
   size_t l;
@@ -278,7 +340,7 @@ static int cmd_dir(const char *path) {
   l = strlen(dir);
   if ((l > 1) && (dir[l - 1] == '\\')) dir[l - 1] = 0;
   sprintf(mask, "%s\\????????.???", (strcmp(dir, "\\") == 0) ? "" : dir);
-  printf("Directory of %s\n\n", dir);
+  printf("Directory of %s%s\n\n", dir, longnames ? " (with long names)" : "");
   /* FINDFIRST: A + path with mask */
   req[0] = 0x16; /* look for hidden, system and directories, too */
   memcpy(buf + DFS_HDR_LEN, req, 1);
@@ -298,10 +360,12 @@ static int cmd_dir(const char *path) {
       printf("ERROR: FIND answer has %d payload bytes, expected 24\n", len);
       return 1;
     }
-    printentry(buf + DFS_HDR_LEN);
+    /* keep a copy of the entry: the LONGNAME query overwrites the buffer */
+    memcpy(entry, buf + DFS_HDR_LEN, 24);
+    dirid = entry[20] | (entry[21] << 8);
+    pos = entry[22] | (entry[23] << 8);
+    if (longnames) printlongentry(dir, entry); else printentry(entry);
     n++;
-    dirid = buf[DFS_HDR_LEN + 20] | (buf[DFS_HDR_LEN + 21] << 8);
-    pos = buf[DFS_HDR_LEN + 22] | (buf[DFS_HDR_LEN + 23] << 8);
     /* FINDNEXT: CC pp A + 11-byte template */
     req[0] = dirid & 0xFF; req[1] = dirid >> 8;
     req[2] = pos & 0xFF;   req[3] = pos >> 8;
@@ -466,9 +530,10 @@ static int cmd_time(void) {
 
 static void usage(void) {
   printf("PGDFSTST v%s - PicoGUS PGDFS transport and protocol test tool\n\n", PVER);
-  printf("  PGDFSTST /INFO              card, protocol, frame size, USB drive info\n");
+  printf("  PGDFSTST /INFO              card, protocol, data port, frame size, USB drive\n");
   printf("  PGDFSTST /ECHO [n]          echo 64/512/4096-byte payloads n times (default 10)\n");
   printf("  PGDFSTST /DIR [path]        list a directory (FINDFIRST/FINDNEXT)\n");
+  printf("  PGDFSTST /LDIR [path]       list a directory with long file names (LONGNAME)\n");
   printf("  PGDFSTST /TYPE file         show a file (READ)\n");
   printf("  PGDFSTST /GET remote local  copy a file from the USB drive\n");
   printf("  PGDFSTST /PUT local remote  copy a file to the USB drive\n");
@@ -490,7 +555,8 @@ int main(int argc, char **argv) {
     if (n < 1) n = 1;
     return cmd_echo(n);
   }
-  if (stricmp(cmd, "DIR") == 0) return cmd_dir((argc > 2) ? argv[2] : NULL);
+  if (stricmp(cmd, "DIR") == 0) return cmd_dir((argc > 2) ? argv[2] : NULL, 0);
+  if (stricmp(cmd, "LDIR") == 0) return cmd_dir((argc > 2) ? argv[2] : NULL, 1);
   if ((stricmp(cmd, "TYPE") == 0) && (argc > 2)) return cmd_type(argv[2]);
   if ((stricmp(cmd, "GET") == 0) && (argc > 3)) return cmd_get(argv[2], argv[3]);
   if ((stricmp(cmd, "PUT") == 0) && (argc > 3)) return cmd_put(argv[2], argv[3]);

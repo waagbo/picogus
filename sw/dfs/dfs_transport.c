@@ -28,7 +28,7 @@
  * __not_in_flash_func.
  *
  * Buffer ownership follows the status byte:
- *   RECEIVING, READY : core 0 (bytes in / bytes out on DFS_DATA_PORT)
+ *   RECEIVING, READY : core 0 (bytes in / bytes out on the data port window)
  *   BUSY             : core 1 (dfs_process())
  * The hand-over in each direction is "write everything, barrier, write
  * status"; the reader does "read status, barrier, read everything".
@@ -164,7 +164,7 @@ uint8_t dfs_ctl_status(void) {
     return s;
 }
 
-/* DFS_DATA_PORT write: append to the request frame while RECEIVING. */
+/* Data window write (either port): append to the request frame while RECEIVING. */
 void dfs_data_write(uint8_t value) {
     if (dfs_state != DFS_STATUS_RECEIVING) {
         return;
@@ -176,7 +176,7 @@ void dfs_data_write(uint8_t value) {
     dfs_buf[dfs_wr++] = value;
 }
 
-/* DFS_DATA_PORT read: stream the answer frame while READY, 0xFF otherwise. */
+/* Data window read (either port): stream the answer frame while READY, 0xFF otherwise. */
 uint8_t dfs_data_read(void) {
     if (dfs_state != DFS_STATUS_READY || dfs_aborted) {
         return 0xFF;

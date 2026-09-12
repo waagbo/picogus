@@ -910,6 +910,94 @@ static void test_lfn(void) {
     CHECK(op_getattr("\\FF\\LongFileName.txt", NULL, NULL, NULL, NULL) == 2, "LFN gone");
 }
 
+/* answer payload equals s (no terminator on the wire) */
+static int payload_is(const char *s) {
+    return (size_t)last_len == strlen(s) && memcmp(pl, s, last_len) == 0;
+}
+
+static void test_longname(void) {
+    FIL f;
+    FRESULT fr;
+    uint16_t ax;
+    search_t s;
+    /* 52 characters: longer than the 32-byte payload buffer used below */
+    static const char lfn[]  = "A Rather Long File Name That Exceeds Thirty Two.txt";
+    static const char ldir[] = "Long Directory Name";
+    SECTION("long name lookup");
+    fr = f_open(&f, "\\FF\\A Rather Long File Name That Exceeds Thirty Two.txt", FA_CREATE_ALWAYS | FA_WRITE);
+    CHECK(fr == FR_OK, "f_open LFN -> %d", fr);
+    if (fr == FR_OK) f_close(&f);
+    fr = f_mkdir("\\FF\\Long Directory Name");
+    CHECK(fr == FR_OK, "f_mkdir LFN dir -> %d", fr);
+
+    /* the redirector interface only ever shows the 8.3 alias */
+    ax = op_findfirst(0x00, "\\FF\\ARATHE??.???", &s);
+    CHECK(ax == 0 && memcmp(s.name, "ARATHE~1TXT", 11) == 0, "findfirst file alias '%s' (%04X)", s.name, ax);
+    ax = op_findfirst(0x10, "\\FF\\LONGDI??.???", &s);
+    CHECK(ax == 0 && memcmp(s.name, "LONGDI~1   ", 11) == 0, "findfirst dir alias '%s' (%04X)", s.name, ax);
+
+    /* LONGNAME on the alias returns the long name */
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\ARATHE~1.TXT");
+    CHECK(ax == 0, "longname file -> %04X", ax);
+    CHECK(payload_is(lfn), "longname file '%.*s'", last_len, pl);
+    ax = run_str(DFS_AL_LONGNAME, "\\ff\\arathe~1.txt");
+    CHECK(ax == 0 && payload_is(lfn), "longname path is case-insensitive (%04X)", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\LONGDI~1");
+    CHECK(ax == 0 && payload_is(ldir), "longname dir '%.*s' (%04X)", last_len, pl, ax);
+    /* a plain 8.3 entry is its own long name */
+    ax = run_str(DFS_AL_LONGNAME, "\\T1.TXT");
+    CHECK(ax == 0 && payload_is("T1.TXT"), "longname 8.3 file '%.*s' (%04X)", last_len, pl, ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF");
+    CHECK(ax == 0 && payload_is("FF"), "longname 8.3 dir '%.*s' (%04X)", last_len, pl, ax);
+    /* an 8.3 entry with NT case bits only: the long name is the cased spelling.
+     * lower.txt (from test_lfn) sits elsewhere in \FF, so the resumed scan wraps. */
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\LOWER.TXT");
+    CHECK(ax == 0 && payload_is("lower.txt"), "longname case-only name '%.*s' (%04X)", last_len, pl, ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\ARATHE~1.TXT");
+    CHECK(ax == 0 && payload_is(lfn), "longname after wrapping around (%04X)", ax);
+    /* dot entries are their own names */
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\.");
+    CHECK(ax == 0 && payload_is("."), "longname '.' (%04X)", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\..");
+    CHECK(ax == 0 && payload_is(".."), "longname '..' (%04X)", ax);
+    /* the root has no name */
+    ax = run_str(DFS_AL_LONGNAME, "\\");
+    CHECK(ax == 0 && last_len == 0, "longname root -> %04X len %u", ax, last_len);
+    /* errors: the GETATTR codes */
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\NOPE.TXT");
+    CHECK(ax == 2, "longname missing file -> 2, got %04X", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\NOPE\\ARATHE~1.TXT");
+    CHECK(ax == 3, "longname missing dir -> 3, got %04X", ax);
+    ax = run(DFS_AL_LONGNAME, NULL, 0);
+    CHECK(ax == 1, "longname empty payload -> 1, got %04X", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\ARATHE??.TXT");
+    CHECK(ax == 3, "longname wildcard -> 3, got %04X", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\");
+    CHECK(ax == 3, "longname trailing separator -> 3, got %04X", ax);
+    ax = run_drv(1, DFS_AL_LONGNAME, "\\T1.TXT", 7);
+    CHECK(ax == 0x0F, "longname on drive 1 -> 0Fh, got %04X", ax);
+    /* the answer is clamped to the buffer, never past it */
+    {
+        const char *p = "\\FF\\ARATHE~1.TXT";
+        uint16_t n = (uint16_t)strlen(p);
+        wr16(buf, (uint16_t)(DFS_HDR_LEN + n));
+        buf[2] = 0;
+        buf[3] = DFS_AL_LONGNAME;
+        memcpy(pl, p, n);
+        ax = run_frame((uint16_t)(DFS_HDR_LEN + n), DFS_HDR_LEN + 32);
+        CHECK(ax == 0 && last_len == 32 && memcmp(pl, lfn, 32) == 0, "longname clamped to a 32-byte payload: %04X len %u", ax, last_len);
+    }
+    fr = f_unlink("\\FF\\A Rather Long File Name That Exceeds Thirty Two.txt");
+    CHECK(fr == FR_OK, "cleanup LFN file -> %d", fr);
+    fr = f_unlink("\\FF\\Long Directory Name");
+    CHECK(fr == FR_OK, "cleanup LFN dir -> %d", fr);
+    /* the resumed scan copes with entries deleted since the last lookup */
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\ARATHE~1.TXT");
+    CHECK(ax == 2, "longname deleted entry -> 2, got %04X", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\FF\\LOWER.TXT");
+    CHECK(ax == 0 && payload_is("lower.txt"), "longname still works after a miss (%04X)", ax);
+}
+
 static void test_handles(void) {
     uint16_t ax, ids[8], id = 0;
     int i;
@@ -954,6 +1042,8 @@ static void test_unmount(void) {
     CHECK(ax == 0x15, "open after unmount -> 15h, got %04X", ax);
     ax = op_findnext(&s);
     CHECK(ax == 0x15, "findnext after unmount -> 15h, got %04X", ax);
+    ax = run_str(DFS_AL_LONGNAME, "\\T1.TXT");
+    CHECK(ax == 0x15, "longname after unmount -> 15h, got %04X", ax);
     CHECK(run(DFS_AL_ECHO, "still", 5) == 0 && last_len == 5, "echo after unmount");
     dfs_server_drive_mounted();
     CHECK(dfs_server_drive_present(), "present after remount");
@@ -991,6 +1081,7 @@ int main(void) {
         test_attr_delete_rename();
         test_time();
         test_lfn();
+        test_longname();
         test_handles();
         test_unmount();
     }

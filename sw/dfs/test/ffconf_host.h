@@ -85,7 +85,9 @@
 / Locale and Namespace Configurations
 /---------------------------------------------------------------------------*/
 
+#ifndef FF_CODE_PAGE
 #define FF_CODE_PAGE	437
+#endif
 /* This option specifies the OEM code page to be used on the target system.
 /  Incorrect code page setting can cause a file open failure.
 /

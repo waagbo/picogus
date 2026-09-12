@@ -10,32 +10,50 @@ sees sectors and the volume format is the card's business.
 The request/answer payloads are the EtherDFS "EDF5" protocol (Mateusz Viste,
 MIT), which is also what PicoMEM's PMDFS speaks. Only the framing and the
 transport differ: EtherDFS uses raw Ethernet frames, PMDFS a shared-RAM window,
-PGDFS a byte stream over an ISA I/O port.
+PGDFS a byte stream over a two-port ISA I/O window.
 
 ## Ports and registers
 
 Everything rides on the existing PicoGUS control protocol (`common/picogus.h`):
 knock `CCh` on `CONTROL_PORT` (1D0h), write a register number, then move data
-through `DATA_PORT_LOW` (1D1h) / `DATA_PORT_HIGH` (1D2h). PGDFS adds one port and
-seven registers.
+through `DATA_PORT_LOW` (1D1h) / `DATA_PORT_HIGH` (1D2h). PGDFS adds a two-port
+data window and eight registers.
 
 | Reg / port | Name | Access | Meaning |
 |---|---|---|---|
-| `1D3h` | `DFS_DATA_PORT` | byte stream | Request bytes in (`rep outsb`), answer bytes out (`rep insb`). Direction follows the selected register. |
+| `1D4h`-`1D5h` (default) | data window | byte stream, 8- or 16-bit | Request bytes in (`rep outsw`), answer bytes out (`rep insw`). Two consecutive ports at an even base; both feed the same byte stream, so a word access carries stream byte n in the low byte (base) and n+1 in the high byte (base+1), and single-byte accesses to either port work as well. Direction follows the selected register. Base set with `CMD_DFSPORT`. |
 | `80h` | `CMD_DFSSTAT` | read 1D2h / write 1D2h | Read: `dfs_status_t`. Any write aborts the current transaction and returns to IDLE. |
-| `81h` | `CMD_DFSREQ` | select | Rewinds the write pointer. Subsequent `1D3h` writes append to the request frame. Status becomes RECEIVING. |
+| `81h` | `CMD_DFSREQ` | select | Rewinds the write pointer. Subsequent data window writes append to the request frame. Status becomes RECEIVING. |
 | `82h` | `CMD_DFSEXEC` | write 1D2h (any value) | Validates the frame (received bytes == declared length, length within limits) and sets BUSY; core 1 serves it. Invalid frame: ABORTED. |
-| `83h` | `CMD_DFSRESP` | select | Rewinds the read pointer. Subsequent `1D3h` reads stream the answer frame. Valid only in READY. |
+| `83h` | `CMD_DFSRESP` | select | Rewinds the read pointer. Subsequent data window reads stream the answer frame. Valid only in READY. |
 | `84h` | `CMD_DFSINFO` | read string 1D2h | Zero-terminated `LABEL|FS|<size MB>|<serial hex>`; empty string when no drive is mounted. Reading the terminator rewinds. |
-| `85h` | `CMD_DFSMAXLEN` | read 16-bit 1D1h/1D2h | Largest payload (bytes, excluding header) the card accepts in one frame. Old firmware without PGDFS returns FF00h here (low byte 00h, high byte FFh); the driver treats anything outside 128..32768 as "not supported". |
+| `85h` | `CMD_DFSMAXLEN` | read 16-bit 1D1h/1D2h | Largest payload (bytes, excluding header) the card accepts in one frame. Reads 0 when PGDFS is disabled (`CMD_DFSPORT` = 0). Firmware without PGDFS returns FF00h here (low byte 00h, high byte FFh); the driver treats anything outside 128..32768 as "not supported". |
 | `86h` | `CMD_DFSTIME` | write 1D2h, 4 bytes | DOS packed time (lo, hi) then packed date (lo, hi), FAT format. Used for timestamps on files the card creates or modifies. |
+| `87h` | `CMD_DFSPORT` | read/write 16-bit 1D1h/1D2h | Base of the data window, handled like `CMD_CDPORT`: write the low byte to 1D1h, then the high byte to 1D2h, which commits; reads return the current value, 0 when disabled. Bit 0 is ignored (the base is forced even). 0 disables PGDFS: `CMD_DFSMAXLEN` reads 0 and the window is not decoded. Bases below 100h, above 3FEh, or whose window overlaps 1D0h-1D3h are rejected and the previous value kept. Stored in the card's settings (`pgusinit /dfsport`, persisted by `pgusinit /save`); default 1D4h. |
 
 Protocol version (`CMD_PROTOCOL`) is 5 with PGDFS present. The driver requires `>= 5`.
 
-Reads of `1D2h` and `1D3h` hold IOCHRDY only for the time it takes core 0 to
-fetch one byte from RAM. Writes to `1D3h` use the IOCHRDY-stalled path as well,
-so the PIO FIFO can never overflow during `rep outsb`. Core 0 never waits on USB
-or FatFs inside a bus cycle; the DOS side waits on the status byte instead.
+Reads of `1D2h` and of the data window hold IOCHRDY only for the time it takes
+core 0 to fetch one byte from RAM. Writes to the data window use the
+IOCHRDY-stalled path as well, so the PIO FIFO can never overflow during
+`rep outsw`. Core 0 never waits on USB or FatFs inside a bus cycle; the DOS side
+waits on the status byte instead.
+
+### Why a word-wide window on an 8-bit card
+
+The PicoGUS is an 8-bit ISA card, so it never sees a 16-bit bus cycle. When
+the CPU executes `out dx, ax` / `in ax, dx` (or `rep outsw` / `rep insw`) on an
+8-bit port, the 8088 itself, or the bus controller of a 286+ motherboard,
+splits the access into two 8-bit cycles, the base port with the low byte and
+then base+1 with the high byte, with no extra CPU work. Both ports of the
+window feed the same stream, so every iteration moves two stream bytes and the
+CPU cost per byte roughly halves compared with `rep outsb` / `rep insb`.
+`insw`/`outsw` are 186+ instructions; an 8086/8088 driver gets the same effect
+from `in ax, dx` / `stosw` and `lodsw` / `out dx, ax` loops.
+
+The card decodes the other emulated devices (GUS, SB, MPU-401, CD-ROM, ...)
+before the PGDFS window, so a window placed on one of their ports is shadowed
+by that device: pick a free even base, as for any other card in the machine.
 
 ## Status machine
 
@@ -58,8 +76,9 @@ or FatFs inside a bus cycle; the DOS side waits on the status byte instead.
   aborted through `CMD_DFSSTAT`. Sticky until the next `CMD_DFSREQ`.
 * `NODRIVE (FFh)`: no USB drive is mounted; reported in place of IDLE and
   ABORTED. Requests are refused. Also what firmware without PGDFS returns for
-  an unknown register, so the driver must check `CMD_DFSMAXLEN` and the
-  protocol version at install, not this byte.
+  an unknown register, so the driver must check `CMD_DFSMAXLEN` (FF00h without
+  PGDFS, 0 with PGDFS disabled) and the protocol version at install, not this
+  byte.
 
 A write to `CMD_DFSSTAT` while BUSY cannot stop core 1: the status keeps
 reading BUSY until core 1 finishes, then it becomes ABORTED (the result is
@@ -92,11 +111,20 @@ frame.
 
 ## Transaction, driver side
 
+`dfs_port` is the window base read from `CMD_DFSPORT` at install (0: PGDFS is
+disabled, do not install). Frames move a word at a time; an odd byte count ends
+with one byte access.
+
 ```
 out 1D0h, CCh          ; knock
 out 1D0h, 81h          ; CMD_DFSREQ: open request buffer
-mov dx, 1D3h
-rep outsb              ; the whole frame, header first (8088: in/stosb loop)
+mov dx, dfs_port
+mov cx, frame_len      ; the whole frame, header first
+shr cx, 1              ; words; CF = one trailing byte
+rep outsw              ; 186+ (8086/8088: lodsw / out dx, ax loop)
+jnc @f
+outsb
+@@:
 out 1D0h, 82h          ; CMD_DFSEXEC
 out 1D2h, 01h
 out 1D0h, 80h          ; CMD_DFSSTAT
@@ -104,9 +132,16 @@ loop: in al, 1D2h
       3 -> ready, FEh -> aborted, FFh -> no drive, else keep polling
       give up after ~30 s (BIOS tick count): abort via out 1D2h, 0 and fail with error 15h
 out 1D0h, 83h          ; CMD_DFSRESP
-mov dx, 1D3h
-insb x4                ; header: length, AX
-rep insb               ; length-4 payload bytes
+mov dx, dfs_port
+in ax, dx              ; header: frame length
+mov cx, ax
+in ax, dx              ; header: AX result
+sub cx, 4
+shr cx, 1
+rep insw               ; payload (8086/8088: in ax, dx / stosw loop)
+jnc @f
+insb
+@@:
 ```
 
 The driver never re-sends a request that got READY. On ABORTED it re-sends
@@ -160,6 +195,7 @@ the position used to continue a search.
 | 21h | SEEKFROMEND | oooo offset from end, SS | oooo offset from start |
 | 24h | SETFILETIMESTAMP | tt, dd, SS | - |
 | F0h | ECHO (PGDFS) | any bytes | the same bytes |
+| F1h | LONGNAME (PGDFS) | path as DOS sees it: drive-relative, backslashes, 8.3 names (`\DIR\LONGNA~1.EXT`), no wildcards | the entry's long file name, no terminator (the short name itself when the entry has none, empty for the root); AX = 0, or GETATTR's errors: 2 file not found, 3 path not found, 15h no drive |
 
 Behaviour that the MS-DOS side relies on (all inherited from ethersrv-linux):
 FINDFIRST in a non-root directory returns `.` and `..` first; a failing
@@ -167,3 +203,19 @@ FINDFIRST returns 12h (no more files), not 02h; DISKSPACE totals are capped just
 under 2 GB; deleting a read-only file returns 05h; RENAME onto an existing name
 fails; file and directory names are matched case-insensitively and reported as
 8.3 names (FatFs short names, so long names appear as `LONGNA~1.EXT`).
+
+## Long file names and the code page
+
+The INT 2Fh/11h redirector interface is 8.3-only, so PGDFS always reports the
+FatFs short name (`LONGNA~1.EXT` for an entry that carries a long name) and
+DOS programs open files by that alias. `LONGNAME` (F1h) is the way back: given
+the 8.3 path, it returns the entry's long name so a tool can show it
+(`PGDFSTST /LDIR`). The card finds the entry by scanning its directory and
+resumes that scan on the next lookup, so asking for a directory's entries in
+listing order costs about one directory read per name. Names travel in the
+FatFs OEM code page, a firmware build option (`-DFATFS_CODE_PAGE=437` by
+default; 850 Western Europe, 865 Nordic, ...): it decides how the long names on
+the drive, stored as UTF-16 by Windows, become the 8-bit names DOS sees, and
+how DOS names are matched against them. A long name with characters outside the
+code page is reported as its 8.3 alias. Build the firmware with the code page
+the DOS machine runs (`CHCP`).

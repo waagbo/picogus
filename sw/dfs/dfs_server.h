@@ -50,7 +50,12 @@ const char *dfs_server_info_string(void);
 uint32_t dfs_platform_millis(void);
 
 /* PGDFS-specific subfunctions on top of the EDF5 set (AL values 0x00-0x2E). */
-#define DFS_AL_ECHO 0xF0   /* answer payload = request payload, AX = 0 */
+#define DFS_AL_ECHO     0xF0 /* answer payload = request payload, AX = 0 */
+#define DFS_AL_LONGNAME 0xF1 /* request: path as DOS sees it ("\\DIR\\FILE~1.TXT", 8.3);
+                              * answer: the entry's long file name in the FatFs code page
+                              * (the same as the short name when it has none), AX = 0,
+                              * or AX = 2/3 when the path does not exist. Lets tools show
+                              * long names although the redirector interface is 8.3-only. */
 
 #ifdef __cplusplus
 }

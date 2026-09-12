@@ -241,7 +241,7 @@ static unsigned short sendquery(unsigned char query, unsigned char drive, unsign
   /* I do not copy anything more into glob_frame - the caller is expected to
    * have already copied all relevant data into glob_frame+4 */
 
-  /* ship it, wait for the answer (up to ~5s), read it back */
+  /* ship it, wait for the answer (up to ~30 s), read it back */
   if (xport_transact(glob_frame, FRAMESIZE) != XPORT_OK) return(0xFFFFu);
 
   /* return buffer (without header) */
@@ -975,7 +975,9 @@ static const char far MSG_HELP[] =
   "  /R   map the drive read-only\r\n"
   "  /Q   quiet: print nothing when loading or unloading succeeded\r\n"
   "  /T   only send the DOS date and time to the card (TSR not required)\r\n"
-  "  /?   this help\r\n$";
+  "  /?   this help\r\n"
+  "\r\n"
+  "The data port comes from the card's settings (pgusinit /dfsport, default 1D4).\r\n$";
 static const char far MSG_UNSUPDOS[] = "PGDFS requires DOS 5.0 or later.\r\n$";
 static const char far MSG_NOREDIR[] = "The DOS network redirector API is not available (INT 2Fh/1100h).\r\n$";
 static const char far MSG_NOTLOAD[] = "PGDFS is not loaded.\r\n$";
@@ -992,6 +994,8 @@ static const char far MSG_NOCARD[] = "PicoGUS not detected (nothing answers on p
 static const char far MSG_PROTO1[] = "PicoGUS firmware uses protocol $";
 static const char far MSG_PROTO2[] = ", PGDFS needs protocol 5 or later.\r\nPlease upgrade the PicoGUS firmware.\r\n$";
 static const char far MSG_NOPGDFS[] = "This PicoGUS firmware has no PGDFS support - please upgrade the firmware.\r\n$";
+static const char far MSG_DFSOFF[] = "PGDFS is disabled on this PicoGUS (enable it with pgusinit /dfsport 1D4).\r\n$";
+static const char far MSG_DATAPORT[] = ", data port $";
 static const char far MSG_USBDRV[] = "USB drive: $";
 static const char far MSG_NOLABEL[] = "(no label)$";
 static const char far MSG_MB[] = " MB)\r\n$";
@@ -1104,6 +1108,19 @@ static void outdec(unsigned long v) {
   do {
     buff[--i] = '0' + (v % 10);
     v /= 10;
+  } while (v != 0);
+  outstr(buff + i);
+}
+
+/* prints an unsigned number in hexadecimal (upper case, no leading zeros) */
+static void outhex(unsigned short v) {
+  char buff[6];
+  int i = 5;
+  buff[i] = 0;
+  do {
+    unsigned char d = v & 15;
+    buff[--i] = (d < 10) ? ('0' + d) : ('A' + d - 10);
+    v >>= 4;
   } while (v != 0);
   outstr(buff + i);
 }
@@ -1321,11 +1338,12 @@ static unsigned char findfreemultiplex(unsigned char *presentflag) {
   return(freeid);
 }
 
-/* looks for a PicoGUS with PGDFS support: magic byte, protocol version and
- * a sane CMD_DFSMAXLEN. prints a message and returns non-zero on failure.
- * on success sets glob_chunk (largest payload per frame) and the CPU flag. */
+/* looks for a PicoGUS with PGDFS support: magic byte, protocol version, a
+ * sane CMD_DFSMAXLEN and an enabled data port (CMD_DFSPORT != 0). prints a
+ * message and returns non-zero on failure. on success sets glob_chunk
+ * (largest payload per frame), xport_data_port and the CPU flag. */
 static int detectcard(void) {
-  unsigned short maxlen;
+  unsigned short maxlen, port;
   unsigned char proto;
 
   xport_detect_cpu();
@@ -1342,10 +1360,30 @@ static int detectcard(void) {
     return(-1);
   }
   maxlen = xport_read16(CMD_DFSMAXLEN);
+  port = xport_read16(CMD_DFSPORT);
+  /* PGDFS switched off (pgusinit /dfsport 0): the card then reports a data
+   * port of 0 and a maximum length of 0 as well, so look at both before
+   * concluding that the firmware has no PGDFS at all */
+  if ((port == 0) && (maxlen == 0)) {
+    outmsg(MSG_DFSOFF);
+    return(-1);
+  }
   if ((maxlen < XPORT_MAXLEN_MIN) || (maxlen > XPORT_MAXLEN_MAX)) {
     outmsg(MSG_NOPGDFS);
     return(-1);
   }
+  if (port == 0) {
+    outmsg(MSG_DFSOFF);
+    return(-1);
+  }
+  port &= 0xFFFEu; /* the window sits at an even base, bit 0 is ignored */
+  if ((port < 0x100) || (port > 0x3FE)) {
+    /* not a value this protocol produces: PGDFS firmware older than the
+     * configurable data port answers FF00h for the unknown register */
+    outmsg(MSG_NOPGDFS);
+    return(-1);
+  }
+  xport_data_port = port;
   glob_chunk = XPORT_MAX_PAYLOAD;
   if (maxlen < glob_chunk) glob_chunk = maxlen;
   return(0);
@@ -1563,9 +1601,9 @@ int main(int argc, char **argv) {
     return(0);
   }
 
-  /* is there a PicoGUS with PGDFS support? (also sets glob_chunk and the
-   * CPU flag, both of which live in the data segment that is copied to the
-   * resident block later on) */
+  /* is there a PicoGUS with PGDFS support? (also sets glob_chunk, the data
+   * port and the CPU flag, all of which live in the data segment that is
+   * copied to the resident block later on; /N keeps the default port) */
   if ((args.flags & ARGFL_NOCHECK) == 0) {
     if (detectcard() != 0) return(1);
   } else {
@@ -1691,6 +1729,9 @@ int main(int argc, char **argv) {
     }
     outmsg(MSG_INSTL2);
     if (glob_readonly != 0) outmsg(MSG_RDONLY);
+    outmsg(MSG_DATAPORT);
+    outhex(xport_data_port);
+    outchar('h');
     /* resident size = PSP + resident code (rounded up to paragraphs) + the
      * data/stack segment (rounded up to paragraphs) */
     residentsz = ((FP_OFF(begtextend) + 256 + 15) & 0xFFF0u) + ((DATASEGSZ + 15) & 0xFFF0u);

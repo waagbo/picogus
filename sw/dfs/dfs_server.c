@@ -433,6 +433,30 @@ uint16_t dfs_process(uint8_t *buf, uint16_t req_len, uint16_t buf_size) {
         ax = dfs_fs_utime(get16(pl + 4), get16(pl), get16(pl + 2));
         break;
 
+    case DFS_AL_LONGNAME: {         /* PGDFS: long name of an 8.3 path, no terminator */
+        const char *name = "";
+        size_t n;
+        if (plen < 1) { ax = DFS_ERR_FUNC; break; }
+        if (has_wildcard(pl, plen)) { ax = DFS_ERR_PATH; break; }    /* as f_stat(): invalid name */
+        if (!split_dir_mask(pl, plen, path_b, path_a, fcb)) { ax = DFS_ERR_PATH; break; }
+        DFS_LOG("longname dir='%s' name='%s'\n", path_b, path_a);
+        if (path_a[0] == 0) {           /* the root has no name; "\DIR\" is not a name */
+            ax = dfs_path_is_root(path_b) ? DFS_ERR_OK : DFS_ERR_PATH;
+        } else if (path_a[0] == '.') {  /* '.' and '..' are their own long names */
+            name = path_a;
+            ax = (strcmp(path_a, ".") == 0 || strcmp(path_a, "..") == 0) ? DFS_ERR_OK : DFS_ERR_FILE;
+        } else {
+            ax = dfs_fs_longname(path_b, fcb, &name);
+        }
+        if (ax == DFS_ERR_OK) {
+            n = strlen(name);
+            if (n > maxpl) n = maxpl;   /* FF_LFN_BUF (255) fits any real frame */
+            memcpy(pl, name, n);        /* name is dfs_fs scratch, not the frame */
+            alen = (uint16_t)n;
+        }
+        break;
+    }
+
     default:
         ax = DFS_ERR_FUNC;
         break;

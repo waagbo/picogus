@@ -7,12 +7,12 @@
  * See XPORT.H for the interface and sw/dfs/PROTOCOL.md for the protocol.
  *
  * RESIDENT CODE RULES (this file is #included into the BEGTEXT segment of
- * PGDFS.C): no libc calls of any kind, no string literals, no static
- * initializers beyond plain zero, no stack checks (-s). inp()/outp() are
- * compiler intrinsics and compile to IN/OUT instructions. The code must run
- * on an 8086, so REP INSB/OUTSB (80186+) are only used after
- * xport_detect_cpu() said so, and they are emitted as raw bytes because the
- * assembler rejects them with -0.
+ * PGDFS.C): no libc calls of any kind, no string literals, only static
+ * initializers that need no startup code (plain constants), no stack checks
+ * (-s). inp()/outp() are compiler intrinsics and compile to IN/OUT
+ * instructions. The code must run on an 8086, so REP INSW/OUTSW (80186+)
+ * are only used after xport_detect_cpu() said so, and they are emitted as
+ * raw bytes because the assembler rejects them with -0.
  */
 
 #include <conio.h>  /* inp() / outp() / inpw() */
@@ -25,6 +25,7 @@
 unsigned char xport_cpu186;
 unsigned char xport_last_status;
 unsigned char xport_retried;
+unsigned short xport_data_port = DFS_DEFAULT_DATA_PORT;
 
 unsigned char xport_detect_cpu(void) {
   unsigned char r = 0;
@@ -65,62 +66,79 @@ unsigned short xport_ticks(void) {
   return(*(unsigned short volatile far *)MK_FP(0x40, 0x6C));
 }
 
+/* The data window is two consecutive ports that feed the same byte stream,
+ * so a 16-bit OUT/IN at the (even) base moves two stream bytes: the bus
+ * splits it into a byte cycle at port (low byte, stream byte n) and one at
+ * port+1 (high byte, stream byte n+1). That halves the CPU work per byte
+ * compared to byte transfers. n/2 words go out as words, an odd last byte
+ * as one byte access to the base port. */
 void xport_out_bytes(const unsigned char *src, unsigned short n) {
-  unsigned short port = DFS_DATA_PORT;
+  unsigned short port = xport_data_port;
+  unsigned short words = n >> 1;
   if (n == 0) return;
-  if (xport_cpu186 != 0) {
-    _asm {
-      mov si, src
-      mov cx, n
-      mov dx, port
-      cld
-      db 0F3h, 6Eh   /* rep outsb (DS:SI -> port DX) */
-    }
-  } else {
-    _asm {
-      mov si, src
-      mov cx, n
-      mov dx, port
-      cld
-      outnext:
-      lodsb
-      out dx, al
-      loop outnext
+  if (words != 0) {
+    if (xport_cpu186 != 0) {
+      _asm {
+        mov si, src
+        mov cx, words
+        mov dx, port
+        cld
+        db 0F3h, 6Fh   /* rep outsw (DS:SI -> port DX, word by word) */
+      }
+    } else {
+      /* OUT DX,AX on an 8086/8088 performs two byte cycles: AL to port DX,
+       * then AH to port DX+1, which is exactly the stream order */
+      _asm {
+        mov si, src
+        mov cx, words
+        mov dx, port
+        cld
+        outwnext:
+        lodsw
+        out dx, ax
+        loop outwnext
+      }
     }
   }
+  if (n & 1) outp(port, src[n - 1]);
 }
 
 void xport_in_bytes(unsigned char *dst, unsigned short n) {
-  unsigned short port = DFS_DATA_PORT;
+  unsigned short port = xport_data_port;
+  unsigned short words = n >> 1;
   if (n == 0) return;
-  if (xport_cpu186 != 0) {
-    _asm {
-      push es
-      push ds
-      pop es
-      mov di, dst
-      mov cx, n
-      mov dx, port
-      cld
-      db 0F3h, 6Ch   /* rep insb (port DX -> ES:DI) */
-      pop es
-    }
-  } else {
-    _asm {
-      push es
-      push ds
-      pop es
-      mov di, dst
-      mov cx, n
-      mov dx, port
-      cld
-      innext:
-      in al, dx
-      stosb
-      loop innext
-      pop es
+  if (words != 0) {
+    if (xport_cpu186 != 0) {
+      _asm {
+        push es
+        push ds
+        pop es
+        mov di, dst
+        mov cx, words
+        mov dx, port
+        cld
+        db 0F3h, 6Dh   /* rep insw (port DX -> ES:DI, word by word) */
+        pop es
+      }
+    } else {
+      /* IN AX,DX on an 8086/8088 reads port DX into AL, then DX+1 into AH */
+      _asm {
+        push es
+        push ds
+        pop es
+        mov di, dst
+        mov cx, words
+        mov dx, port
+        cld
+        inwnext:
+        in ax, dx
+        stosw
+        loop inwnext
+        pop es
+      }
     }
   }
+  if (n & 1) dst[n - 1] = inp(port);
 }
 
 unsigned char xport_status(void) {

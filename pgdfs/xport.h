@@ -6,9 +6,12 @@
  *
  * This module moves EDF5 frames between DOS and the PicoGUS card through the
  * PicoGUS control port protocol (knock on 1D0h, select a register, move data
- * through 1D1h/1D2h) plus the DFS_DATA_PORT byte stream on 1D3h. The wire
- * protocol is described in sw/dfs/PROTOCOL.md; register numbers and status
- * values come from common/picogus.h.
+ * through 1D1h/1D2h) plus the PGDFS data window: two consecutive ports at an
+ * even base (default 1D4h, read from the card's CMD_DFSPORT register at
+ * install) that both feed the same byte stream, so a word IN/OUT moves two
+ * stream bytes (low byte from the base port, high byte from base+1). The
+ * wire protocol is described in sw/dfs/PROTOCOL.md; register numbers and
+ * status values come from common/picogus.h.
  *
  * The code obeys the TSR rules of PGDFS.C: no libc calls, no static
  * initializers that need startup code, only inp()/outp() intrinsics and
@@ -44,9 +47,14 @@
 #define XPORT_BADLEN   4  /* answer header announces an impossible length */
 #define XPORT_TOOLONG  5  /* request frame does not fit the buffer */
 
-/* 0 = 8086/8088 (IN/OUT + STOSB/LODSB loops), 1 = 80186+ (REP INSB/OUTSB).
- * set by xport_detect_cpu() and read by the byte movers. */
+/* 0 = 8086/8088 (IN AX,DX / OUT DX,AX + STOSW/LODSW loops), 1 = 80186+
+ * (REP INSW/OUTSW). set by xport_detect_cpu() and read by the movers. */
 extern unsigned char xport_cpu186;
+
+/* base of the data window (two consecutive ports, even). Defaults to
+ * DFS_DEFAULT_DATA_PORT; the install code replaces it with what CMD_DFSPORT
+ * reports, so the driver never needs the port on its command line. */
+extern unsigned short xport_data_port;
 
 /* diagnostics: the last status byte read from CMD_DFSSTAT, and whether the
  * last transaction had to be re-sent after an ABORTED status */
@@ -71,8 +79,11 @@ int xport_present(void);
 /* low word of the BIOS tick counter at 0040:006Ch */
 unsigned short xport_ticks(void);
 
-/* move n bytes from src to DFS_DATA_PORT / from DFS_DATA_PORT to dst.
- * src and dst are near pointers into the data segment. */
+/* move n bytes from src to the data window / from the data window to dst.
+ * src and dst are near pointers into the data segment. The movers work in
+ * words (n/2 word accesses at xport_data_port, which the bus splits into
+ * two byte cycles on this 8-bit card) followed by one byte access when n
+ * is odd; nothing happens when n is 0. */
 void xport_out_bytes(const unsigned char *src, unsigned short n);
 void xport_in_bytes(unsigned char *dst, unsigned short n);
 
