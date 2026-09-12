@@ -166,6 +166,12 @@ bin_init(const char *filename, int *error)
     //tf->fp = plat_fopen64(tf->fn, "rb");    
     
     tf->fp = (FIL *) malloc(sizeof(FIL));
+    if (tf->fp == NULL) {
+        free(tf);
+        *error = 2;
+        cdrom_image_backend_log("can't malloc FIL\n");
+        return NULL;
+    }
     FRESULT result = f_open(tf->fp, tf->fn, FA_READ);
     cdrom_image_backend_log("CDROM: binary_open(%s) = %08lx, result %d\n", tf->fn, tf->fp, result);
     cdrom_image_backend_log("file size: %u", (unsigned) f_size(tf->fp));
@@ -183,6 +189,7 @@ bin_init(const char *filename, int *error)
         tf->get_length = bin_get_length;
         tf->close      = bin_close;
     } else {
+        free(tf->fp);           /* a cue whose .bin is missing must not leak the FIL */
         free(tf);
         tf = NULL;
         *error = 3;
