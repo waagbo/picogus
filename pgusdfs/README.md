@@ -30,9 +30,9 @@ of Ethernet. The protocol is documented in `sw/dfs/PROTOCOL.md`.
 ## Usage
 
 ```
-PGDFS X: [/Q] [/R]     map the PicoGUS USB drive to drive X:
-PGDFS /U [/Q]          unload PGDFS from memory
-PGDFS /T               push the DOS date and time to the card and exit
+PGUSDFS X: [/Q] [/R]     map the PicoGUS USB drive to drive X:
+PGUSDFS /U [/Q]          unload PGUSDFS from memory
+PGUSDFS /T               push the DOS date and time to the card and exit
 ```
 
 * `X:` - the drive letter to use (any unused letter up to `LASTDRIVE`).
@@ -44,7 +44,7 @@ PGDFS /T               push the DOS date and time to the card and exit
   INT 2Fh (unload TSRs in the reverse order of loading).
 * `/T` - only send the DOS clock to the card, whether or not the TSR is
   loaded. PGDFS does this at install time as well; the card uses the clock
-  for the timestamps of files created or modified from DOS. Run `PGDFS /T`
+  for the timestamps of files created or modified from DOS. Run `PGUSDFS /T`
   again after changing the DOS date or time.
 * `/?` - help.
 
@@ -56,7 +56,7 @@ USB drive does not have to be present when PGDFS loads: without one, any
 access to the drive letter fails with "drive not ready" until a drive is
 plugged in.
 
-Example `AUTOEXEC.BAT` line: `PGDFS E: /Q`.
+Example `AUTOEXEC.BAT` line: `PGUSDFS E: /Q`.
 
 `PGUSINIT.EXE` shows the state of PGDFS on a `PGDFS data port 1D4, USB
 drive: ...` line of its normal output when the firmware has PGDFS (or `PGDFS
@@ -75,7 +75,7 @@ the setting from the card at install time and prints it in its banner (`data
 port 1D4h`), so there is nothing to configure on the DOS side; move the
 window only when another card needs 1D4h-1D5h. PGDFS reads the port once at
 install: after changing it (or after `pgusinit /defaults`) unload and reload
-the driver (`PGDFS /U`, then `PGDFS E:`). Keep the window clear of the ports
+the driver (`PGUSDFS /U`, then `PGUSDFS E:`). Keep the window clear of the ports
 of the emulated devices that are active in your mode (220h Sound Blaster,
 250h CD-ROM, 330h MPU-401, 388h AdLib, ...): those are decoded first and
 pgusinit warns when the window overlaps one of them.
@@ -85,30 +85,30 @@ data a word at a time (`REP INSW`/`REP OUTSW`, or `IN AX,DX`/`OUT DX,AX`
 loops on an 8086/8088): the motherboard splits each 16-bit access to this
 8-bit card into two 8-bit bus cycles (the base port, then base+1) without
 any CPU work, which roughly halves the CPU cost per byte compared to byte
-transfers. Nothing needs configuring for this either; `PGDFSTST /INFO` shows
-which instructions are in use and `PGDFSTST /ECHO` measures the resulting
+transfers. Nothing needs configuring for this either; `DFSDIAG /INFO` shows
+which instructions are in use and `DFSDIAG /ECHO` measures the resulting
 throughput.
 
 ## Test tool
 
-`PGDFSTST.EXE` talks to the card through the same transport as the TSR
+`DFSDIAG.EXE` talks to the card through the same transport as the TSR
 without installing anything, and doubles as the protocol conformance check
 for the firmware. Every failure is reported with the status byte, the DOS
 result (AX) and the lengths involved.
 
 ```
-PGDFSTST /INFO              card, protocol, data port, frame size, USB drive, free space
-PGDFSTST /ECHO [n]          echo 64/512/4096-byte payloads n times, verify, KB/s
-PGDFSTST /DIR [path]        list a directory (FINDFIRST/FINDNEXT)
-PGDFSTST /LDIR [path]       list a directory with long file names (LONGNAME)
-PGDFSTST /TYPE file         show a file (READ)
-PGDFSTST /GET remote local  copy a file from the USB drive
-PGDFSTST /PUT local remote  copy a file to the USB drive
-PGDFSTST /TIME              push the DOS clock to the card
+DFSDIAG /INFO              card, protocol, data port, frame size, USB drive, free space
+DFSDIAG /ECHO [n]          echo 64/512/4096-byte payloads n times, verify, KB/s
+DFSDIAG /DIR [path]        list a directory (FINDFIRST/FINDNEXT)
+DFSDIAG /LDIR [path]       list a directory with long file names (LONGNAME)
+DFSDIAG /TYPE file         show a file (READ)
+DFSDIAG /GET remote local  copy a file from the USB drive
+DFSDIAG /PUT local remote  copy a file to the USB drive
+DFSDIAG /TIME              push the DOS clock to the card
 ```
 
 Remote paths are relative to the root of the USB drive (`\DIR\FILE.TXT`); a
-drive letter prefix is ignored. `PGDFSTST /INFO` followed by `PGDFSTST /ECHO`
+drive letter prefix is ignored. `DFSDIAG /INFO` followed by `DFSDIAG /ECHO`
 is the first thing to run on new firmware. `/LDIR` prints each entry as
 `SHORT.EXT  size  date time  Long Name`: the short name is what DOS sees,
 the long name is what the card returns for that entry (see below), printed
@@ -141,7 +141,7 @@ on the USB drive therefore shows up in `DIR` as the short alias FatFs
 generates for it (`LONGNA~1.EXT`), and a file created from DOS gets a plain
 8.3 name with no long name attached. The long names are not lost: they are
 there on the stick itself (plug it into any other system) and they can be
-seen from DOS with `PGDFSTST /LDIR [path]`, which lists a directory with
+seen from DOS with `DFSDIAG /LDIR [path]`, which lists a directory with
 each entry's long name next to its short one, using the PGDFS `LONGNAME`
 subfunction (the card answers with the entry's long name, or its short name
 when it has none; see `sw/dfs/PROTOCOL.md`). Windows 9x is untested; being
@@ -170,14 +170,14 @@ names, never file contents.
 * `Drive not ready` / "not ready reading drive X:" when accessing the drive
   - no USB drive is mounted on the card (none inserted, unplugged, or the
   card is still mounting it), the drive is not FAT-formatted, or the card
-  did not answer within 30 seconds. `PGUSINIT` and `PGDFSTST /INFO` show
+  did not answer within 30 seconds. `PGUSINIT` and `DFSDIAG /INFO` show
   what the card sees.
 * `Cannot map this drive letter (LASTDRIVE too low?)` - raise `LASTDRIVE=`
   in `CONFIG.SYS` or pick a lower letter.
 * `This drive letter is already in use` - the letter belongs to a local
   disk, a SUBST or another network drive.
-* `PGDFS is already loaded` - use `PGDFS /U` first to change the mapping.
-* Wrong timestamps on files created from DOS: run `PGDFS /T` after setting
+* `PGUSDFS is already loaded` - use `PGUSDFS /U` first to change the mapping.
+* Wrong timestamps on files created from DOS: run `PGUSDFS /T` after setting
   the DOS clock (the card keeps DOS time + elapsed time).
 * Emulators: DOSBox and DOSBox-X do not emulate a PicoGUS, so PGDFS reports
   "PicoGUS not detected" there. The undocumented `/N` option installs the
@@ -197,7 +197,7 @@ so throughput is bounded by the bus and by the USB drive on the card. Reads and 
 chunked to the frame payload size (4096 bytes, or less if the firmware
 reports a smaller `CMD_DFSMAXLEN`); DOS programs that read in large blocks
 get the best speed, programs that read byte by byte pay one full transaction
-per call. `PGDFSTST /ECHO` measures the raw transport speed on a given
+per call. `DFSDIAG /ECHO` measures the raw transport speed on a given
 machine.
 
 The resident part keeps one 4100-byte frame buffer plus a private stack, so
@@ -207,9 +207,9 @@ it needs about 10 KB of conventional memory; it can be loaded high with
 ## Building
 
 OpenWatcom 2.0: `make` (GNU make, as used by the CI) or `wmake -f makefile.wat`
-builds `PGDFS.EXE` and `PGDFSTST.EXE`. The TSR is compiled with `-0 -s -ms`
+builds `PGUSDFS.EXE` and `DFSDIAG.EXE`. The TSR is compiled with `-0 -s -ms`
 (8086 code, no stack checks, small model); its resident code lives in the
-`BEGTEXT` segment and must not call the C library. Check `pgdfs.map` after
+`BEGTEXT` segment and must not call the C library. Check `pgusdfs.map` after
 changes: the `DGROUP` size must not exceed `DATASEGSZ` in `globals.h`.
 
 ## Credits

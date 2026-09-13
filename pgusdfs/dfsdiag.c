@@ -1,5 +1,5 @@
 /*
- * PGDFSTST - PicoGUS PGDFS transport and protocol test tool
+ * DFSDIAG - PicoGUS PGDFS transport and protocol test tool
  *
  * Copyright (C) 2026 PicoGUS contributors
  * Distributed under the MIT license, see LICENSE.
@@ -10,14 +10,14 @@
  * conformance check for the firmware, so every failure is reported with the
  * status byte, AX and the lengths involved.
  *
- *   PGDFSTST /INFO            card, protocol, data port, max payload, drive info
- *   PGDFSTST /ECHO [n]        echo 64/512/4096-byte payloads n times, verify
- *   PGDFSTST /DIR [path]      FINDFIRST/FINDNEXT listing
- *   PGDFSTST /LDIR [path]     the same listing with long file names (LONGNAME)
- *   PGDFSTST /TYPE file       READ a file to stdout
- *   PGDFSTST /GET remote local  copy a file from the USB drive
- *   PGDFSTST /PUT local remote  copy a file to the USB drive
- *   PGDFSTST /TIME            push the DOS clock to the card
+ *   DFSDIAG /INFO            card, protocol, data port, max payload, drive info
+ *   DFSDIAG /ECHO [n]        echo 64/512/4096-byte payloads n times, verify
+ *   DFSDIAG /DIR [path]      FINDFIRST/FINDNEXT listing
+ *   DFSDIAG /LDIR [path]     the same listing with long file names (LONGNAME)
+ *   DFSDIAG /TYPE file       READ a file to stdout
+ *   DFSDIAG /GET remote local  copy a file from the USB drive
+ *   DFSDIAG /PUT local remote  copy a file to the USB drive
+ *   DFSDIAG /TIME            push the DOS clock to the card
  */
 
 #include <stdio.h>
@@ -184,7 +184,7 @@ static void printinfo(void) {
 static int cmd_info(void) {
   unsigned short ax;
   int len;
-  printf("PGDFSTST v%s - PicoGUS PGDFS test tool\n", PVER);
+  printf("DFSDIAG v%s - PicoGUS PGDFS test tool\n", PVER);
   if (checkcard(1) != 0) return 1;
   printinfo();
   /* a DISKSPACE query is the cheapest end-to-end check */
@@ -529,15 +529,15 @@ static int cmd_time(void) {
 }
 
 static void usage(void) {
-  printf("PGDFSTST v%s - PicoGUS PGDFS transport and protocol test tool\n\n", PVER);
-  printf("  PGDFSTST /INFO              card, protocol, data port, frame size, USB drive\n");
-  printf("  PGDFSTST /ECHO [n]          echo 64/512/4096-byte payloads n times (default 10)\n");
-  printf("  PGDFSTST /DIR [path]        list a directory (FINDFIRST/FINDNEXT)\n");
-  printf("  PGDFSTST /LDIR [path]       list a directory with long file names (LONGNAME)\n");
-  printf("  PGDFSTST /TYPE file         show a file (READ)\n");
-  printf("  PGDFSTST /GET remote local  copy a file from the USB drive\n");
-  printf("  PGDFSTST /PUT local remote  copy a file to the USB drive\n");
-  printf("  PGDFSTST /TIME              push the DOS clock to the card\n\n");
+  printf("DFSDIAG v%s - PicoGUS PGDFS transport and protocol test tool\n\n", PVER);
+  printf("  DFSDIAG /INFO              card, protocol, data port, frame size, USB drive\n");
+  printf("  DFSDIAG /ECHO [n]          echo 64/512/4096-byte payloads n times (default 10)\n");
+  printf("  DFSDIAG /DIR [path]        list a directory (FINDFIRST/FINDNEXT)\n");
+  printf("  DFSDIAG /LDIR [path]       list a directory with long file names (LONGNAME)\n");
+  printf("  DFSDIAG /TYPE file         show a file (READ)\n");
+  printf("  DFSDIAG /GET remote local  copy a file from the USB drive\n");
+  printf("  DFSDIAG /PUT local remote  copy a file to the USB drive\n");
+  printf("  DFSDIAG /TIME              push the DOS clock to the card\n\n");
   printf("Remote paths are relative to the root of the USB drive, e.g. \\DIR\\FILE.TXT\n");
 }
 

@@ -1,6 +1,6 @@
 # PGDFS wire protocol
 
-PGDFS lets a DOS network-redirector TSR (`PGDFS.EXE`) use the USB drive plugged
+PGDFS lets a DOS network-redirector TSR (`PGUSDFS.EXE`) use the USB drive plugged
 into the PicoGUS as a drive letter. DOS forwards every file operation on that
 letter (open, read, find-first, mkdir, ...) to the TSR as an INT 2Fh/11h call;
 the TSR packs the call into a request frame, ships it to the card, and unpacks
@@ -157,7 +157,7 @@ program (pgusinit) may have changed the selected register in between.
 
 ## Time
 
-At install, and on `PGDFS /T`, the driver writes the DOS clock through
+At install, and on `PGUSDFS /T`, the driver writes the DOS clock through
 `CMD_DFSTIME`. Core 0 collects the four bytes and hands them to core 1,
 which keeps `dos_time + elapsed` and returns it from `get_fattime()`. Without it, files created from DOS carry the FatFs default
 timestamp (1 Jan 1980 or the firmware's fixed value).
@@ -210,7 +210,7 @@ The INT 2Fh/11h redirector interface is 8.3-only, so PGDFS always reports the
 FatFs short name (`LONGNA~1.EXT` for an entry that carries a long name) and
 DOS programs open files by that alias. `LONGNAME` (F1h) is the way back: given
 the 8.3 path, it returns the entry's long name so a tool can show it
-(`PGDFSTST /LDIR`). The card finds the entry by scanning its directory and
+(`DFSDIAG /LDIR`). The card finds the entry by scanning its directory and
 resumes that scan on the next lookup, so asking for a directory's entries in
 listing order costs about one directory read per name. Names travel in the
 FatFs OEM code page, a firmware build option (`-DFATFS_CODE_PAGE=437` by

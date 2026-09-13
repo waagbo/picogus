@@ -13,10 +13,10 @@
  * wire protocol is described in sw/dfs/PROTOCOL.md; register numbers and
  * status values come from common/picogus.h.
  *
- * The code obeys the TSR rules of PGDFS.C: no libc calls, no static
+ * The code obeys the TSR rules of PGUSDFS.C: no libc calls, no static
  * initializers that need startup code, only inp()/outp() intrinsics and
- * inline assembly. PGDFS.C #includes XPORT.C into its resident (BEGTEXT)
- * segment; PGDFSTST.C links the same file as a normal module.
+ * inline assembly. PGUSDFS.C #includes XPORT.C into its resident (BEGTEXT)
+ * segment; DFSDIAG.C links the same file as a normal module.
  */
 
 #ifndef XPORT_H_SENTINEL
