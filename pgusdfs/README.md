@@ -97,13 +97,17 @@ for the firmware. Every failure is reported with the status byte, the DOS
 result (AX) and the lengths involved.
 
 ```
-DFSDIAG /INFO              card, protocol, data port, frame size, USB drive, free space
+DFSDIAG /INFO              card, protocol, data port, frame size, USB drive, free space,
+                           and the card's disk/FatFs diagnostics
 DFSDIAG /ECHO [n]          echo 64/512/4096-byte payloads n times, verify, KB/s
 DFSDIAG /DIR [path]        list a directory (FINDFIRST/FINDNEXT)
 DFSDIAG /LDIR [path]       list a directory with long file names (LONGNAME)
 DFSDIAG /TYPE file         show a file (READ)
 DFSDIAG /GET remote local  copy a file from the USB drive
 DFSDIAG /PUT local remote  copy a file to the USB drive
+DFSDIAG /MKDIR path        create a directory (MKDIR)
+DFSDIAG /WRTEST path [n]   create a file, write n bytes (512), read them back,
+                           delete it; every step shows its DOS result
 DFSDIAG /TIME              push the DOS clock to the card
 ```
 
@@ -113,6 +117,17 @@ is the first thing to run on new firmware. `/LDIR` prints each entry as
 `SHORT.EXT  size  date time  Long Name`: the short name is what DOS sees,
 the long name is what the card returns for that entry (see below), printed
 byte for byte in the card's code page.
+
+When something fails, `DFSDIAG` fetches the card's diagnostics record (the
+`DIAG` request in `sw/dfs/PROTOCOL.md`) and prints it after the error, so one
+screen says which layer gave up: the USB transfer (a WRITE(10) refused by the
+USB stack, answered with an error status by the drive, timed out (2 s for a read, 10 s for a write),
+or cut short by the drive disappearing, with the sector, count and duration
+of the last write), FatFs (the last failing call and its result, and how many
+free clusters FatFs believes the volume has) or the server. `/WRTEST` is the
+smallest write round trip (CREATE, WRITE with sync, READ, CLOSE, DELETE) and
+the thing to run, with `/MKDIR`, when writes fail under the TSR: paste its
+output together with the diagnostics block.
 
 ## Limitations
 
@@ -172,6 +187,17 @@ names, never file contents.
   card is still mounting it), the drive is not FAT-formatted, or the card
   did not answer within 30 seconds. `PGUSINIT` and `DFSDIAG /INFO` show
   what the card sees.
+* `Write fault` / `Read fault` (DOS errors 1Dh/1Eh) - the drive is mounted
+  but a sector transfer to or from it failed. `DFSDIAG /WRTEST \X.TMP` and
+  the diagnostics it prints show whether the USB command was refused, was
+  answered with an error status, timed out, or whether FatFs rejected the
+  operation. Run `DFSDIAG /INFO` right after the failure: the record keeps
+  the last error until the next one.
+* `Access denied` on `MD` or `COPY` to the drive, with nothing read-only in
+  the picture - FatFs believes the volume has no free cluster. The card no
+  longer trusts the free count stored on the stick by other systems and
+  counts the FAT itself on the first free-space query, so this should not
+  happen any more; `DFSDIAG /INFO` shows the count FatFs is working with.
 * `Cannot map this drive letter (LASTDRIVE too low?)` - raise `LASTDRIVE=`
   in `CONFIG.SYS` or pick a lower letter.
 * `This drive letter is already in use` - the letter belongs to a local

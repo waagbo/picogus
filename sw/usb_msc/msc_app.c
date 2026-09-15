@@ -51,12 +51,17 @@
 #endif
 #ifdef PGDFS
 #include "dfs/dfs.h"
+#include "dfs/dfs_fs.h"     /* dfs_platform_fatfs() */
 #endif
 
 //------------- Elm Chan FatFS -------------//
 static FATFS fatfs; // for simplicity only support 1 device
 static volatile bool _disk_busy;
 static volatile bool _disk_error;
+static volatile uint8_t _disk_cause;      // msc_io_cause_t of the transfer in flight
+static bool _disk_is_write;               // direction of the transfer in flight
+static uintptr_t _xfer_gen;               // tag of the transfer in flight (user_arg of the callback)
+static msc_stats_t stats;                 // see msc_app.h; core 1 only
 static volatile uint8_t mounted_dev;      // USB address of the attached drive, 0 = none
 static volatile uint8_t pending_mount;    // drive whose INQUIRY completed, waiting for f_mount()
 static volatile bool pending_unmount;     // the mounted drive went away, f_unmount() pending
@@ -169,24 +174,48 @@ void msc_app_task(void)
 // DiskIO
 //--------------------------------------------------------------------+
 
+static inline void count_sat(uint32_t *c)
+{
+    if (*c != 0xFFFFFFFFu) (*c)++;
+}
+
+const msc_stats_t *msc_app_get_stats(void)
+{
+    return &stats;
+}
+
+#ifdef PGDFS
+/* The mounted volume for PGDFS diagnostics; fs_type is 0 while unmounted. */
+FATFS *dfs_platform_fatfs(void)
+{
+    return &fatfs;
+}
+#endif
+
 static void wait_for_disk_io(uint8_t dev)
 {
-    /* 2-second timeout — prevents a hung or disconnected USB drive from
-     * locking the firmware forever.  At 44100 Hz stereo, 2 s is far longer
-     * than any legitimate sector read should take over USB Full Speed. */
-    uint32_t deadline = time_us_32() + 2000000u;
+    /* Timeout — prevents a hung or disconnected USB drive from locking the
+     * firmware forever.  2 s is far longer than any legitimate sector read
+     * takes over USB Full Speed; writes get 10 s because a flash drive may
+     * NAK for a long time while it programs and erases (the DOS driver's own
+     * deadline is 30 s per request). */
+    uint32_t deadline = time_us_32() + (_disk_is_write ? 10000000u : 2000000u);
     while (_disk_busy) {
         tuh_task();
         if (mounted_dev != dev) {
             /* the drive went away (or was replaced) under this transfer */
             _disk_busy = false;
             _disk_error = true;
+            _disk_cause = MSC_IO_GONE;
+            count_sat(&stats.device_gone);
             return;
         }
         if ((int32_t)(time_us_32() - deadline) >= 0) {
             DBG_PRINTF("disk_io: timeout waiting for USB transfer\n");
             _disk_busy = false;
             _disk_error = true;
+            _disk_cause = MSC_IO_TIMEOUT;
+            count_sat(&stats.timeouts);
             return;
         }
     }
@@ -195,11 +224,23 @@ static void wait_for_disk_io(uint8_t dev)
 static bool disk_io_complete(uint8_t dev_addr, tuh_msc_complete_data_t const * cb_data)
 {
     (void) dev_addr;
+    /* A completion for a transfer wait_for_disk_io() already gave up on
+     * (timeout or device change) must not be charged to whatever runs now. */
+    if (cb_data->user_arg != _xfer_gen) {
+        count_sat(&stats.stale);
+        return true;
+    }
     /* Propagate SCSI command status — non-zero CSW status means the drive
      * reported an error (e.g. medium error, illegal request). */
-    _disk_error = (cb_data->csw->status != 0);
-    if (_disk_error)
-        DBG_PRINTF("disk_io: SCSI error status %u\n", cb_data->csw->status);
+    uint8_t status = cb_data->csw->status;
+    _disk_error = (status != 0);
+    if (_disk_error) {
+        DBG_PRINTF("disk_io: SCSI error status %u\n", status);
+        _disk_cause = MSC_IO_CSW;
+        stats.last_csw_status = status;
+        stats.last_csw_residue = cb_data->csw->data_residue;
+        count_sat(_disk_is_write ? &stats.write_csw_err : &stats.read_csw_err);
+    }
     _disk_busy = false;
     return true;
 }
@@ -231,17 +272,31 @@ DRESULT disk_read (
     (void)pdrv;
     uint8_t const lun = 0;
     uint8_t dev = mounted_dev;
-    if (!dev) return RES_NOTRDY;
+    DRESULT res;
+
+    count_sat(&stats.reads);
+    if (!dev) {
+        stats.last_read_res = RES_NOTRDY;
+        stats.last_read_cause = MSC_IO_NODEV;
+        return RES_NOTRDY;
+    }
 
     _disk_busy = true;
     _disk_error = false;
-    if (!tuh_msc_read10(dev, lun, buff, sector, (uint16_t) count, disk_io_complete, 0)) {
+    _disk_cause = MSC_IO_OK;
+    _disk_is_write = false;
+    if (!tuh_msc_read10(dev, lun, buff, sector, (uint16_t) count, disk_io_complete, ++_xfer_gen)) {
         _disk_busy = false;
-        return RES_ERROR;
+        _disk_cause = MSC_IO_REFUSED;
+        count_sat(&stats.read_refused);
+        res = RES_ERROR;
+    } else {
+        wait_for_disk_io(dev);
+        res = _disk_error ? RES_ERROR : RES_OK;
     }
-    wait_for_disk_io(dev);
-
-    return _disk_error ? RES_ERROR : RES_OK;
+    stats.last_read_res = (uint8_t) res;
+    stats.last_read_cause = _disk_cause;
+    return res;
 }
 
 #if FF_FS_READONLY == 0
@@ -256,17 +311,36 @@ DRESULT disk_write (
     (void)pdrv;
     uint8_t const lun = 0;
     uint8_t dev = mounted_dev;
-    if (!dev) return RES_NOTRDY;
+    uint32_t t0 = time_us_32();
+    DRESULT res;
+
+    count_sat(&stats.writes);
+    stats.last_write_lba = (uint32_t) sector;
+    stats.last_write_count = (uint16_t) count;
+    if (!dev) {
+        stats.last_write_res = RES_NOTRDY;
+        stats.last_write_cause = MSC_IO_NODEV;
+        stats.last_write_us = 0;
+        return RES_NOTRDY;
+    }
 
     _disk_busy = true;
     _disk_error = false;
-    if (!tuh_msc_write10(dev, lun, buff, sector, (uint16_t) count, disk_io_complete, 0)) {
+    _disk_cause = MSC_IO_OK;
+    _disk_is_write = true;
+    if (!tuh_msc_write10(dev, lun, buff, sector, (uint16_t) count, disk_io_complete, ++_xfer_gen)) {
         _disk_busy = false;
-        return RES_ERROR;
+        _disk_cause = MSC_IO_REFUSED;
+        count_sat(&stats.write_refused);
+        res = RES_ERROR;
+    } else {
+        wait_for_disk_io(dev);
+        res = _disk_error ? RES_ERROR : RES_OK;
     }
-    wait_for_disk_io(dev);
-
-    return _disk_error ? RES_ERROR : RES_OK;
+    stats.last_write_us = time_us_32() - t0;
+    stats.last_write_res = (uint8_t) res;
+    stats.last_write_cause = _disk_cause;
+    return res;
 }
 
 #endif

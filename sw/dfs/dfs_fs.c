@@ -78,7 +78,51 @@ static uint32_t time_base_secs;
 static uint32_t time_base_ms;
 static bool     time_valid;
 
+/* telemetry for DFS_AL_DIAG: last non-OK FatFs result and the call that made it */
+static struct {
+    uint8_t fr, call;           /* any error, lookup misses included */
+    uint8_t hard_fr, hard_call; /* errors other than the lookup outcomes */
+} last_err;
+
 /* ---- helpers -------------------------------------------------------------- */
+
+/* Every FatFs call goes through here so the DIAG record can say which one
+ * failed last. A lookup miss is what DOS provokes all day (OPEN of a file that
+ * does not exist, FINDFIRST on an empty pattern), so it is kept apart from the
+ * "hard" errors an operator needs to see: disk errors, FR_DENIED, ... */
+static FRESULT note(uint8_t call, FRESULT fr) {
+    if (fr != FR_OK) {
+        last_err.fr = (uint8_t)fr;
+        last_err.call = call;
+        if (fr != FR_NO_FILE && fr != FR_NO_PATH && fr != FR_EXIST && fr != FR_INVALID_NAME) {
+            last_err.hard_fr = (uint8_t)fr;
+            last_err.hard_call = call;
+        }
+    }
+    return fr;
+}
+
+void dfs_fs_last_error(uint8_t *fr, uint8_t *call, uint8_t *hard_fr, uint8_t *hard_call) {
+    *fr = last_err.fr;
+    *call = last_err.call;
+    *hard_fr = last_err.hard_fr;
+    *hard_call = last_err.hard_call;
+}
+
+void dfs_fs_volume_stats(uint32_t *free_clst, uint32_t *n_fatent, uint16_t *csize, uint8_t *fs_type) {
+    FATFS *fs = dfs_platform_fatfs();
+    if (fs == NULL || fs->fs_type == 0) {
+        *free_clst = 0;
+        *n_fatent = 0;
+        *csize = 0;
+        *fs_type = 0;
+        return;
+    }
+    *free_clst = (uint32_t)fs->free_clst;      /* > n_fatent - 2 means "unknown" (FatFs starts at 0xFFFFFFFF) */
+    *n_fatent = (uint32_t)fs->n_fatent;
+    *csize = (uint16_t)fs->csize;
+    *fs_type = fs->fs_type;
+}
 
 uint16_t dfs_fr2dos(FRESULT fr) {
     switch (fr) {
@@ -98,6 +142,14 @@ uint16_t dfs_fr2dos(FRESULT fr) {
     case FR_INVALID_PARAMETER:   return DFS_ERR_FUNC;
     default:                     return DFS_ERR_NOTREADY; /* DISK_ERR, INT_ERR, NOT_READY, NOT_ENABLED, NO_FILESYSTEM */
     }
+}
+
+/* Same, for calls whose purpose is to move data: a low-level disk error or a
+ * FatFs assertion becomes DOS 1Dh "write fault" or 1Eh "read fault" (fault),
+ * so the DOS side can tell a failing transfer from an absent drive (15h). */
+static uint16_t fr2dos_io(FRESULT fr, uint16_t fault) {
+    if (fr == FR_DISK_ERR || fr == FR_INT_ERR) return fault;
+    return dfs_fr2dos(fr);
 }
 
 /* "FILE.TXT" -> "FILE    TXT", "*.*" -> "???????????", "." -> ".          " */
@@ -271,16 +323,21 @@ static char *put_hex32(char *p, const char *end, uint32_t v) {
 
 bool dfs_fs_volume_info(char *out, size_t cap) {
     FATFS *fs;
-    DWORD nfree, serial = 0;
+    DWORD serial = 0;
     uint32_t sectors, mb;
     const char *type;
     char *p = out, *end = out + cap - 1;
 
     out[0] = 0;
     if (cap < 2) return false;
-    if (f_getfree("", &nfree, &fs) != FR_OK) return false;
+    /* The geometry comes straight from the FATFS object: f_getfree() would do
+     * here as well, but with FF_FS_NOFSINFO set it scans the whole FAT the
+     * first time after a mount, and that scan belongs to the first DISKSPACE
+     * request, not to the mount itself (core 1 also serves the CD-ROM). */
+    fs = dfs_platform_fatfs();
+    if (fs == NULL || fs->fs_type == 0) return false;
     label_buf[0] = 0;
-    if (f_getlabel("", label_buf, &serial) != FR_OK) label_buf[0] = 0;
+    if (note(DFS_CALL_GETLABEL, f_getlabel("", label_buf, &serial)) != FR_OK) label_buf[0] = 0;
     switch (fs->fs_type) {
     case FS_FAT12: type = "FAT12"; break;
     case FS_FAT16: type = "FAT16"; break;
@@ -310,7 +367,7 @@ bool dfs_fs_volume_info(char *out, size_t cap) {
 bool dfs_fs_label(char *fcb) {
     int i;
     label_buf[0] = 0;
-    if (f_getlabel("", label_buf, NULL) != FR_OK || label_buf[0] == 0) return false;
+    if (note(DFS_CALL_GETLABEL, f_getlabel("", label_buf, NULL)) != FR_OK || label_buf[0] == 0) return false;
     memset(fcb, ' ', 11);
     for (i = 0; i < 11 && label_buf[i]; i++) fcb[i] = label_buf[i];
     return true;
@@ -320,7 +377,8 @@ uint16_t dfs_fs_diskspace(uint16_t *total_units, uint16_t *free_units) {
     FATFS *fs;
     DWORD nfree;
     uint32_t clusters, total, avail, ss;
-    FRESULT fr = f_getfree("", &nfree, &fs);
+    /* first call after a mount: full FAT scan (FF_FS_NOFSINFO), then cached */
+    FRESULT fr = note(DFS_CALL_GETFREE, f_getfree("", &nfree, &fs));
     if (fr != FR_OK) return dfs_fr2dos(fr);
 #if FF_MAX_SS != FF_MIN_SS
     ss = fs->ssize;
@@ -358,18 +416,18 @@ uint16_t dfs_fs_open(const char *path, uint8_t fa_mode, uint8_t set_attr, uint16
     if (strlen(path) >= DFS_PATH_MAX) return DFS_ERR_PATH;
     bit = (uint8_t)(1u << slot);
 
-    fr = f_open(&files[slot], path, fa_mode);
+    fr = note(DFS_CALL_OPEN, f_open(&files[slot], path, fa_mode));
     DFS_LOG("f_open('%s', %02X) = %d\n", path, fa_mode, fr);
     if (fr != FR_OK) return dfs_fr2dos(fr);
     file_used |= bit;
     strcpy(file_path[slot], path);
 
     set_attr &= DFS_ATTR_RDO | DFS_ATTR_HID | DFS_ATTR_SYS;
-    if (set_attr) f_chmod(path, set_attr, DFS_ATTR_RDO | DFS_ATTR_HID | DFS_ATTR_SYS);
+    if (set_attr) note(DFS_CALL_CHMOD, f_chmod(path, set_attr, DFS_ATTR_RDO | DFS_ATTR_HID | DFS_ATTR_SYS));
 
-    fr = f_stat(path, &fno);
+    fr = note(DFS_CALL_STAT, f_stat(path, &fno));
     if (fr != FR_OK) {
-        f_close(&files[slot]);
+        note(DFS_CALL_CLOSE, f_close(&files[slot]));
         file_used &= (uint8_t)~bit;
         return dfs_fr2dos(fr);
     }
@@ -382,9 +440,9 @@ uint16_t dfs_fs_close(uint16_t id) {
     FIL *fp = get_file(id);
     FRESULT fr;
     if (!fp) return DFS_ERR_HANDLE;
-    fr = f_close(fp);
+    fr = note(DFS_CALL_CLOSE, f_close(fp));     /* flushes: a disk error is a write fault */
     file_used &= (uint8_t)~(1u << (id - 1));
-    return dfs_fr2dos(fr);
+    return fr2dos_io(fr, DFS_ERR_WRFAULT);
 }
 
 uint16_t dfs_fs_read(uint16_t id, uint32_t offset, uint8_t *dst, uint16_t len, uint16_t *got) {
@@ -395,9 +453,9 @@ uint16_t dfs_fs_read(uint16_t id, uint32_t offset, uint8_t *dst, uint16_t len, u
     if (!fp) return DFS_ERR_HANDLE;
     /* never seek past the end: on a writable handle that would grow the file */
     if (offset >= f_size(fp)) return DFS_ERR_OK;
-    fr = f_lseek(fp, offset);
-    if (fr == FR_OK) fr = f_read(fp, dst, len, &br);
-    if (fr != FR_OK) return dfs_fr2dos(fr);
+    fr = note(DFS_CALL_LSEEK, f_lseek(fp, offset));
+    if (fr == FR_OK) fr = note(DFS_CALL_READ, f_read(fp, dst, len, &br));
+    if (fr != FR_OK) return fr2dos_io(fr, DFS_ERR_RDFAULT);
     *got = (uint16_t)br;
     return DFS_ERR_OK;
 }
@@ -409,16 +467,16 @@ uint16_t dfs_fs_write(uint16_t id, uint32_t offset, const uint8_t *src, uint16_t
     *done = 0;
     if (!fp) return DFS_ERR_HANDLE;
     if (!(fp->flag & FA_WRITE)) return DFS_ERR_ACCESS;
-    fr = f_lseek(fp, offset);           /* extends the file when offset > size */
+    fr = note(DFS_CALL_LSEEK, f_lseek(fp, offset));     /* extends the file when offset > size */
     if (fr == FR_OK) {
         if (len == 0) {
-            fr = f_truncate(fp);        /* DOS: zero-length write sets the size */
+            fr = note(DFS_CALL_TRUNCATE, f_truncate(fp));   /* DOS: zero-length write sets the size */
         } else {
-            fr = f_write(fp, src, len, &bw);
+            fr = note(DFS_CALL_WRITE, f_write(fp, src, len, &bw));
         }
     }
-    if (fr == FR_OK) fr = f_sync(fp);   /* an unplug should lose as little as possible */
-    if (fr != FR_OK) return dfs_fr2dos(fr);
+    if (fr == FR_OK) fr = note(DFS_CALL_SYNC, f_sync(fp));  /* an unplug should lose as little as possible */
+    if (fr != FR_OK) return fr2dos_io(fr, DFS_ERR_WRFAULT);
     *done = (uint16_t)bw;
     return DFS_ERR_OK;
 }
@@ -435,11 +493,11 @@ uint16_t dfs_fs_utime(uint16_t id, uint16_t dos_time, uint16_t dos_date) {
     FRESULT fr;
     if (!fp) return DFS_ERR_HANDLE;
     /* flush first: a later f_close() only rewrites the entry when data is pending */
-    fr = f_sync(fp);
-    if (fr != FR_OK) return dfs_fr2dos(fr);
+    fr = note(DFS_CALL_SYNC, f_sync(fp));
+    if (fr != FR_OK) return fr2dos_io(fr, DFS_ERR_WRFAULT);
     fno.ftime = dos_time;
     fno.fdate = dos_date;
-    return dfs_fr2dos(f_utime(file_path[id - 1], &fno));
+    return fr2dos_io(note(DFS_CALL_UTIME, f_utime(file_path[id - 1], &fno)), DFS_ERR_WRFAULT);
 }
 
 /* ---- paths ---------------------------------------------------------------- */
@@ -452,7 +510,7 @@ uint16_t dfs_fs_stat(const char *path, dfs_finfo_t *info) {
         info->attr = DFS_ATTR_DIR;
         return DFS_ERR_OK;
     }
-    fr = f_stat(path, &fno);
+    fr = note(DFS_CALL_STAT, f_stat(path, &fno));
     if (fr != FR_OK) return dfs_fr2dos(fr);
     fill_info(info, &fno);
     return DFS_ERR_OK;
@@ -469,7 +527,7 @@ uint16_t dfs_fs_longname(const char *dir, const char *fcbmask, const char **name
         passes = (scan_dir.dptr == 0) ? 1 : 2;
     } else {
         lname.valid = false;
-        fr = f_opendir(&scan_dir, dir);
+        fr = note(DFS_CALL_OPENDIR, f_opendir(&scan_dir, dir));
         if (fr != FR_OK) return (fr == FR_NO_FILE) ? DFS_ERR_PATH : dfs_fr2dos(fr);
         strcpy(lname.dir, dir);
         lname.valid = true;
@@ -479,7 +537,7 @@ uint16_t dfs_fs_longname(const char *dir, const char *fcbmask, const char **name
      * entry's stored long name; only f_readdir() loads the LFN entries. */
     while (passes-- > 0) {
         for (;;) {
-            fr = f_readdir(&scan_dir, &fno);
+            fr = note(DFS_CALL_READDIR, f_readdir(&scan_dir, &fno));
             if (fr != FR_OK) {
                 lname.valid = false;
                 return dfs_fr2dos(fr);
@@ -496,7 +554,7 @@ uint16_t dfs_fs_longname(const char *dir, const char *fcbmask, const char **name
                 return DFS_ERR_OK;
             }
         }
-        f_rewinddir(&scan_dir);
+        note(DFS_CALL_READDIR, f_rewinddir(&scan_dir));
     }
     return DFS_ERR_FILE;
 }
@@ -504,28 +562,30 @@ uint16_t dfs_fs_longname(const char *dir, const char *fcbmask, const char **name
 uint16_t dfs_fs_chmod(const char *path, uint8_t attr) {
     const uint8_t mask = DFS_ATTR_RDO | DFS_ATTR_HID | DFS_ATTR_SYS | DFS_ATTR_ARC;
     if (dfs_path_is_root(path)) return DFS_ERR_ACCESS;
-    return dfs_fr2dos(f_chmod(path, attr & mask, mask));
+    return dfs_fr2dos(note(DFS_CALL_CHMOD, f_chmod(path, attr & mask, mask)));
 }
 
 uint16_t dfs_fs_mkdir(const char *path) {
     if (dfs_path_is_root(path)) return DFS_ERR_ACCESS;
-    return dfs_fr2dos(f_mkdir(path));
+    /* FR_DENIED (5) also when FatFs believes the volume is full; FR_DISK_ERR
+     * from the cluster/entry writes is a write fault, not an absent drive */
+    return fr2dos_io(note(DFS_CALL_MKDIR, f_mkdir(path)), DFS_ERR_WRFAULT);
 }
 
 uint16_t dfs_fs_rmdir(const char *path) {
     FRESULT fr;
     if (dfs_path_is_root(path)) return DFS_ERR_ACCESS;
-    fr = f_stat(path, &fno);
+    fr = note(DFS_CALL_STAT, f_stat(path, &fno));
     if (fr != FR_OK) return (fr == FR_NO_FILE) ? DFS_ERR_PATH : dfs_fr2dos(fr);
     if (!(fno.fattrib & AM_DIR)) return DFS_ERR_PATH;
     cache.valid = false;                /* the cached DIR may sit in it */
     lname.valid = false;
-    return dfs_fr2dos(f_unlink(path));  /* FR_DENIED when not empty or read-only */
+    return dfs_fr2dos(note(DFS_CALL_UNLINK, f_unlink(path)));  /* FR_DENIED when not empty or read-only */
 }
 
 uint16_t dfs_fs_chdir(const char *path) {
     if (dfs_path_is_root(path)) return DFS_ERR_OK;
-    if (f_stat(path, &fno) != FR_OK) return DFS_ERR_PATH;
+    if (note(DFS_CALL_STAT, f_stat(path, &fno)) != FR_OK) return DFS_ERR_PATH;
     return (fno.fattrib & AM_DIR) ? DFS_ERR_OK : DFS_ERR_PATH;
 }
 
@@ -533,16 +593,16 @@ uint16_t dfs_fs_rename(const char *from, const char *to) {
     if (dfs_path_is_root(from) || dfs_path_is_root(to)) return DFS_ERR_ACCESS;
     cache.valid = false;
     lname.valid = false;
-    return dfs_fr2dos(f_rename(from, to));   /* FR_EXIST -> access denied */
+    return dfs_fr2dos(note(DFS_CALL_RENAME, f_rename(from, to)));   /* FR_EXIST -> access denied */
 }
 
 uint16_t dfs_fs_unlink(const char *path) {
     FRESULT fr;
     if (dfs_path_is_root(path)) return DFS_ERR_ACCESS;
-    fr = f_stat(path, &fno);
+    fr = note(DFS_CALL_STAT, f_stat(path, &fno));
     if (fr != FR_OK) return dfs_fr2dos(fr);
     if (fno.fattrib & AM_DIR) return DFS_ERR_ACCESS;
-    return dfs_fr2dos(f_unlink(path));       /* FR_DENIED on a read-only file */
+    return dfs_fr2dos(note(DFS_CALL_UNLINK, f_unlink(path)));       /* FR_DENIED on a read-only file */
 }
 
 uint16_t dfs_fs_delete_wild(const char *dir, const char *fcbmask) {
@@ -554,11 +614,11 @@ uint16_t dfs_fs_delete_wild(const char *dir, const char *fcbmask) {
 
     if (dlen >= DFS_PATH_MAX) return DFS_ERR_PATH;
     lname.valid = false;                /* scan_dir is reused here */
-    fr = f_opendir(&scan_dir, dir);
+    fr = note(DFS_CALL_OPENDIR, f_opendir(&scan_dir, dir));
     if (fr != FR_OK) return (fr == FR_NO_FILE) ? DFS_ERR_PATH : dfs_fr2dos(fr);
     for (;;) {
         const char *name;
-        fr = f_readdir(&scan_dir, &fno);
+        fr = note(DFS_CALL_READDIR, f_readdir(&scan_dir, &fno));
         if (fr != FR_OK || fno.fname[0] == 0) break;
         if (fno.fattrib & AM_DIR) continue;
         name = fno.altname[0] ? fno.altname : fno.fname;   /* always the 8.3 alias */
@@ -567,7 +627,7 @@ uint16_t dfs_fs_delete_wild(const char *dir, const char *fcbmask) {
         memcpy(scan_path, dir, dlen);
         scan_path[dlen] = '\\';
         strcpy(scan_path + dlen + 1, name);
-        fr = f_unlink(scan_path);
+        fr = note(DFS_CALL_UNLINK, f_unlink(scan_path));
         DFS_LOG("f_unlink('%s') = %d\n", scan_path, fr);
         if (fr == FR_OK) {
             deleted++;
@@ -575,7 +635,7 @@ uint16_t dfs_fs_delete_wild(const char *dir, const char *fcbmask) {
             err = dfs_fr2dos(fr);
         }
     }
-    f_closedir(&scan_dir);
+    note(DFS_CALL_CLOSEDIR, f_closedir(&scan_dir));
     if (err != DFS_ERR_OK) return err;
     return deleted ? DFS_ERR_OK : DFS_ERR_FILE;
 }
@@ -629,7 +689,7 @@ static bool attr_ok(uint8_t fattrib, uint8_t mask) {
  * After a read, dptr points at the next slot, unless the table ended right
  * there (sect == 0), in which case it still points at the entry itself. */
 static FRESULT read_entry(uint32_t *slot) {
-    FRESULT fr = f_readdir(&cache.dir, &fno);
+    FRESULT fr = note(DFS_CALL_READDIR, f_readdir(&cache.dir, &fno));
     if (fr == FR_OK && fno.fname[0]) {
         *slot = (cache.dir.sect == 0) ? (cache.dir.dptr / 32) : (cache.dir.dptr / 32 - 1);
     }
@@ -671,7 +731,7 @@ static uint16_t search(uint16_t dir_id, uint32_t start, uint8_t attr, const char
         info->size = 0;
         info->time = 0;
         info->date = 0;
-        if (f_stat(path, &fno) == FR_OK) {          /* the directory's own stamp */
+        if (note(DFS_CALL_STAT, f_stat(path, &fno)) == FR_OK) {  /* the directory's own stamp */
             info->time = fno.ftime;
             info->date = fno.fdate;
         }
@@ -682,7 +742,7 @@ static uint16_t search(uint16_t dir_id, uint32_t start, uint8_t attr, const char
 
     if (!(cache.valid && cache.id == dir_id && cache.next == start)) {
         cache.valid = false;
-        fr = f_opendir(&cache.dir, path);
+        fr = note(DFS_CALL_OPENDIR, f_opendir(&cache.dir, path));
         DFS_LOG("f_opendir('%s') = %d\n", path, fr);
         if (fr != FR_OK) {
             uint16_t e = dfs_fr2dos(fr);

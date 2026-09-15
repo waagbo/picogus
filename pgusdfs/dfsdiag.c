@@ -10,14 +10,22 @@
  * conformance check for the firmware, so every failure is reported with the
  * status byte, AX and the lengths involved.
  *
- *   DFSDIAG /INFO            card, protocol, data port, max payload, drive info
+ *   DFSDIAG /INFO            card, protocol, data port, max payload, drive info,
+ *                            and the card's disk/FatFs telemetry (DIAG)
  *   DFSDIAG /ECHO [n]        echo 64/512/4096-byte payloads n times, verify
  *   DFSDIAG /DIR [path]      FINDFIRST/FINDNEXT listing
  *   DFSDIAG /LDIR [path]     the same listing with long file names (LONGNAME)
  *   DFSDIAG /TYPE file       READ a file to stdout
  *   DFSDIAG /GET remote local  copy a file from the USB drive
  *   DFSDIAG /PUT local remote  copy a file to the USB drive
+ *   DFSDIAG /MKDIR path      create a directory (MKDIR)
+ *   DFSDIAG /WRTEST path [n] create, write n bytes, read back, delete: one
+ *                            write round trip with every step's AX shown
  *   DFSDIAG /TIME            push the DOS clock to the card
+ *
+ * After any failed command the tool fetches the DIAG record from the card and
+ * prints it, so one screen carries everything needed to see which layer
+ * (USB transfer, FatFs, server) a failure came from.
  */
 
 #include <stdio.h>
@@ -31,21 +39,58 @@
 #include "version.h"
 
 /* EDF5 subfunctions used here (AL values of the INT 2Fh/11h calls) */
+#define AL_MKDIR      0x03
 #define AL_CLSFIL     0x06
 #define AL_READFIL    0x08
 #define AL_WRITEFIL   0x09
 #define AL_DISKSPACE  0x0C
+#define AL_DELETE     0x13
 #define AL_OPEN       0x16
 #define AL_CREATE     0x17
 #define AL_FINDFIRST  0x1B
 #define AL_FINDNEXT   0x1C
 #define AL_ECHO       0xF0  /* PGDFS extension (DFS_AL_ECHO in sw/dfs/dfs_server.h) */
 #define AL_LONGNAME   0xF1  /* PGDFS extension (DFS_AL_LONGNAME): 8.3 path in, long name out */
+#define AL_DIAG       0xF2  /* PGDFS extension (DFS_AL_DIAG): telemetry record out, AX = 0 always */
+
+/* DIAG record layout: a copy of the DFS_DIAG_* table in sw/dfs/dfs_server.h
+ * (and sw/dfs/PROTOCOL.md). Little-endian; u16 counters saturate at FFFFh. */
+#define DIAG_VERSION       2
+#define DIAG_LEN           60
+#define DIAG_OFF_VERSION    0  /* u8  */
+#define DIAG_OFF_FLAGS      1  /* u8  bit 0: drive present */
+#define DIAG_OFF_FSTYPE     2  /* u8  0 none, 1 FAT12, 2 FAT16, 3 FAT32, 4 exFAT */
+#define DIAG_OFF_FREECLST   4  /* u32 free clusters as FatFs believes, > n_fatent-2 = unknown */
+#define DIAG_OFF_NFATENT    8  /* u32 FAT entries = clusters + 2 */
+#define DIAG_OFF_CSIZE     12  /* u16 sectors per cluster */
+#define DIAG_OFF_LASTFR    14  /* u8  last non-OK FRESULT of any FatFs call */
+#define DIAG_OFF_LASTCALL  15  /* u8  which call */
+#define DIAG_OFF_HARDFR    16  /* u8  last FRESULT other than a lookup miss */
+#define DIAG_OFF_HARDCALL  17  /* u8  which call */
+#define DIAG_OFF_RDRES     18  /* u8  DRESULT of the last disk read */
+#define DIAG_OFF_WRRES     19  /* u8  DRESULT of the last disk write */
+#define DIAG_OFF_RDCAUSE   20  /* u8  cause of the last disk read's outcome */
+#define DIAG_OFF_WRCAUSE   21  /* u8  cause of the last disk write's outcome */
+#define DIAG_OFF_CSWSTAT   22  /* u8  CSW status of the last failed USB command */
+#define DIAG_OFF_READS     24  /* u32 disk reads */
+#define DIAG_OFF_WRITES    28  /* u32 disk writes */
+#define DIAG_OFF_RDREFUSED 32  /* u16 READ(10) refused by the USB stack */
+#define DIAG_OFF_WRREFUSED 34  /* u16 WRITE(10) refused by the USB stack */
+#define DIAG_OFF_RDCSWERR  36  /* u16 READ(10) completed with CSW status != 0 */
+#define DIAG_OFF_WRCSWERR  38  /* u16 WRITE(10) completed with CSW status != 0 */
+#define DIAG_OFF_TIMEOUTS  40  /* u16 transfers abandoned at the deadline (2 s rd, 10 s wr) */
+#define DIAG_OFF_GONE      42  /* u16 transfers abandoned because the drive vanished */
+#define DIAG_OFF_WRUS      44  /* u32 microseconds of the last disk write */
+#define DIAG_OFF_WRLBA     48  /* u32 first sector of the last disk write */
+#define DIAG_OFF_WRCOUNT   52  /* u16 sectors of the last disk write */
+#define DIAG_OFF_STALE     54  /* u16 completions of already abandoned transfers, ignored */
+#define DIAG_OFF_CSWRESID  56  /* u32 CSW data residue of the last failed USB command */
 
 #define TICKS_PER_SEC 18.2065
 
 static unsigned char buf[XPORT_FRAME_SIZE];
 static unsigned short chunk = XPORT_MAX_PAYLOAD; /* largest payload per frame */
+static int card_ok;                              /* checkcard() passed: DIAG can be fetched */
 
 static const char *xport_errname(int r) {
   switch (r) {
@@ -161,7 +206,113 @@ static int checkcard(int verbose) {
     printf("Data port:     %03Xh-%03Xh (word transfers, low byte from %03Xh)\n", port, port + 1, port);
     printf("Frame payload used by this tool: %u bytes\n", chunk);
   }
+  card_ok = 1;
   return 0;
+}
+
+/* ---- DIAG record ------------------------------------------------------- */
+
+static unsigned short rd16(const unsigned char *p) {
+  return p[0] | (p[1] << 8);
+}
+
+static unsigned long rd32(const unsigned char *p) {
+  return (unsigned long)p[0] | ((unsigned long)p[1] << 8) | ((unsigned long)p[2] << 16) | ((unsigned long)p[3] << 24);
+}
+
+/* FatFs FRESULT names (ff.h order) */
+static const char *frname(unsigned char fr) {
+  static const char *names[] = {
+    "FR_OK", "FR_DISK_ERR", "FR_INT_ERR", "FR_NOT_READY", "FR_NO_FILE", "FR_NO_PATH",
+    "FR_INVALID_NAME", "FR_DENIED", "FR_EXIST", "FR_INVALID_OBJECT", "FR_WRITE_PROTECTED",
+    "FR_INVALID_DRIVE", "FR_NOT_ENABLED", "FR_NO_FILESYSTEM", "FR_MKFS_ABORTED", "FR_TIMEOUT",
+    "FR_LOCKED", "FR_NOT_ENOUGH_CORE", "FR_TOO_MANY_OPEN_FILES", "FR_INVALID_PARAMETER"
+  };
+  return (fr < sizeof(names) / sizeof(names[0])) ? names[fr] : "?";
+}
+
+/* DFS_CALL_* ids (sw/dfs/dfs_fs.h) */
+static const char *callname(unsigned char c) {
+  static const char *names[] = {
+    "none", "f_open", "f_close", "f_lseek", "f_read", "f_write", "f_truncate", "f_sync",
+    "f_stat", "f_chmod", "f_utime", "f_mkdir", "f_unlink", "f_rename", "f_opendir",
+    "f_readdir", "f_closedir", "f_getfree", "f_getlabel"
+  };
+  return (c < sizeof(names) / sizeof(names[0])) ? names[c] : "?";
+}
+
+/* FatFs DRESULT */
+static const char *dresname(unsigned char r) {
+  static const char *names[] = { "RES_OK", "RES_ERROR", "RES_WRPRT", "RES_NOTRDY", "RES_PARERR" };
+  return (r < sizeof(names) / sizeof(names[0])) ? names[r] : "?";
+}
+
+/* msc_io_cause_t (sw/usb_msc/msc_app.h) */
+static const char *causename(unsigned char c) {
+  static const char *names[] = {
+    "completed", "no drive mounted", "refused by the USB stack (endpoint busy/not mounted)",
+    "drive answered CSW status != 0", "no completion within the deadline (timeout)", "drive vanished during the transfer"
+  };
+  return (c < sizeof(names) / sizeof(names[0])) ? names[c] : "?";
+}
+
+static const char *fsname(unsigned char t) {
+  static const char *names[] = { "none", "FAT12", "FAT16", "FAT32", "exFAT" };
+  return (t < sizeof(names) / sizeof(names[0])) ? names[t] : "?";
+}
+
+/* fetches the DIAG record and prints it, one line per item. returns 0 when
+ * the record was shown, 1 when the card could not deliver it (old firmware
+ * answers AX=1 "invalid function" for the unknown AL) */
+static int printdiag(void) {
+  unsigned short ax;
+  unsigned char r[DIAG_LEN];
+  unsigned long freeclst, nfatent;
+  int len = query(AL_DIAG, NULL, 0, &ax);
+  if (len < 0) return 1;
+  if ((ax != 0) || (len < DIAG_LEN)) {
+    printf("DIAG: not available (AX=%04Xh, %d payload bytes): firmware without the DIAG request?\n", ax, len);
+    return 1;
+  }
+  memcpy(r, buf + DFS_HDR_LEN, DIAG_LEN);
+  if (r[DIAG_OFF_VERSION] != DIAG_VERSION) {
+    printf("DIAG: record version %u, this tool knows version %u; showing what it can\n", r[DIAG_OFF_VERSION], DIAG_VERSION);
+  }
+  freeclst = rd32(r + DIAG_OFF_FREECLST);
+  nfatent = rd32(r + DIAG_OFF_NFATENT);
+  printf("--- card diagnostics (DIAG v%u) ---\n", r[DIAG_OFF_VERSION]);
+  printf("Drive present (server):  %s\n", (r[DIAG_OFF_FLAGS] & 1) ? "yes" : "no");
+  printf("FatFs volume:            %s, %lu clusters of %u sectors\n",
+         fsname(r[DIAG_OFF_FSTYPE]), (nfatent >= 2) ? nfatent - 2 : 0, rd16(r + DIAG_OFF_CSIZE));
+  if ((nfatent >= 2) && (freeclst <= nfatent - 2)) {
+    printf("Free clusters (FatFs):   %lu\n", freeclst);
+  } else {
+    printf("Free clusters (FatFs):   unknown (FAT not scanned yet; the first DISKSPACE does it)\n");
+  }
+  printf("Last FatFs error:        %s (%u) from %s (%u)\n",
+         frname(r[DIAG_OFF_LASTFR]), r[DIAG_OFF_LASTFR], callname(r[DIAG_OFF_LASTCALL]), r[DIAG_OFF_LASTCALL]);
+  printf("Last hard FatFs error:   %s (%u) from %s (%u)\n",
+         frname(r[DIAG_OFF_HARDFR]), r[DIAG_OFF_HARDFR], callname(r[DIAG_OFF_HARDCALL]), r[DIAG_OFF_HARDCALL]);
+  printf("Disk reads:              %lu (refused %u, CSW errors %u), last %s: %s\n",
+         rd32(r + DIAG_OFF_READS), rd16(r + DIAG_OFF_RDREFUSED), rd16(r + DIAG_OFF_RDCSWERR),
+         dresname(r[DIAG_OFF_RDRES]), causename(r[DIAG_OFF_RDCAUSE]));
+  printf("Disk writes:             %lu (refused %u, CSW errors %u), last %s: %s\n",
+         rd32(r + DIAG_OFF_WRITES), rd16(r + DIAG_OFF_WRREFUSED), rd16(r + DIAG_OFF_WRCSWERR),
+         dresname(r[DIAG_OFF_WRRES]), causename(r[DIAG_OFF_WRCAUSE]));
+  printf("Last disk write:         %u sector(s) at LBA %lu, took %lu us\n",
+         rd16(r + DIAG_OFF_WRCOUNT), rd32(r + DIAG_OFF_WRLBA), rd32(r + DIAG_OFF_WRUS));
+  printf("Timeouts / drive gone:   %u / %u, stale completions %u\n",
+         rd16(r + DIAG_OFF_TIMEOUTS), rd16(r + DIAG_OFF_GONE), rd16(r + DIAG_OFF_STALE));
+  printf("Last failed USB command: CSW status %u, data residue %lu bytes\n",
+         r[DIAG_OFF_CSWSTAT], rd32(r + DIAG_OFF_CSWRESID));
+  return 0;
+}
+
+/* called by main() when a command failed: one screen with everything */
+static void diag_after_failure(void) {
+  if (!card_ok) return;
+  printf("\nCard state after the failure:\n");
+  printdiag();
 }
 
 static void printinfo(void) {
@@ -198,6 +349,7 @@ static int cmd_info(void) {
   } else {
     printf("WARNING: DISKSPACE answered %d payload bytes (expected 6), AX=%04Xh\n", len, ax);
   }
+  printdiag();
   printf("PGDFS ready.\n");
   return 0;
 }
@@ -518,6 +670,93 @@ static int cmd_put(const char *lpath, const char *rpath) {
   return 0;
 }
 
+/* one WRITE of n bytes at offset; returns the count the card reports, or -1 */
+static long writeremote(unsigned short id, unsigned long offset, unsigned short n) {
+  int len;
+  buf[DFS_HDR_LEN + 0] = offset & 0xFF; buf[DFS_HDR_LEN + 1] = (offset >> 8) & 0xFF;
+  buf[DFS_HDR_LEN + 2] = (offset >> 16) & 0xFF; buf[DFS_HDR_LEN + 3] = (offset >> 24) & 0xFF;
+  buf[DFS_HDR_LEN + 4] = id & 0xFF; buf[DFS_HDR_LEN + 5] = (id >> 8) & 0xFF;
+  len = query_ok(AL_WRITEFIL, NULL, 6 + n, "WRITE");
+  if (len < 0) return -1;
+  if (len != 2) {
+    printf("ERROR: WRITE answer has %d payload bytes, expected 2\n", len);
+    return -1;
+  }
+  return buf[DFS_HDR_LEN] | (buf[DFS_HDR_LEN + 1] << 8);
+}
+
+static int deleteremote(const char *rpath) {
+  char path[128];
+  normpath(path, rpath, sizeof(path));
+  memcpy(buf + DFS_HDR_LEN, path, strlen(path));
+  return (query_ok(AL_DELETE, NULL, strlen(path), "DELETE") < 0) ? -1 : 0;
+}
+
+static int cmd_mkdir(const char *rpath) {
+  char path[128];
+  if (checkcard(0) != 0) return 1;
+  normpath(path, rpath, sizeof(path));
+  memcpy(buf + DFS_HDR_LEN, path, strlen(path));
+  if (query_ok(AL_MKDIR, NULL, strlen(path), "MKDIR") < 0) return 1;
+  printf("MKDIR %s: AX=0000h (ok)\n", path);
+  return 0;
+}
+
+/* the write round trip in isolation: CREATE, one WRITE of n bytes (which the
+ * card f_sync()s: data sector, directory entry and FAT go to the drive),
+ * READ back and compare, CLOSE, DELETE. every step prints its result so a
+ * failure can be placed without the TSR in the picture. */
+static int cmd_wrtest(const char *rpath, unsigned short n) {
+  long id, written;
+  unsigned short i;
+  int len, fails = 0;
+  if (checkcard(0) != 0) return 1;
+  if (n == 0) n = 512;
+  if (n > chunk - 6) n = chunk - 6;
+  printf("Write test on %s with %u bytes\n", rpath, n);
+  id = openremote(rpath, 1, NULL);
+  if (id < 0) return 1;
+  printf("  CREATE: AX=0000h (ok), file id %ld\n", id);
+  for (i = 0; i < n; i++) buf[DFS_HDR_LEN + 6 + i] = (unsigned char)(i * 5 + 3);
+  written = writeremote((unsigned short)id, 0, n);
+  if (written < 0) {
+    fails++;
+  } else if (written != n) {
+    printf("  WRITE: AX=0000h but only %ld of %u bytes written (disk full?)\n", written, n);
+    fails++;
+  } else {
+    printf("  WRITE: AX=0000h (ok), %ld bytes\n", written);
+  }
+  if (fails == 0) {
+    len = readremote((unsigned short)id, 0, n);
+    if (len < 0) {
+      fails++;
+    } else if (len != n) {
+      printf("  READ: AX=0000h but %d of %u bytes came back\n", len, n);
+      fails++;
+    } else {
+      for (i = 0; i < n; i++) {
+        if (buf[DFS_HDR_LEN + i] != (unsigned char)(i * 5 + 3)) break;
+      }
+      if (i != n) {
+        printf("  READ: AX=0000h, %d bytes, but data differs at offset %u (got %02Xh, expected %02Xh)\n",
+               len, i, buf[DFS_HDR_LEN + i], (unsigned char)(i * 5 + 3));
+        fails++;
+      } else {
+        printf("  READ: AX=0000h (ok), %d bytes, data verified\n", len);
+      }
+    }
+  }
+  if (closeremote((unsigned short)id) != 0) fails++; else printf("  CLOSE: AX=0000h (ok)\n");
+  if (deleteremote(rpath) != 0) fails++; else printf("  DELETE: AX=0000h (ok)\n");
+  if (fails) {
+    printf("Write test FAILED (%d failure%s)\n", fails, fails == 1 ? "" : "s");
+    return 1;
+  }
+  printf("Write test passed.\n");
+  return 0;
+}
+
 static int cmd_time(void) {
   unsigned short t, d;
   if (checkcard(0) != 0) return 1;
@@ -537,18 +776,15 @@ static void usage(void) {
   printf("  DFSDIAG /TYPE file         show a file (READ)\n");
   printf("  DFSDIAG /GET remote local  copy a file from the USB drive\n");
   printf("  DFSDIAG /PUT local remote  copy a file to the USB drive\n");
+  printf("  DFSDIAG /MKDIR path        create a directory (MKDIR)\n");
+  printf("  DFSDIAG /WRTEST path [n]   create, write n bytes (512), read back, delete\n");
   printf("  DFSDIAG /TIME              push the DOS clock to the card\n\n");
   printf("Remote paths are relative to the root of the USB drive, e.g. \\DIR\\FILE.TXT\n");
+  printf("/INFO shows the card's disk and FatFs telemetry; a failed command prints it too.\n");
 }
 
-int main(int argc, char **argv) {
-  const char *cmd;
-  if (argc < 2) {
-    usage();
-    return 1;
-  }
-  cmd = argv[1];
-  if ((cmd[0] == '/') || (cmd[0] == '-')) cmd++;
+/* runs the command; -1 = unknown command or missing arguments */
+static int dispatch(const char *cmd, int argc, char **argv) {
   if (stricmp(cmd, "INFO") == 0) return cmd_info();
   if (stricmp(cmd, "ECHO") == 0) {
     int n = (argc > 2) ? atoi(argv[2]) : 10;
@@ -560,7 +796,33 @@ int main(int argc, char **argv) {
   if ((stricmp(cmd, "TYPE") == 0) && (argc > 2)) return cmd_type(argv[2]);
   if ((stricmp(cmd, "GET") == 0) && (argc > 3)) return cmd_get(argv[2], argv[3]);
   if ((stricmp(cmd, "PUT") == 0) && (argc > 3)) return cmd_put(argv[2], argv[3]);
+  if ((stricmp(cmd, "MKDIR") == 0) && (argc > 2)) return cmd_mkdir(argv[2]);
+  if ((stricmp(cmd, "WRTEST") == 0) && (argc > 2)) {
+    int n = (argc > 3) ? atoi(argv[3]) : 512;
+    if (n < 1) n = 512;
+    if (n > 4090) n = 4090;
+    return cmd_wrtest(argv[2], (unsigned short)n);
+  }
   if (stricmp(cmd, "TIME") == 0) return cmd_time();
-  usage();
-  return 1;
+  return -1;
+}
+
+int main(int argc, char **argv) {
+  const char *cmd;
+  int r;
+  if (argc < 2) {
+    usage();
+    return 1;
+  }
+  cmd = argv[1];
+  if ((cmd[0] == '/') || (cmd[0] == '-')) cmd++;
+  r = dispatch(cmd, argc, argv);
+  if (r < 0) {
+    usage();
+    return 1;
+  }
+  /* a failed command: add the card's view so one screen tells the story
+   * (/INFO prints it as part of its normal output already) */
+  if ((r != 0) && (stricmp(cmd, "INFO") != 0)) diag_after_failure();
+  return r;
 }

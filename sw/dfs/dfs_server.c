@@ -28,6 +28,7 @@
 #include <string.h>
 #include "dfs_server.h"
 #include "dfs_fs.h"
+#include "../usb_msc/msc_app.h"     /* msc_app_get_stats() for DFS_AL_DIAG */
 
 /* INT 2Fh/11h subfunctions carried in the AL byte of the header */
 enum {
@@ -261,6 +262,60 @@ static uint16_t do_findnext(const uint8_t *pl, uint16_t plen, uint8_t *answ, uin
     return DFS_ERR_OK;
 }
 
+/* ---- DIAG ------------------------------------------------------------------ */
+
+static uint16_t sat16(uint32_t v) {
+    return (v > 0xFFFF) ? 0xFFFF : (uint16_t)v;
+}
+
+/* Builds the DFS_DIAG_LEN-byte telemetry record (layout in dfs_server.h and
+ * PROTOCOL.md) into answ, clipped to maxpl; returns the length written. No disk
+ * access: everything comes from counters and the FATFS object as they are. */
+static uint16_t do_diag(uint8_t *answ, uint16_t maxpl) {
+    static uint8_t rec[DFS_DIAG_LEN];
+    const msc_stats_t *ms = msc_app_get_stats();
+    uint32_t free_clst, n_fatent;
+    uint16_t csize, n;
+    uint8_t fs_type, fr, call, hard_fr, hard_call;
+
+    dfs_fs_volume_stats(&free_clst, &n_fatent, &csize, &fs_type);
+    dfs_fs_last_error(&fr, &call, &hard_fr, &hard_call);
+
+    memset(rec, 0, sizeof(rec));
+    rec[DFS_DIAG_OFF_VERSION] = DFS_DIAG_VERSION;
+    rec[DFS_DIAG_OFF_FLAGS] = drive_present ? 1 : 0;
+    rec[DFS_DIAG_OFF_FSTYPE] = fs_type;
+    put32(rec + DFS_DIAG_OFF_FREECLST, free_clst);
+    put32(rec + DFS_DIAG_OFF_NFATENT, n_fatent);
+    put16(rec + DFS_DIAG_OFF_CSIZE, csize);
+    rec[DFS_DIAG_OFF_LASTFR] = fr;
+    rec[DFS_DIAG_OFF_LASTCALL] = call;
+    rec[DFS_DIAG_OFF_HARDFR] = hard_fr;
+    rec[DFS_DIAG_OFF_HARDCALL] = hard_call;
+    rec[DFS_DIAG_OFF_RDRES] = ms->last_read_res;
+    rec[DFS_DIAG_OFF_WRRES] = ms->last_write_res;
+    rec[DFS_DIAG_OFF_RDCAUSE] = ms->last_read_cause;
+    rec[DFS_DIAG_OFF_WRCAUSE] = ms->last_write_cause;
+    rec[DFS_DIAG_OFF_CSWSTAT] = ms->last_csw_status;
+    put32(rec + DFS_DIAG_OFF_READS, ms->reads);
+    put32(rec + DFS_DIAG_OFF_WRITES, ms->writes);
+    put16(rec + DFS_DIAG_OFF_RDREFUSED, sat16(ms->read_refused));
+    put16(rec + DFS_DIAG_OFF_WRREFUSED, sat16(ms->write_refused));
+    put16(rec + DFS_DIAG_OFF_RDCSWERR, sat16(ms->read_csw_err));
+    put16(rec + DFS_DIAG_OFF_WRCSWERR, sat16(ms->write_csw_err));
+    put16(rec + DFS_DIAG_OFF_TIMEOUTS, sat16(ms->timeouts));
+    put16(rec + DFS_DIAG_OFF_GONE, sat16(ms->device_gone));
+    put32(rec + DFS_DIAG_OFF_WRUS, ms->last_write_us);
+    put32(rec + DFS_DIAG_OFF_WRLBA, ms->last_write_lba);
+    put16(rec + DFS_DIAG_OFF_WRCOUNT, ms->last_write_count);
+    put16(rec + DFS_DIAG_OFF_STALE, sat16(ms->stale));
+    put32(rec + DFS_DIAG_OFF_CSWRESID, ms->last_csw_residue);
+
+    n = (maxpl < DFS_DIAG_LEN) ? maxpl : DFS_DIAG_LEN;
+    memcpy(answ, rec, n);
+    return n;
+}
+
 /* ---- dispatcher ------------------------------------------------------------ */
 
 uint16_t dfs_process(uint8_t *buf, uint16_t req_len, uint16_t buf_size) {
@@ -278,6 +333,10 @@ uint16_t dfs_process(uint8_t *buf, uint16_t req_len, uint16_t buf_size) {
 
     if (al == DFS_AL_ECHO) {            /* payload is already in place */
         alen = plen;
+        goto out;
+    }
+    if (al == DFS_AL_DIAG) {            /* telemetry, with or without a drive */
+        alen = do_diag(pl, maxpl);
         goto out;
     }
     if ((buf[2] & 0x1F) != 0) {

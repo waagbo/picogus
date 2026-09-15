@@ -254,7 +254,13 @@
 /  These options have no effect in read-only configuration (FF_FS_READONLY = 1). */
 
 
-#define FF_FS_NOFSINFO	0
+#define FF_FS_NOFSINFO	1
+/* PGDFS: bit 0 set. USB sticks written by other operating systems can carry a
+/  stale FSINFO free count (Windows and Linux update it lazily or not at all);
+/  a count of 0 makes FatFs refuse every allocation with FR_DENIED, which DOS
+/  shows as "Access denied" on MD or COPY. The first f_getfree() after a mount
+/  (the first DISKSPACE request) scans the FAT instead; the next-free hint
+/  (bit 1) is still taken from FSINFO. */
 /* If you need to know correct free space on the FAT32 volume, set bit 0 of this
 /  option, and f_getfree() at the first time after volume mount will force
 /  a full FAT scan. Bit 1 controls the use of last allocated cluster number.

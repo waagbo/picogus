@@ -51,8 +51,33 @@ extern "C" {
 #define DFS_ERR_NOMORE    0x12  /* no more files                        */
 #define DFS_ERR_WRPROT    0x13  /* disk write-protected                 */
 #define DFS_ERR_NOTREADY  0x15  /* drive not ready                      */
+#define DFS_ERR_WRFAULT   0x1D  /* write fault: FR_DISK_ERR/FR_INT_ERR on the write side */
+#define DFS_ERR_RDFAULT   0x1E  /* read fault: FR_DISK_ERR/FR_INT_ERR on the read side   */
 #define DFS_ERR_SHARING   0x20  /* sharing violation                    */
 #define DFS_ERR_EXISTS    0x50  /* file exists (create-new on existing) */
+
+/* Which FatFs call produced the last error (DFS_AL_DIAG record) */
+enum {
+    DFS_CALL_NONE = 0,
+    DFS_CALL_OPEN,      /* 1  f_open      */
+    DFS_CALL_CLOSE,     /* 2  f_close     */
+    DFS_CALL_LSEEK,     /* 3  f_lseek     */
+    DFS_CALL_READ,      /* 4  f_read      */
+    DFS_CALL_WRITE,     /* 5  f_write     */
+    DFS_CALL_TRUNCATE,  /* 6  f_truncate  */
+    DFS_CALL_SYNC,      /* 7  f_sync      */
+    DFS_CALL_STAT,      /* 8  f_stat      */
+    DFS_CALL_CHMOD,     /* 9  f_chmod     */
+    DFS_CALL_UTIME,     /* 10 f_utime     */
+    DFS_CALL_MKDIR,     /* 11 f_mkdir     */
+    DFS_CALL_UNLINK,    /* 12 f_unlink    */
+    DFS_CALL_RENAME,    /* 13 f_rename    */
+    DFS_CALL_OPENDIR,   /* 14 f_opendir   */
+    DFS_CALL_READDIR,   /* 15 f_readdir / f_rewinddir */
+    DFS_CALL_CLOSEDIR,  /* 16 f_closedir  */
+    DFS_CALL_GETFREE,   /* 17 f_getfree   */
+    DFS_CALL_GETLABEL   /* 18 f_getlabel  */
+};
 
 /* Attributes as DOS and FAT see them (same values as FatFs AM_*) */
 #define DFS_ATTR_RDO  0x01
@@ -87,6 +112,13 @@ void     dfs_name2fcb(char *fcb, const char *name);       /* "FILE.TXT" / "*.*" 
 bool     dfs_fcb_match(const char *mask, const char *fcb);/* '?' wildcards, case-insensitive */
 bool     dfs_path_is_root(const char *path);              /* "", "\", "/" ... */
 
+/* ---- platform ------------------------------------------------------------- */
+/* The FATFS object the volume "" is mounted on (msc_app.c on the Pico, the test
+ * harness on host). May return NULL; fs_type is 0 while nothing is mounted.
+ * Lets the server read the volume geometry and FatFs's free-cluster belief
+ * without f_getfree(), which scans the whole FAT the first time. */
+FATFS *dfs_platform_fatfs(void);
+
 /* ---- state ---------------------------------------------------------------- */
 void dfs_fs_reset(void);           /* boot: forget handles, dir ids, cache and time; no FatFs calls */
 void dfs_fs_invalidate(void);      /* drive gone: drop every handle and cached DIR; no FatFs calls  */
@@ -95,6 +127,19 @@ void dfs_fs_set_dos_time(uint16_t dos_time, uint16_t dos_date);
 bool dfs_fs_volume_info(char *out, size_t cap);
 /* volume label as an 11-byte FCB block; false when the volume has none */
 bool dfs_fs_label(char *fcb);
+
+/* ---- telemetry (DFS_AL_DIAG) ---------------------------------------------- */
+/* Last non-OK FRESULT of any FatFs call made here and the DFS_CALL_* id of that
+ * call, plus the same for the last "hard" error: everything but the lookup
+ * outcomes FR_NO_FILE, FR_NO_PATH, FR_EXIST and FR_INVALID_NAME, which DOS
+ * provokes all day. Zero until an error happens; kept across mounts. */
+void dfs_fs_last_error(uint8_t *fr, uint8_t *call, uint8_t *hard_fr, uint8_t *hard_call);
+/* Volume geometry as FatFs holds it, no disk access: free clusters as FatFs
+ * currently believes them (a value greater than the cluster count means not
+ * known yet, i.e. the FAT has not been scanned since the mount; FatFs starts
+ * at 0xFFFFFFFF), FAT entries (clusters + 2), sectors per
+ * cluster and FS_FAT12/16/32/EXFAT. All zero when no volume is mounted. */
+void dfs_fs_volume_stats(uint32_t *free_clst, uint32_t *n_fatent, uint16_t *csize, uint8_t *fs_type);
 
 /* ---- open files (ids 1..DFS_MAX_FILES) ------------------------------------ */
 /* fa_mode: FatFs FA_* flags. set_attr: DOS attributes applied after a create (RDO/HID/SYS). */

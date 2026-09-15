@@ -102,8 +102,17 @@ answer  : LL LL AX AX  payload...
           LL LL = total frame length including this 4-byte header
           AX AX = DOS result: 0 = success, else the DOS error code (2 = file not
                   found, 3 = path not found, 5 = access denied, 15h = drive not
-                  ready, 12h = no more files, ...)
+                  ready, 12h = no more files, 1Dh = write fault, 1Eh = read
+                  fault, ...)
 ```
+
+Error codes that tell the layers apart: `15h` (drive not ready) means no drive
+is mounted, FatFs found no file system, or the volume is not enabled; `1Dh`
+(write fault) is a WRITE, CLOSE, SETFILETIMESTAMP or MKDIR whose disk write
+(or a FatFs internal consistency check) failed underneath a mounted volume;
+`1Eh` (read fault) is the same for READ; `13h` is a write-protected drive;
+`05h` from MKDIR or CREATE can also mean that FatFs believes the volume has
+no free cluster. `DIAG` (F2h) says which.
 
 Maximum payload per frame is `CMD_DFSMAXLEN` (4096 by default). READ and WRITE
 requests are chunked by the driver to fit; every other subfunction fits in one
@@ -196,6 +205,7 @@ the position used to continue a search.
 | 24h | SETFILETIMESTAMP | tt, dd, SS | - |
 | F0h | ECHO (PGDFS) | any bytes | the same bytes |
 | F1h | LONGNAME (PGDFS) | path as DOS sees it: drive-relative, backslashes, 8.3 names (`\DIR\LONGNA~1.EXT`), no wildcards | the entry's long file name, no terminator (the short name itself when the entry has none, empty for the root); AX = 0, or GETATTR's errors: 2 file not found, 3 path not found, 15h no drive |
+| F2h | DIAG (PGDFS) | - | the 60-byte diagnostics record below; AX = 0 always, with or without a drive (the drive index is ignored) |
 
 Behaviour that the MS-DOS side relies on (all inherited from ethersrv-linux):
 FINDFIRST in a non-root directory returns `.` and `..` first; a failing
@@ -203,6 +213,56 @@ FINDFIRST returns 12h (no more files), not 02h; DISKSPACE totals are capped just
 under 2 GB; deleting a read-only file returns 05h; RENAME onto an existing name
 fails; file and directory names are matched case-insensitively and reported as
 8.3 names (FatFs short names, so long names appear as `LONGNA~1.EXT`).
+
+## Diagnostics record (DIAG, F2h)
+
+`DIAG` returns what the card knows about its own disk path, so a failing
+write can be placed in the USB transfer, in FatFs or in the server from the
+DOS side alone (`DFSDIAG /INFO` prints it, and `DFSDIAG` prints it after any
+failed command). It never touches the drive: the values are counters kept by
+the USB mass-storage glue (`sw/usb_msc/msc_app.c`) and the state of the FatFs
+volume object as it is. AX is always 0; without a drive the volume fields are
+zero and the counters still count. The layout is fixed and versioned by its
+first byte; the same table is in `sw/dfs/dfs_server.h` (`DFS_DIAG_*`) and in
+`pgusdfs/dfsdiag.c`. Little-endian; the u16 event counters saturate at FFFFh,
+the u32 ones count since power-on.
+
+| Offset | Size | Field |
+|---|---|---|
+| 0 | u8 | record version, 1 |
+| 1 | u8 | flags: bit 0 = the server considers a drive present (status would not read NODRIVE) |
+| 2 | u8 | FatFs volume type: 0 none, 1 FAT12, 2 FAT16, 3 FAT32, 4 exFAT |
+| 3 | u8 | reserved, 0 |
+| 4 | u32 | free clusters as FatFs currently believes them; a value greater than the cluster count means "unknown": the FAT has not been scanned since the mount (the first DISKSPACE does it, see FF_FS_NOFSINFO; FatFs starts at FFFFFFFFh) |
+| 8 | u32 | FAT entries = clusters + 2 |
+| 12 | u16 | sectors per cluster |
+| 14 | u8 | last non-OK FatFs result of any call the server made (FRESULT, `ff.h` order: 1 DISK_ERR, 2 INT_ERR, 3 NOT_READY, 4 NO_FILE, 5 NO_PATH, 6 INVALID_NAME, 7 DENIED, 8 EXIST, ...); 0 = none since boot |
+| 15 | u8 | which call produced it: 0 none, 1 f_open, 2 f_close, 3 f_lseek, 4 f_read, 5 f_write, 6 f_truncate, 7 f_sync, 8 f_stat, 9 f_chmod, 10 f_utime, 11 f_mkdir, 12 f_unlink, 13 f_rename, 14 f_opendir, 15 f_readdir, 16 f_closedir, 17 f_getfree, 18 f_getlabel |
+| 16 | u8 | last "hard" FatFs result: as offset 14 but ignoring the lookup outcomes NO_FILE, NO_PATH, EXIST and INVALID_NAME, which DOS provokes constantly |
+| 17 | u8 | which call produced it (same ids as offset 15) |
+| 18 | u8 | DRESULT of the last disk read: 0 OK, 1 ERROR, 2 WRPRT, 3 NOTRDY, 4 PARERR |
+| 19 | u8 | DRESULT of the last disk write |
+| 20 | u8 | how the last disk read ended: 0 completed, 1 no drive mounted, 2 refused by the USB stack (endpoint busy or not mounted), 3 drive answered CSW status != 0, 4 no completion within the deadline (2 s for reads, 10 s for writes), 5 drive vanished during the transfer |
+| 21 | u8 | how the last disk write ended (same codes) |
+| 22 | u8 | bCSWStatus of the last SCSI command that completed with status != 0 (0 = none yet) |
+| 23 | u8 | reserved, 0 |
+| 24 | u32 | disk reads issued (`disk_read()` calls) |
+| 28 | u32 | disk writes issued (`disk_write()` calls) |
+| 32 | u16 | READ(10) commands the USB stack refused to start |
+| 34 | u16 | WRITE(10) commands the USB stack refused to start |
+| 36 | u16 | READ(10) commands completed with CSW status != 0 |
+| 38 | u16 | WRITE(10) commands completed with CSW status != 0 |
+| 40 | u16 | transfers abandoned at the deadline (2 s for reads, 10 s for writes) |
+| 42 | u16 | transfers abandoned because the drive vanished |
+| 44 | u32 | microseconds the last disk write took, from the call to its outcome (about 2 000 000 after a timeout) |
+| 48 | u32 | first sector (LBA) of the last disk write |
+| 52 | u16 | sectors in the last disk write (FatFs writes up to a cluster in one command when the caller's buffer allows it) |
+| 54 | u16 | completions that arrived for a transfer the card had already abandoned (ignored, not charged to the current command) |
+| 56 | u32 | dCSWDataResidue of the last SCSI command that completed with status != 0 |
+
+A driver or tool that does not know the record simply skips it: the answer is
+clipped to the frame like any other, and a record longer than the tool expects
+(a later version) still starts with the fields above.
 
 ## Long file names and the code page
 
