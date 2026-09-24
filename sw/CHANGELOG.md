@@ -12,6 +12,13 @@
 - Diagnostics: the new `DIAG` request returns the card's disk and FatFs telemetry (USB read/write counters, refused, failed and timed-out transfers, the last SCSI status, the last failing FatFs call and the free-cluster count FatFs is working with). `DFSDIAG /INFO` prints it and `DFSDIAG` prints it after any failed command; `DFSDIAG /WRTEST` and `/MKDIR` reproduce a write round trip without the TSR. A failing sector transfer underneath a mounted drive is now reported to DOS as a write fault (1Dh) or read fault (1Eh) instead of "drive not ready" (15h). FatFs no longer trusts the FAT32 FSInfo free count written by other operating systems (`FF_FS_NOFSINFO`), a stale count of which makes every allocation fail with "Access denied"; the FAT is counted on the first free-space query after a mount instead.
 - Firmware built with `-DPGDFS=OFF` omits all of this and keeps the previous behaviour.
 
+### PGBOOT: boot floppy and hard disk images from the USB drive (experimental)
+
+- An option ROM (`PGBOOT.ROM`, in an EEPROM on a ROM card, or loaded by `PGBOOT.COM`) can present a disk image file on the PicoGUS USB drive to the BIOS as floppy drive A: and/or hard disk C:, so the machine boots from it. The card serves the sectors over the PGDFS transport with three new requests (`BDINFO`, `BDREAD`, `BDWRITE`, see `sw/bootdisk/PROTOCOL.md`), in every firmware mode that carries PGDFS.
+- Raw images and fixed VHD files are supported. Floppy geometry comes from the image size (160K to 2.88M, DMF 1.68M/1.72M) or its DOS boot sector; hard disk geometry from the VHD footer, the partition table, the boot sector, or 16 heads / 63 sectors. Images are kept open with a FatFs fast seek map, and every write is synced to the USB drive before it is acknowledged.
+- `pgusinit /fdimage <path|->` selects the floppy image (swapped in at once, reported to DOS as a media change), `/hdimage <path|->` the hard disk image (used from the next boot), `/bdopts <0-15>` the options (read-only floppy / hard disk, ROM disabled, boot the hard disk image). They are saved with `/save` (settings version 7) and shown in pgusinit's status output.
+- While an image is in use, PGDFS refuses to delete, rename or write that file (access denied).
+
 # v4.1.1
 
 ## Fixes/improvements

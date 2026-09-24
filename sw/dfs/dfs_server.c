@@ -29,6 +29,7 @@
 #include "dfs_server.h"
 #include "dfs_fs.h"
 #include "../usb_msc/msc_app.h"     /* msc_app_get_stats() for DFS_AL_DIAG */
+#include "../bootdisk/bootdisk.h"   /* PGBOOT: BD_AL_* sector service for the boot ROM */
 
 /* INT 2Fh/11h subfunctions carried in the AL byte of the header */
 enum {
@@ -339,6 +340,12 @@ uint16_t dfs_process(uint8_t *buf, uint16_t req_len, uint16_t buf_size) {
         alen = do_diag(pl, maxpl);
         goto out;
     }
+    if (al == BD_AL_INFO || al == BD_AL_READ || al == BD_AL_WRITE) {
+        /* PGBOOT (sw/bootdisk/PROTOCOL.md): answers with INT 13h status codes
+         * and reports "no drive" itself, so it bypasses the drive checks */
+        alen = bd_process(al, pl, plen, pl, maxpl, &ax);
+        goto out;
+    }
     if ((buf[2] & 0x1F) != 0) {
         ax = DFS_ERR_DRIVE;
         goto out;
@@ -545,9 +552,11 @@ void dfs_server_drive_mounted(void) {
     dfs_fs_invalidate();                /* nothing from an earlier drive may survive */
     if (!dfs_fs_volume_info(info_str, sizeof(info_str))) info_str[0] = 0;
     drive_present = true;
+    bd_on_drive_mounted();              /* PGBOOT: open the configured images */
 }
 
 void dfs_server_drive_unmounted(void) {
+    bd_on_drive_unmounted();            /* PGBOOT: forget the images, no FatFs */
     dfs_fs_invalidate();
     drive_present = false;
     info_str[0] = 0;

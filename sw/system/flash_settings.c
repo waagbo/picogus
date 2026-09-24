@@ -97,6 +97,11 @@ static const Settings defaultSettings = {
     },
     .DFS = {
         .basePort = DFS_DEFAULT_DATA_PORT
+    },
+    .BootDisk = {
+        .fdImage = {0},
+        .hdImage = {0},
+        .options = 0
     }
 };
 
@@ -147,6 +152,11 @@ static const VersionFields versionFieldsTable[] = {
     // version 6 - added PGDFS settings
     {(const FieldInfo[]){
         FIELD(DFS),
+    }, 1},
+
+    // version 7 - added PGBOOT settings (disk image names and options)
+    {(const FieldInfo[]){
+        FIELD(BootDisk),
     }, 1},
 };
 
@@ -205,10 +215,17 @@ void loadSettings(Settings* settings, bool migrate)
 }
 
 
+// Settings are programmed as whole flash pages; since version 7 (PGBOOT image
+// names) they take two. Older firmware reads only the first page's worth.
+#define SETTINGS_FLASH_BYTES (((sizeof(Settings) + FLASH_PAGE_SIZE - 1) / FLASH_PAGE_SIZE) * FLASH_PAGE_SIZE)
+static_assert(SETTINGS_FLASH_BYTES <= FLASH_SECTOR_SIZE, "Settings struct doesn't fit inside the settings flash sector");
+static_assert(sizeof(versionFieldsTable) / sizeof(VersionFields) == SETTINGS_VERSION,
+              "versionFieldsTable needs one entry per settings version");
+
 void saveSettings(const Settings* settings)
 {
-    uint8_t data[FLASH_PAGE_SIZE] = {0};
-    static_assert(sizeof(Settings) < FLASH_PAGE_SIZE, "Settings struct doesn't fit inside one flash page");
+    static uint8_t data[SETTINGS_FLASH_BYTES];  // static: this runs on the small core 0 stack
+    memset(data, 0, sizeof(data));
     memcpy(data, settings, sizeof(Settings));
     DBG_PRINTF("doing settings save: ");
     // No need for flash_safe_execute or stop second core, since it will not touch flash
@@ -220,7 +237,7 @@ void saveSettings(const Settings* settings)
     uint32_t ints = save_and_disable_interrupts();
     flash_range_erase(SETTINGS_SECTOR, FLASH_SECTOR_SIZE);    // last sector
     DBG_PUTCHAR('/');
-    flash_range_program(SETTINGS_SECTOR, data, FLASH_PAGE_SIZE);
+    flash_range_program(SETTINGS_SECTOR, data, SETTINGS_FLASH_BYTES);
     restore_interrupts(ints);
     overclock_370mhz();
     DBG_PRINTF("settings saved");
