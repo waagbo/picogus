@@ -89,7 +89,7 @@ output; the evidence stays in `$EMU_CACHE/work/<test>/`:
 
 | Test | What runs | What it proves |
 |---|---|---|
-| S1 | `buscheck.py` against the sim, no QEMU | Card PGBOOT server over the exact bus sequence: `CMD_BDOPTS` signature, image names, BDINFO (state, CHS, total, floppy type), BDREAD (content equals the image, max-size frames, end of image -> 04h), BDWRITE + read back, unknown unit -> 01h. Also shows BUSY -> READY. |
+| S1 | `buscheck.py` against the sim, no QEMU | Card PGBOOT server over the exact bus sequence: `CMD_BDOPTS` signature, image names, nothing open before BDINFO OPEN (state 0, BDREAD -> 80h), BDINFO (state, CHS, total, floppy type, image token), BDREAD (content equals the image, max-size frames, end of image -> 04h), BDWRITE + read back, wrong token -> 06h floppy / 80h hard disk, new token after OPEN and after a floppy name commit, unknown unit -> 01h. Also shows BUSY -> READY. |
 | T0 | Native QEMU floppy boot (FreeDOS), `DFSDIAG /INFO /ECHO /DIR /LDIR /MKDIR` | Bridge + transport + real DFS server, without the ROM: detection registers, 16-bit reads at odd ports, word-wide data window both ways, 64..4096-byte frames, FatFs on the stick image, a write (MKDIR) visible with mtools. |
 | T1 | `PGBOOT.ROM`, no native disks, stick with `FD.IMG`, sim `--fd FD.IMG` | The ROM boots FreeDOS from the floppy image: POST detection, INT 19h late init, BDINFO OPEN, INT 13h reads (boot sector, FAT, kernel, COMMAND.COM). Also reports whether a DOS write to A: reached `FD.IMG`. |
 | T2 | as T1 with `PGBOOT88.ROM` | the 8088 transfer path (`in ax,dx`/`out dx,ax` loops instead of `rep insw`/`outsw`; the ROM's banner says `(8088 forced)`, on the bus both paths are the same byte-cycle pairs) |

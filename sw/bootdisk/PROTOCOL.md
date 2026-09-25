@@ -44,7 +44,7 @@ Answer: AX = 0000h and the record below (AX = 0001h: unknown unit / old firmware
 | Off | Size | Field |
 |---|---|---|
 | 0 | u8 | record version, 1 |
-| 1 | u8 | state: 0 no image configured, 1 ready, 2 file not found, 3 unusable (size or format not recognised, dynamic VHD, ...), 4 USB drive not mounted |
+| 1 | u8 | state: 0 no image configured (or none opened yet since the card booted), 1 ready, 2 file not found, 3 unusable (size or format not recognised, dynamic VHD, ...), 4 USB drive not mounted, 5 image file too fragmented (copy it to a freshly formatted stick) |
 | 2 | u8 | type: 0 none, 1 floppy, 2 hard disk |
 | 3 | u8 | flags: bit 0 read-only, bit 1 fixed VHD (footer stripped), bit 2 media changed since the previous BDINFO for this unit (cleared by this call) |
 | 4 | u16 | cylinders (hard disks: at most 1024, the CHS view) |
@@ -55,7 +55,9 @@ Answer: AX = 0000h and the record below (AX = 0001h: unknown unit / old firmware
 | 16 | u8 | floppy drive type for INT 13h AH=08h BL: 01h 360K, 02h 1.2M, 03h 720K, 04h 1.44M, 06h 2.88M; 0 for hard disks |
 | 17 | u8 | media generation, incremented whenever the unit's image changes |
 | 18 | u8 | n = length of the display name that follows at offset 32 (at most 63) |
-| 19..31 | | reserved, 0 |
+| 19 | u8 | reserved, 0 |
+| 20 | u32 | image token: identifies this card boot and this image file (hash of a per-boot nonce, the path, the start cluster and the size); 0 when the unit is not ready. BDREAD/BDWRITE must echo it. A USB replug of the same stick keeps it; a card reboot, a different file or a floppy swap changes it. |
+| 24..31 | | reserved, 0 |
 | 32 | n | display name (the active path, no terminator) |
 
 Notes on the record:
@@ -66,21 +68,35 @@ Notes on the record:
   than 63 characters is shown as `...` and its last 60 characters.
 * For unit 1 it is the path the open image came from, which differs from
   `CMD_BDHDNAME` after a commit until the next OPEN.
-* Type is 0 only in state 0; a configured unit reports its type in states
-  1-4. Geometry, total sectors and drive type are 0 unless the state is 1.
-  Flag bit 0 is set in states 1-4 when the unit is read-only by option or
-  (state 1) by the file's attribute.
-* The media-changed flag and the generation move together, whenever the
-  unit's image is closed and (re)opened: a floppy name commit, a BDINFO with
-  OPEN (that same call already reports it), a USB mount (configured units)
-  and a USB unmount (configured units). The flag is cleared by every BDINFO
-  for the unit; the generation wraps at 256.
+* Type is 0 only in state 0; a unit in use reports its type in states
+  1-5. Geometry, total sectors, drive type and token are 0 unless the state
+  is 1. Flag bit 0 is set in states 1-5 when the unit is read-only by option
+  or (state 1) by the file's attribute.
+* After a card boot every unit is state 0 with an empty name until its first
+  BDINFO with OPEN (unit 0 also on a floppy name commit, an explicit swap by
+  the user): the card never opens an image nobody asked for. While no USB
+  drive is mounted, a unit with a configured name reads state 4 instead, so
+  the ROM's wait loop (BDINFO without OPEN) can tell "not mounted yet" from
+  "mounted, not opened yet".
+* The token hashes (FNV-1a) the per-boot nonce, the unit, the count of
+  explicit opens of the unit (BDINFO OPEN, floppy commit), the normalised
+  path (case-insensitive), the file's start cluster and its size. So every
+  OPEN and every floppy commit (the same name again included) gives a new
+  token; a USB replug reopens the file and gets the same token back as long
+  as it is the same file (same start cluster and size); a file replaced on
+  the stick while it was out gets a new one.
+* The media-changed flag and the generation move together: on a floppy name
+  commit, a BDINFO with OPEN (that same call already reports it), and a USB
+  replug that brings back a different token (other file, or not openable any
+  more). An unplug alone changes neither (the unit reads state 4, token 0,
+  requests get 80h). The flag is cleared by every BDINFO for the unit; the
+  generation wraps at 256.
 * The answer is clipped to `CMD_DFSMAXLEN` (the name first); a frame
   capacity below 32 bytes gets AX = 0001h.
 
 ### F4h BDREAD
 
-Request payload: `UU NN LL LL LL LL` (unit, sector count 1..255, LBA u32).
+Request payload: `UU NN LL LL LL LL TT TT TT TT` (unit, sector count 1..255, LBA u32, the image token from the last BDINFO).
 Answer: AX = INT 13h status (low byte; high byte 0), payload = NN*512 bytes
 when AX = 0, nothing otherwise. The ROM never asks for more sectors than fit:
 `NN*512 <= CMD_DFSMAXLEN` (8 sectors with the default 4096); a larger count
@@ -88,12 +104,15 @@ is answered 01h.
 
 ### F5h BDWRITE
 
-Request payload: `UU NN LL LL LL LL` + NN*512 bytes (`6 + NN*512 <= CMD_DFSMAXLEN`,
+Request payload: `UU NN LL LL LL LL TT TT TT TT` + NN*512 bytes (`10 + NN*512 <= CMD_DFSMAXLEN`,
 so at most 7 sectors with the default 4096). Fewer data bytes than NN*512:
-01h. Answer: AX = INT 13h status, no payload. The card syncs the image file
-(data and directory entry) before answering.
+01h. Answer: AX = INT 13h status, no payload. The sectors are on the drive
+when the answer comes (FatFs writes whole aligned sectors straight to the
+disk, never through a buffer); the file's directory entry (time stamp,
+archive bit; the size never changes) is written back on the first write after
+an open, then after 1 s without writes, and when the image is closed.
 
-Checks in this order: request shape (01h), unit ready (80h), write
+Checks in this order: request shape (01h), unit ready (80h), token (floppy: 06h media changed, the ROM then refreshes BDINFO and DOS rereads; hard disk: 80h, the system must be rebooted), write
 protection (03h, BDWRITE only), range (04h), then the transfer (20h on a
 FatFs or USB error). After a 20h the next request tries the drive again.
 
@@ -105,8 +124,13 @@ FatFs or USB error). After a 20h the next request tries the drive again.
 | 01h | invalid unit or request |
 | 03h | write protected (read-only image) |
 | 04h | sector not found (LBA + count beyond the image) |
+| 06h | media changed: floppy image token mismatch (image swapped since the last BDINFO) |
 | 20h | controller failure (FatFs or USB error underneath) |
-| 80h | not ready: no image configured or opened for the unit, USB drive gone |
+| 80h | not ready: no image configured or opened for the unit, USB drive gone, or a hard disk token mismatch |
+
+After the card boots it opens no image until the ROM's BDINFO with OPEN, so a
+running system whose card rebooted (mode switch, firmware update) gets 80h
+instead of a different image. A USB replug reopens the units that were open.
 
 ## Configuration registers (control port, core 0)
 
@@ -125,8 +149,9 @@ is ejected at once, an open hard disk image stays until the next boot.
 
 ## Card behaviour
 
-* Images open on USB mount (configured units), on BDINFO with OPEN, and for
-  unit 0 on a floppy name commit. USB unmount closes both (state 4). A file
+* Images open on BDINFO with OPEN, for unit 0 also on a floppy name commit,
+  and again on a USB mount for the units that were in use before the
+  unplug (none after a card boot). USB unmount closes both (state 4). A file
   that cannot be opened is state 2 when FatFs reports no such file, path or
   name (a directory included), state 3 otherwise.
 * Formats: raw sector images of any extension; fixed VHD (512-byte
@@ -146,16 +171,19 @@ is ejected at once, an open hard disk image stays until the next boot.
 * Hard disk geometry, first that applies: VHD footer (when its sectors per
   track are 1-63; large VHDs carry 255); MBR (55AA, at least one non-empty
   partition entry, every non-empty entry with status 00h/80h, a start LBA and
-  length, an end sector) with heads = max(end head)+1 and sectors = the
+  length, an end sector) with heads = max(end head)+1 (at most 255) and sectors = the
   largest end sector of the partition entries; a FAT BPB in sector 0
   (superfloppy); else 16 heads, 63 sectors. Cylinders = min(1024,
   total / (heads*sectors)), for a VHD also at most the footer's cylinders,
   and at least 1.
-* Reads/writes go through FatFs with fast seek (a cluster link map per open
-  image: up to 7 fragments for the floppy, 31 for the hard disk; a more
-  fragmented image falls back to plain seeks, which walk the FAT chain) so
-  random access does not walk the FAT chain. Writes stay inside the file
-  (never extend it) and are synced before the answer.
+* Reads/writes go through FatFs with fast seek, a cluster link map per open
+  image, so random access does not walk the FAT chain. The maps share a 2 KB
+  pool sized per file (2 DWORDs per fragment + 2, about 250 fragments in
+  all); the floppy may use at most 128 DWORDs (63 fragments). A floppy image
+  whose map does not fit is served with plain seeks, which walk its FAT chain
+  (short: at most 2.88 MB). A hard disk image whose map does not fit what the
+  floppy left is state 5 (fragmented): copy it to a freshly formatted stick.
+  Writes stay inside the file (never extend it).
 * An image is opened read/write unless it has the AM_RDO attribute or the
   drive is write-protected. A read-only image (option bit, checked at every
   write, or the file) answers 03h to writes and reports flag bit 0.

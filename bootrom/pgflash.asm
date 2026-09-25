@@ -14,9 +14,11 @@
 ; Every page (or byte) is preceded by the SDP unlock (AAh, 55h, A0h), which
 ; also leaves the chip protected afterwards. Pages that already hold the
 ; right data are skipped. The chip's data polling (bit 7) ends each write
-; cycle; everything is verified at the end. Refuses segments that read back
-; as RAM (shadow RAM, UMBs) and reports writes that do not stick (write
-; protect jumper, wrong SDP variant, shadowing).
+; cycle (interrupts stay off from the unlock to the end of the cycle);
+; everything is verified at the end. Nothing is written before the user
+; confirms. Refuses segments that read back as RAM (shadow RAM, UMBs) and
+; reports writes that do not stick (write protect jumper, wrong SDP variant,
+; shadowing). Warns about other option ROMs in the same 32 KB window.
 ; Copyright (C) 2026 PicoGUS contributors. MIT license.
 ; ===========================================================================
 
@@ -155,23 +157,9 @@ start:
         mov     dx, s_norom
         call    puts
 
-        ; ---- RAM test: a write that reads back at once is RAM, not an EEPROM
-        ; (an EEPROM in its write cycle returns the inverted bit 7) -------------
-.ramtest:
-        cli
-        mov     al, [es:0]
-        mov     ah, al
-        not     al
-        mov     [es:0], al
-        mov     bl, [es:0]
-        sti
-        cmp     bl, al
-        jne     .notram
-        mov     [es:0], ah                      ; put it back
-        mov     dx, s_isram
-        jmp     die
-.notram:
-        call    wait_idle                       ; an unprotected chip is now writing
+        ; ---- other option ROMs in the same 32 KB window: a 28C256 or a board
+        ; that decodes 32 KB may hold them in the same chip -------------------
+        call    scan_window
 
         ; ---- confirm ----------------------------------------------------------------
         cmp     byte [opt_yes], 0
@@ -199,6 +187,24 @@ start:
         mov     dx, s_abort
         jmp     die
 .go:
+        ; ---- RAM test: a write that reads back at once is RAM, not an EEPROM
+        ; (an EEPROM in its write cycle returns the inverted bit 7) -------------
+.ramtest:  ; (only after the confirmation: it writes)
+        cli
+        mov     al, [es:0]
+        mov     ah, al
+        not     al
+        mov     [es:0], al
+        mov     bl, [es:0]
+        sti
+        cmp     bl, al
+        jne     .notram
+        mov     [es:0], ah                      ; put it back
+        mov     dx, s_isram
+        jmp     die
+.notram:
+        call    wait_idle                       ; an unprotected chip is now writing
+
         ; ---- program ----------------------------------------------------------------
         mov     dx, s_writing
         call    puts
@@ -223,16 +229,16 @@ start:
         mov     si, image
         add     si, di
         mov     cx, [pagesz]
-        cli
-        call    sdp_unlock
+        cli                                     ; no interrupt handler may touch
+        call    sdp_unlock                      ; the bus until the cycle ends
 .wr:
         lodsb
         mov     [es:di], al
         inc     di
         loop    .wr
-        sti
         dec     di
         call    poll_done                       ; data polling on the last byte
+        sti
         inc     di
         jnc     .next0
         mov     dx, s_timeout
@@ -328,21 +334,18 @@ sdp_unlock:
         ret
 
 ; poll_done: wait until ES:DI reads back the image byte (write cycle over).
-; CF=1 after ~3 timer ticks (or a loop-count backstop).
+; Runs with interrupts off, so the timeout is a read count: 4 x 65536 reads
+; of the chip (>= 0.7 us each: ~180 ms or more; a write cycle takes <= 10 ms).
+; CF=1 on timeout.
 poll_done:
         push    ax
         push    bx
         push    cx
-        push    dx
         push    si
-        push    ds
         mov     si, image
         add     si, di
         mov     bl, [si]                        ; expected
-        xor     ax, ax
-        mov     ds, ax
-        mov     dx, [046Ch]
-        mov     bh, 4                           ; tick changes
+        mov     bh, 4
         xor     cx, cx
 .p:
         mov     al, [es:di]
@@ -352,30 +355,53 @@ poll_done:
         cmp     al, bl                          ; glitch on the last read
         je      .ok
 .busy:
-        mov     ax, [046Ch]
-        cmp     ax, dx
-        je      .same
-        mov     dx, ax
-        dec     bh
-        jz      .tmo
-.same:
         loop    .p
-        mov     cx, 0FFFFh
         dec     bh
         jnz     .p
-.tmo:
-        pop     ds
         stc
         jmp     short .ret
 .ok:
-        pop     ds
         clc
 .ret:
         pop     si
-        pop     dx
         pop     cx
         pop     bx
         pop     ax
+        ret
+
+; scan_window: warn about option ROM signatures in the 32 KB window around
+; the target that lie outside the range about to be written (reads only)
+scan_window:
+        push    es
+        mov     bx, [romseg]
+        and     bx, 0F800h                      ; 32 KB aligned
+        mov     cx, 16                          ; 2 KB steps
+        mov     ax, [size]
+        push    cx
+        mov     cl, 4
+        shr     ax, cl
+        pop     cx
+        add     ax, [romseg]
+        mov     [endseg], ax
+.s:
+        cmp     bx, [romseg]
+        jb      .chk
+        cmp     bx, [endseg]
+        jb      .nx                             ; our own range
+.chk:
+        mov     es, bx
+        cmp     word [es:0], 0AA55h
+        jne     .nx
+        mov     dx, s_other
+        call    puts
+        mov     ax, bx
+        call    hex16
+        mov     dx, s_other2
+        call    puts
+.nx:
+        add     bx, 80h
+        loop    .s
+        pop     es
         ret
 
 ; wait_idle: wait until ES:0 reads the same twice in a row (~20 ms max)
@@ -635,6 +661,9 @@ s_ok       db "Written and verified at $"
 s_ok2      db ". Reboot to use it; with EMM386 add X=$"
 s_ok3      db ".", 13, 10, "$"
 s_crlf     db 13, 10, "$"
+s_other    db "Warning: another option ROM at $"
+s_other2   db "h, in the same 32 KB window. If it shares this EEPROM or the board", 13, 10
+           db "decodes 32 KB, check the chip size and the address jumpers before writing.", 13, 10, "$"
 
         section .bss
         alignb  16
@@ -643,6 +672,7 @@ fname      resb 128
 size       resw 1
 romseg     resw 1
 pagesz     resw 1
+endseg     resw 1
 opt_256    resb 1
 opt_nosdp  resb 1
 opt_byte   resb 1

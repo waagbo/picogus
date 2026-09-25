@@ -41,12 +41,14 @@ extern "C" {
 #define BD_INFO_OFF_DRVTYPE 16  /* u8  floppy drive type (INT 13h AH=08h BL), 0 for disks */
 #define BD_INFO_OFF_GEN     17  /* u8  media generation */
 #define BD_INFO_OFF_NAMELEN 18  /* u8  display name length, the name follows the record */
+#define BD_INFO_OFF_TOKEN   20  /* u32 image token, echoed in BDREAD/BDWRITE; 0 when not ready */
 
-#define BD_STATE_NONE       0   /* no image configured */
+#define BD_STATE_NONE       0   /* no image configured, or none opened since the card booted */
 #define BD_STATE_READY      1
 #define BD_STATE_NOTFOUND   2   /* file not found */
 #define BD_STATE_UNUSABLE   3   /* size/format not recognised, dynamic VHD, read error */
 #define BD_STATE_NODRIVE    4   /* USB drive not mounted */
+#define BD_STATE_FRAGMENTED 5   /* image file too fragmented for the fast-seek map */
 
 #define BD_TYPE_NONE        0
 #define BD_TYPE_FLOPPY      1
@@ -56,8 +58,8 @@ extern "C" {
 #define BD_FLAG_VHD         0x02
 #define BD_FLAG_CHANGED     0x04
 
-/* BDREAD / BDWRITE request header: UU NN LL LL LL LL */
-#define BD_IO_HDR_LEN       6
+/* BDREAD / BDWRITE request header: UU NN LL LL LL LL TT TT TT TT (unit, count, LBA, token) */
+#define BD_IO_HDR_LEN       10
 
 /* CMD_BDOPTS bits */
 #define BD_OPT_FD_RO        0x01
@@ -72,6 +74,7 @@ extern "C" {
 #define BD_ST_BADCMD        0x01
 #define BD_ST_WRPROT        0x03
 #define BD_ST_NOSECTOR      0x04
+#define BD_ST_CHANGED       0x06    /* floppy: token mismatch = media changed */
 #define BD_ST_CTRLFAIL      0x20
 #define BD_ST_NOTREADY      0x80
 
@@ -79,6 +82,10 @@ extern "C" {
  * Binds the server to the persisted settings storage: the two name buffers
  * (BD_NAME_BUF bytes each, zero-terminated) and the options byte. */
 void bd_init(char *fd_name, char *hd_name, uint8_t *opts);
+/* A value that differs on every card boot (the Pico: get_rand_32()), mixed
+ * into the image tokens so a system that booted before a card reboot never
+ * matches an image opened after it. Call after bd_init(); 0 if never called. */
+void bd_set_boot_nonce(uint32_t nonce);
 
 /* ---- core 0: control register handlers (O(1), no FatFs, ISR-safe) ----- */
 void    bd_ctl_name_select(uint8_t unit);           /* register selected: rewind */

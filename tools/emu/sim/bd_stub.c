@@ -30,6 +30,7 @@ uint8_t bd_ctl_name_read(uint8_t unit) {
 }
 uint8_t bd_ctl_opts_read(void) { return (uint8_t)((*opts_p & BD_OPT_MASK) | BD_OPTS_SIGNATURE); }
 void bd_ctl_opts_write(uint8_t v) { *opts_p = v & BD_OPT_MASK; }
+void bd_set_boot_nonce(uint32_t nonce) { (void)nonce; }
 void bd_tasks(void) {}
 void bd_on_drive_mounted(void) {}
 void bd_on_drive_unmounted(void) {}

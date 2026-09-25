@@ -95,9 +95,9 @@ xlate13:
         test    byte [F_FL], 1
         jnz     .out
         push    es
-        mov     ax, 40h
-        mov     es, ax
-        mov     dl, [es:75h]                    ; includes the image
+        mov     es, [F_RAMSEG]
+        mov     dl, [es:r_hdcnt]                ; physical disks + the image
+        inc     dl
         pop     es
 .out:
         pop     ax
@@ -124,6 +124,15 @@ own13:
         push    bx
         push    ax
         cld
+        cmp     byte [r_busy], 0
+        je      .free
+        ; reentered (from an interrupt handler while we wait for the card):
+        ; the transport is in use, answer "drive not ready"
+        mov     byte [F_AH], 0AAh
+        or      byte [F_FL], 1
+        jmp     exit_nobusy
+.free:
+        mov     byte [r_busy], 1
         mov     si, [r_cur]
         mov     bl, ah
         xor     bh, bh
@@ -187,6 +196,8 @@ exit_cf:
         jz      exit_pop
         or      byte [F_FL], 1
 exit_pop:
+        mov     byte [r_busy], 0
+exit_nobusy:
         pop     ax
         pop     bx
         pop     cx
@@ -322,7 +333,8 @@ fn_params:
         mov     word [F_DI], r_dpt
         jmp     fn_ok
 .hd:
-        mov     al, [es:75h]
+        mov     al, [r_hdcnt]                   ; physical disks + the image
+        inc     al
         mov     [F_DL], al
         jmp     fn_ok
 
@@ -589,15 +601,26 @@ mul32x16:
 
 ; disk_io: io_count sectors from io_lba of unit [r_cur], buffer io_seg:io_off,
 ; operation io_op. Split into frames of at most r_maxrd (read, verify) or
-; r_maxwr (write, fill) sectors; the buffer is normalised and advanced by
-; segment. Stops at the end of the image with 04h.
+; r_maxwr (write, fill) sectors. The buffer is tracked as a linear address
+; and every frame gets a seg:off that reaches it without the offset wrapping:
+; the segment is the address / 16 but at most FFFFh, so buffers in the HMA
+; (FFFF:xxxx with A20 on) work and never wrap to low memory; a frame is cut
+; short at the end of that last segment (09h when not even a sector fits).
+; Stops at the end of the image with 04h. A floppy answer 06h (the image was
+; swapped: token mismatch) refreshes the unit so the next call works and
+; latches the change for AH=16h.
 ; out: AH = status, io_done = sectors transferred. Clobbers all but BP, DS.
 disk_io:
-        mov     ax, [io_off]
+        mov     ax, [io_seg]
+        mov     dx, ax
         mov     cl, 4
-        shr     ax, cl
-        add     [io_seg], ax
-        and     word [io_off], 0Fh
+        shl     ax, cl
+        mov     cl, 12
+        shr     dx, cl                          ; DX:AX = segment * 16
+        add     ax, [io_off]
+        adc     dx, 0
+        mov     [io_lin], ax
+        mov     [io_lin+2], dx
         mov     word [io_done], 0
 .next:
         mov     si, [r_cur]
@@ -635,59 +658,110 @@ disk_io:
         ret
 .max:
         cmp     cx, ax
-        jbe     .n
+        jbe     .buf
         mov     cx, ax
-.n:
+.buf:
+        ; seg:off for the linear buffer address
+        mov     ax, [io_lin]
+        mov     dx, [io_lin+2]
+        cmp     dx, 10h
+        jae     .hma
+        mov     bx, ax
+        and     bx, 0Fh                         ; offset
+        push    cx
+        mov     cl, 4
+        shr     ax, cl
+        mov     cl, 12
+        shl     dx, cl
+        or      ax, dx                          ; segment
+        pop     cx
+        jmp     short .seg
+.hma:
+        sub     ax, 0FFF0h                      ; address - FFFF0h
+        sbb     dx, 0Fh
+        jnz     .wrap                           ; beyond FFFF:FFFF
+        mov     bx, ax
+        mov     ax, 0FFFFh
+        ; sectors that fit before the offset wraps: (10000h - off) / 512
+        mov     dx, bx
+        neg     dx
+        jz      .seg                            ; offset 0: a whole segment
+        push    cx
+        mov     cl, 9
+        shr     dx, cl
+        pop     cx
+        or      dx, dx
+        jz      .wrap
+        cmp     cx, dx
+        jbe     .seg
+        mov     cx, dx
+.seg:
+        mov     [x_dptr], bx
+        mov     [x_aptr], bx
+        mov     [x_dptr+2], ax
+        mov     [x_aptr+2], ax
+        ; frame header: UU NN LBA TOKEN
         mov     [io_n], cl
         mov     al, [si+U_UNIT]
         mov     ah, cl
-        mov     [x_hdr+4], ax                   ; UU NN
+        mov     [x_hdr+4], ax
         mov     ax, [io_lba]
         mov     [x_hdr+6], ax
         mov     ax, [io_lba+2]
         mov     [x_hdr+8], ax
-        mov     word [x_hlen], 10
-        mov     word [x_tmo], TMO_IO
+        mov     ax, [si+U_TOKEN]
+        mov     [x_hdr+10], ax
+        mov     ax, [si+U_TOKEN+2]
+        mov     [x_hdr+12], ax
+        mov     word [x_hlen], 4 + BD_IO_HDR_LEN
         mov     ah, cl
         xor     al, al
         shl     ax, 1                           ; bytes = n * 512
         mov     bx, ax
-        mov     ax, [io_off]
-        mov     [x_dptr], ax
-        mov     [x_aptr], ax
-        mov     ax, [io_seg]
-        mov     [x_dptr+2], ax
-        mov     [x_aptr+2], ax
         xor     ax, ax
         mov     [x_fill], al
         mov     [x_dlen], ax
         mov     [x_alen], ax
         mov     dl, BD_AL_READ
-        mov     al, [io_op]
-        cmp     al, IO_READ
+        mov     ax, TMO_READ
+        mov     cl, [io_op]
+        cmp     cl, IO_READ
         jne     .nr
         mov     [x_alen], bx
         jmp     short .hdr
 .nr:
-        cmp     al, IO_VERIFY
+        cmp     cl, IO_VERIFY
         je      .hdr
         mov     dl, BD_AL_WRITE
+        mov     ax, TMO_WRITE
         mov     [x_dlen], bx
-        cmp     al, IO_FILL
+        cmp     cl, IO_FILL
         jne     .hdr
         mov     byte [x_fill], 1
 .hdr:
         mov     byte [x_hdr+2], 0
         mov     [x_hdr+3], dl
+        call    set_tmo
         call    xact                            ; preserves BX
         jc      .ret                            ; AH = transport status
         or      ax, ax
         jz      .cardok
         mov     ah, al                          ; the card's INT 13h status
         or      ah, ah
-        jnz     .ret
+        jnz     .st
         mov     ah, 20h
+.st:
+        cmp     ah, BD_ST_CHANGED
+        jne     .ret
+        cmp     byte [r_isfd], 0
+        je      .ret
+        call    fd_refresh                      ; new token and geometry
+        mov     byte [r_fdchg], 1
+        mov     ah, BD_ST_CHANGED
 .ret:
+        ret
+.wrap:
+        mov     ah, 09h                         ; buffer runs past FFFF:FFFF
         ret
 .cardok:
         test    byte [io_op], 1
@@ -702,7 +776,6 @@ disk_io:
         add     [io_done], ax
         add     [io_lba], ax
         adc     word [io_lba+2], 0
-        mov     cl, 5
-        shl     ax, cl                          ; paragraphs = n * 32
-        add     [io_seg], ax
+        add     [io_lin], bx                    ; + n * 512
+        adc     word [io_lin+2], 0
         jmp     .next

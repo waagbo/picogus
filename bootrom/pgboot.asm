@@ -63,7 +63,18 @@ post_init:
         mov     si, msg_banner
         call    print
         call    detect_card
-        jc      .absent
+        jnc     .found
+        call    print
+        or      ah, ah
+        jnz     .nohook                         ; answers, but old/disabled: stay out
+        test    byte [cs:HDR_FLAGS], HDRF_RAMCOPY
+        jnz     .nohook                         ; PGBOOT.COM: the card had time
+        ; nothing answers: the card may still be starting (fast POST);
+        ; hook INT 19h anyway, the late init looks again
+        mov     si, msg_later
+        call    print
+        jmp     short .hook19
+.found:
         mov     si, msg_found
         call    print
         mov     ax, bx
@@ -75,7 +86,8 @@ post_init:
         mov     si, msg_cpu186
 .c:
         call    print
-        ; hook INT 19h (once)
+.hook19:
+        ; hook INT 19h (once); interrupts stay off until the popf below
         xor     ax, ax
         mov     ds, ax
         mov     dx, cs
@@ -99,10 +111,8 @@ post_init:
         mov     word [19h*4], int19_entry
         mov     [19h*4+2], dx
 .hooked:
-        sti
         jmp     short .done
-.absent:
-        call    print
+.nohook:
         call    crlf
 .done:
         pop     es
@@ -140,6 +150,30 @@ int19_entry:
         cld
         call    detect_card
         jnc     .card
+        or      ah, ah
+        jnz     .gone
+        ; nothing answers: give a card that is still starting ~2 s
+        push    es
+        xor     ax, ax
+        mov     es, ax
+        mov     di, 2 * TICKS_PER_SEC
+        mov     bp, [es:046Ch]
+.retry:
+        call    detect_card
+        jnc     .late
+        or      ah, ah
+        jnz     .late
+        mov     ax, [es:046Ch]
+        cmp     ax, bp
+        je      .retry
+        mov     bp, ax
+        dec     di
+        jnz     .retry
+        stc
+.late:
+        pop     es
+        jnc     .card
+.gone:
         ; card gone (or disabled since POST): unhook and continue
         call    print_pfx
         call    print
@@ -213,9 +247,9 @@ int19_entry:
         mov     al, ah
         shr     al, 1                           ; maxlen / 512
         mov     [r_maxrd], al
-        sub     cx, 6
+        sub     cx, BD_IO_HDR_LEN               ; the BD header in the payload
         mov     al, ch
-        shr     al, 1                           ; (maxlen - 6) / 512
+        shr     al, 1                           ; (maxlen - 10) / 512
         mov     [r_maxwr], al
         call    detect_cpu
         mov     [r_cpu], al
@@ -284,13 +318,13 @@ int19_entry:
         pop     si
         call    print_count
 .spin:
-        mov     ah, 1
-        int     16h
+        mov     ah, 1                           ; peek; only Esc is taken, other
+        int     16h                             ; keys (F5/F8 for DOS) stay queued
         jz      .nokey
-        xor     ah, ah
-        int     16h
         cmp     al, 1Bh
         jne     .nokey
+        xor     ah, ah
+        int     16h
         call    crlf
         mov     si, msg_skipped
         jmp     chain19_msg
@@ -575,6 +609,9 @@ do_unit:
         mov     si, msg_st_nousb
         cmp     al, 4
         je      .r
+        mov     si, msg_st_frag
+        cmp     al, BD_STATE_FRAG
+        je      .r
         mov     si, msg_st_nr
 .r:
         call    print
@@ -760,6 +797,8 @@ msg_st_nf       db " - file not found", 0
 msg_st_bad      db " - unusable image", 0
 msg_st_nousb    db " - no USB drive", 0
 msg_st_nr       db " - not ready", 0
+msg_st_frag     db " - too fragmented (copy it to a freshly formatted drive)", 0
+msg_later       db ", will look again at boot", 13, 10, 0
 msg_xerr        db ": card error ", 0
 msg_rderr       db ": boot sector read error ", 0
 msg_nosig       db ": not bootable (no 55AAh signature)", 0

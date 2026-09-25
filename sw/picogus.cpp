@@ -40,6 +40,7 @@
 #ifdef PGDFS
 #include "dfs/dfs.h"
 #include "bootdisk/bootdisk.h"  // PGBOOT: disk image configuration registers
+#include "pico/rand.h"          // PGBOOT: per-boot nonce for the image tokens
 // PGDFS data port window: two consecutive ports at an even base, decoded as
 // (port & ~1) == dfs_port_test. 0xFFFF matches nothing: PGDFS disabled, and
 // the value until processSettings() has run (the card must never answer a
@@ -1481,6 +1482,9 @@ int main()
     // PGBOOT: bind the image names and options in the settings (core 1 opens
     // the images when the USB drive mounts)
     bd_init(settings.BootDisk.fdImage, settings.BootDisk.hdImage, &settings.BootDisk.options);
+    // a different value on every card boot: image tokens from before a card
+    // reboot (mode switch, firmware update) never match the images after it
+    bd_set_boot_nonce(get_rand_32());
 #endif // PGDFS
 
 #ifdef SOUND_SB

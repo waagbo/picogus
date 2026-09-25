@@ -166,6 +166,7 @@ static bool mbr_geometry(const uint8_t *ptab, uint16_t *heads, uint16_t *spt) {
         used++;
     }
     if (used == 0) return false;
+    if (h > 255) h = 255;                                   /* end head 255: INT 13h counts 255 at most */
     *heads = h;
     *spt = s;
     return true;

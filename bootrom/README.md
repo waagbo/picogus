@@ -59,13 +59,36 @@ effect at the next boot.
 
 1. Choose a free 8 KB window, for example C800h, D000h, D800h or E000h. It
    must not overlap the VGA BIOS (C000h-C7FFh), a network boot ROM or an
-   XTIDE ROM.
+   XTIDE ROM. **Order matters with other disk ROMs.** The BIOS scans option
+   ROMs from low to high segments, so each ROM that hooks INT 19h wraps the
+   ones scanned before it, and the last one scanned runs first at boot.
+   * Some ROMs replace INT 19h without chaining to the old handler: XT
+     fixed-disk controller ROMs (the IBM/WD/Xebec family) and the XTIDE
+     Universal BIOS in its default mode, which runs its own boot menu.
+     PGBOOT must be scanned **after** such a ROM, so give it a higher
+     segment. Scanned first, PGBOOT's INT 19h never runs.
+   * The XTIDE Universal BIOS configured for late initialisation hooks
+     INT 19h and INT 13h at boot time itself. Then both ROMs rearrange the
+     drive numbers when their INT 19h runs, and the one that runs second
+     sees the other's drives as physical. Use XUB in normal (POST-time)
+     mode with PGBOOT above it, or expect the image at 80h to shift.
+   * BIOSes with a BIOS Boot Specification boot manager (most 1996+ AT
+     BIOSes, "boot device priority" menus) may restore their own INT 19h
+     before booting, or boot through their own list without calling
+     INT 19h. PGBOOT then never runs its late init. Such machines need a
+     BIOS that keeps legacy option ROM INT 19h hooks, or `PGBOOT.COM`.
 2. Program the EEPROM. You have three ways to do it:
    * `PGFLASH D000 PGBOOT.ROM` in the target machine. Boot clean first (no
      EMM386 or QEMM) and set the board's write-enable jumper. `/256` sends
      the 28C256 SDP command addresses, but only when the board decodes the
      chip's full 32 KB. `/NOSDP` writes without the unlock sequence. `/BYTE`
-     is for chips without page mode.
+     is for chips without page mode. PGFLASH only reads until you confirm.
+     It shows what the segment holds now and warns about other option ROMs
+     in the same 32 KB window, which a 28C256 or a board decoding 32 KB may
+     share. After you confirm, it checks that the segment is not RAM and
+     writes. Interrupts stay off from each SDP unlock until the write cycle
+     ends. It refuses to overwrite a PGBOOT that is running from that
+     segment.
    * XTIDECFG (from the XTIDE Universal BIOS): load `PGBOOT.ROM` as a
      "BIOS image" and flash it to the segment. Skip its "configure" step,
      because that is XTIDE-specific.
@@ -130,7 +153,12 @@ The loader fixes the checksum byte after it patches these fields.
    these checks: knock CCh on 1D0h; `CMD_MAGIC` = DDh; `CMD_PROTOCOL` >= 5;
    `CMD_DFSMAXLEN` in 512..32768; `CMD_DFSPORT` != 0; `CMD_BDOPTS` with
    bit 7 set, bit 6 clear and bit 2 (ROM disabled) clear. The ROM prints one
-   line. If the card is there, it hooks INT 19h and nothing else. A ROM
+   line. If the card is there, it hooks INT 19h and nothing else. If
+   nothing answers at all, it still hooks INT 19h: a fast AT POST can reach
+   the option ROMs while the card is still booting. The late init then
+   gives the card another 2 s and continues with the BIOS boot if it is
+   still absent. If the card answers but reports old firmware, PGDFS off
+   or the ROM disabled, nothing is hooked. A ROM
    cannot write to itself: an unprotected EEPROM would take the write. So
    the ROM keeps the previous INT 19h in interrupt vector **6Bh** (free
    between POST and boot) until the late init copies it to RAM. A loaded
@@ -140,7 +168,8 @@ The loader fixes the checksum byte after it patches these fields.
    runs on its own stack at the top of that block. If no image name is
    configured, it continues with the BIOS boot at once. Otherwise it waits
    up to 15 s for the USB drive (`CMD_DFSSTAT` = FFh, or BDINFO state 4,
-   means "not mounted yet"). A countdown is shown and Esc skips the wait. The
+   means "not mounted yet"). A countdown is shown and Esc skips the wait
+   (other keys, such as F5/F8 for DOS, stay in the keyboard buffer). The
    ROM then sends BDINFO with OPEN for unit 0 (floppy) and unit 1 (hard
    disk), prints a line per configured unit, adjusts the BIOS data area,
    hooks INT 13h and reads sector 0 of the boot image to 0000:7C00. It boots
@@ -168,8 +197,10 @@ The loader fixes the checksum byte after it patches these fields.
 
 When a floppy image is present, the equipment word (40:10h) is set to report
 at least one floppy drive. A hard disk image adds one to 40:75h. INT 13h
-AH=08h for a translated drive returns DL = 40:75h, which includes the image.
-AH=15h returns CX:DX unchanged from the old handler.
+AH=08h for 80h or a translated drive returns DL = the number of physical
+hard disks the ROM saw at install + 1, taken from its own state rather than
+from 40:75h after chaining. AH=15h returns CX:DX unchanged from the old
+handler.
 
 ### INT 13h functions served
 
@@ -189,12 +220,27 @@ Any other function returns AH=01h with CF set. The last status goes to 40:41h
 (floppy) or 40:74h (hard disk). CHS addresses outside the geometry, and LBAs
 at or past the end of the image, return 04h. Transfers stop at the end of the
 image, and AL (or the packet count) holds the number of sectors done. The
-buffer pointer is normalised, so the ROM never raises DMA-boundary errors.
-Transfers are split into frames of at most `CMD_DFSMAXLEN`/512 sectors for
-reads and (`CMD_DFSMAXLEN`-6)/512 for writes. With the default 4096 that is
-8 and 7 sectors. Card status codes pass through as INT 13h status (03h write
+buffer (ES:BX or the packet's pointer) is tracked as a linear address. Each
+frame gets the segment address/16, but at most FFFFh, so no DMA-boundary
+errors are raised. A buffer in the HMA (FFFF:xxxx with A20 on) is served
+without wrapping to low memory. A frame that would run past FFFF:FFFF is cut
+there, and if not even one sector fits, the ROM returns 09h. Transfers are
+split into frames of at most `CMD_DFSMAXLEN`/512 sectors for reads and
+(`CMD_DFSMAXLEN`-10)/512 for writes. With the default 4096 that is 8 and 7
+sectors. Card status codes pass through as INT 13h status (03h write
 protected, 04h, 20h, 80h). A transport timeout or a missing USB drive gives
 80h, and a frame the card rejects twice gives 20h.
+
+Every BDREAD/BDWRITE carries the unit's image token from the last BDINFO.
+If the floppy image was swapped in between, the card answers 06h. The ROM
+passes 06h on (CF set, DOS re-reads the disk), refreshes the unit (new
+token and geometry, so the next call works) and also reports the change at
+the next AH=16h. For the hard disk, a token mismatch (card rebooted,
+different file) is 80h "not ready" until the next boot.
+
+A call that comes in while a request is in progress (an interrupt handler
+calling INT 13h during the poll) gets AAh "drive not ready" with CF set, and
+the transaction in flight is not disturbed.
 
 ### Transport
 
@@ -203,22 +249,29 @@ program may have changed it. On a 186 or later the ROM moves data with
 `rep outsw`/`rep insw`. On an 8086/8088 it uses `lodsw/out dx,ax` and
 `in ax,dx/stosw` loops, and an odd last byte moves as a single byte. The
 CPU test is the shift-count mask, so a NEC V20 counts as an 8088. After
-`CMD_DFSEXEC`, the ROM polls `CMD_DFSSTAT` for about 5 s: 91 changes of the
-BIOS tick count, plus a loop-count backstop in case interrupts are off.
-BDINFO with OPEN gets 30 s. On a timeout the ROM aborts the transaction and
-returns 80h. An ABORTED status makes it send the request once more, and
-NODRIVE returns 80h.
+`CMD_DFSEXEC`, the ROM polls `CMD_DFSSTAT`. Reads, verifies and BDINFO get
+about 10 s. Writes and BDINFO with OPEN get about 30 s, because the card's
+USB write deadline is 10 s per operation and one BDWRITE (write plus sync)
+can take several. The time is counted in changes of the BIOS tick count,
+and a timeout also needs a minimum number of status reads (ticks x 1.2 x
+65536; one ISA read takes at least about 0.7 us). A program that speeds up
+the timer therefore cannot shorten the timeout. With interrupts off, twice
+that many reads end the wait. On a timeout the ROM aborts the transaction
+and returns 80h. An ABORTED status makes it send the request once more, and
+NODRIVE returns 80h. Before it starts a request, the ROM reads
+`CMD_DFSSTAT`. If another client's request is BUSY (PGUSDFS interrupted by
+an INT 13h call), the ROM waits for it to finish, within the same timeout.
 
 ### RAM block (1 KB at segment `[40:13h]*64` after the late init)
 
 | Offset | Content |
 |---|---|
 | 00h | `PGBT`, old INT 13h, old INT 19h, ROM segment, data port, sectors per read/write frame, CPU flag, installed units, last translated drive, saved 40:10h / 40:75h, options, media-change latch, scratch |
-| 30h / 40h | unit structures (floppy, hard disk): cylinders, heads, sectors, total, drive type, flags, state, card unit, generation |
-| 50h | diskette parameter table (AH=08h/18h) |
-| 60h | INT 13h trampoline: `push cs / push cs / jmp far ROM:int13_entry`. The INT 13h vector points here. The handler reads its RAM segment from the pushed words and puts the caller's DS back before it returns or chains. |
-| 68h-97h | transaction and transfer parameters |
-| A0h-11Fh | BDINFO answer buffer |
+| 30h / 48h | unit structures (floppy, hard disk): cylinders, heads (at most 255), sectors, total, drive type, flags, state, card unit, generation, image token. The geometry is only replaced by a valid BDINFO record, so an ejected floppy keeps its last geometry. |
+| 60h | diskette parameter table (AH=08h/18h) |
+| 70h | INT 13h trampoline: `push cs / push cs / jmp far ROM:int13_entry`. The INT 13h vector points here. The handler reads its RAM segment from the pushed words and puts the caller's DS back before it returns or chains. |
+| 78h-B3h | transaction and transfer parameters |
+| C0h-13Fh | BDINFO answer buffer |
 | up to 400h | stack for the late init (the INT 13h handler runs on the caller's stack, about 50 bytes) |
 
 If INT 19h runs again (a reboot through INT 19h), the ROM finds its block
@@ -229,7 +282,7 @@ block.
 
 No card (or firmware without PGDFS/PGBOOT):
 ```
-PGBOOT 0.1: PicoGUS not found
+PGBOOT 0.1: PicoGUS not found, will look again at boot   [then at INT 19h: PGBOOT: PicoGUS not found]
 PGBOOT 0.1: PicoGUS firmware without PGBOOT support
 PGBOOT 0.1: PGDFS disabled or unsupported on the card
 PGBOOT 0.1: disabled (pgusinit /bdopts bit 2)
@@ -247,7 +300,8 @@ Other late-init lines, each followed by the normal BIOS boot:
 PGBOOT: no disk image configured
 PGBOOT: skipped                                        (Esc)
 PGBOOT: no USB drive                                   (15 s passed)
-PGBOOT: A: \MISSING.IMG - file not found               (also: - unusable image, - no USB drive, - not ready)
+PGBOOT: A: \MISSING.IMG - file not found               (also: - unusable image, - no USB drive,
+                                                        - too fragmented (copy it to a freshly formatted drive), - not ready)
 PGBOOT: no image ready
 PGBOOT: C: card error 80h
 PGBOOT: C: boot sector read error 04h
@@ -302,5 +356,7 @@ LBA of 80h. The last line is `INT13TST DONE, n failures`.
   in `defs.inc` and rebuild.
 * `PGBOOT.COM` depends on a clean boot, and its `/C` mode is untested on
   MS-DOS.
+* A floppy image that was ejected (`/fdimage -`) still answers AH=08h with
+  the last geometry. Reads return 80h.
 * PGFLASH is untested on real EEPROMs. Its refusal paths (RAM,
   read-only window, running ROM) have been checked in QEMU.

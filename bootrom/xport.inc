@@ -30,14 +30,16 @@ rd16:
 
 ; detect_card: checks for a PicoGUS that can serve PGBOOT. No RAM needed.
 ; out: CF=0: BX = data window base, CX = max payload, AL = options (low nibble)
-;      CF=1: SI = message (CS-relative) saying why not
+;      CF=1: SI = message (CS-relative) saying why not; AH = 0: nothing
+;      answers (the card may still be starting: worth another look at
+;      INT 19h), AH = 1: the card answers but cannot or must not serve
 ; clobbers AX, BX, CX, DX, SI
 detect_card:
         mov     si, msg_nocard
         mov     al, CMD_MAGIC
         call    rd8
         cmp     al, MAGIC_VALUE
-        jne     .fail
+        jne     .absent
         mov     si, msg_oldfw
         mov     al, CMD_PROTOCOL
         call    rd8
@@ -69,7 +71,12 @@ detect_card:
         and     al, 0Fh
         clc
         ret
+.absent:
+        xor     ah, ah
+        stc
+        ret
 .fail:
+        mov     ah, 1
         stc
         ret
 
@@ -144,17 +151,18 @@ in186:
         cpu     8086
 
 ; poll: waits until CMD_DFSSTAT (already selected) reads READY, ABORTED or
-; NODRIVE. [x_tmo] BIOS ticks (counted as tick changes, so midnight and
-; wrap-around do not matter), with a loop-count backstop (~16M polls) for
-; the case where interrupts are off and the tick count stands still.
+; NODRIVE. Times out when [x_tmo] BIOS ticks have passed (counted as tick
+; changes, so midnight and wrap-around do not matter) AND at least [x_pmin]
+; x 65536 status reads were made (a sped-up timer cannot shorten it), or
+; after 2 x [x_pmin] x 65536 reads whatever the ticks say (interrupts off).
 ; out: CF=0, AL = status; CF=1: timeout. Clobbers AX, BX, CX, DX, SI, DI.
 poll:
         push    es
         xor     ax, ax
         mov     es, ax
+        mov     [x_units], ax
         mov     si, [es:046Ch]
         mov     di, [x_tmo]
-        mov     bh, 0                   ; 256 rounds of 65536 polls
         xor     cx, cx
         mov     dx, DATA_PORT_HIGH
 .p:
@@ -167,12 +175,21 @@ poll:
         cmp     ax, si
         je      .same
         mov     si, ax
+        or      di, di
+        jz      .same
         dec     di
-        jz      .tmo
 .same:
         loop    .p
-        dec     bh
-        jnz     .p
+        mov     ax, [x_units]
+        inc     ax
+        mov     [x_units], ax
+        cmp     ax, [x_pmin]
+        jb      .p                              ; too few reads for a timeout
+        or      di, di
+        jz      .tmo                            ; ticks and reads both done
+        shr     ax, 1
+        cmp     ax, [x_pmin]
+        jb      .p
 .tmo:
         pop     es
         stc
@@ -180,6 +197,22 @@ poll:
 .fin:
         pop     es
         clc
+        ret
+
+; set_tmo: [x_tmo] = AX ticks, [x_pmin] to match (AX * 1.2). Clobbers AX, DX.
+set_tmo:
+        mov     [x_tmo], ax
+        mov     dx, ax
+        shr     dx, 1
+        shr     dx, 1
+        shr     dx, 1                           ; ticks / 8 ...
+        add     ax, dx
+        shr     dx, 1
+        shr     dx, 1                           ; ... + ticks / 32 + ticks / 64
+        add     ax, dx
+        shr     dx, 1
+        add     ax, dx
+        mov     [x_pmin], ax
         ret
 
 ; xact: one PGDFS transaction, parameters in the x_* RAM variables (DS=RAM).
@@ -198,6 +231,15 @@ xact:
         push    es
         mov     byte [x_try], 2
 .send:
+        ; another client's request in flight (PGUSDFS interrupted by us):
+        ; let it finish first, the card ignores a new request while BUSY
+        mov     al, CMD_DFSSTAT
+        call    rd8
+        cmp     al, DFS_BUSY
+        jne     .idle
+        call    poll
+        jc      .timeout
+.idle:
         mov     al, CMD_DFSREQ
         call    select
         mov     ax, [x_hlen]
@@ -300,11 +342,14 @@ bdinfo:
         mov     word [x_alen], BI_MAXLEN
         mov     word [x_aptr], x_ans
         mov     [x_aptr+2], ds
+        push    ax
         test    ah, BD_INFO_OPEN
-        mov     word [x_tmo], TMO_IO
+        mov     ax, TMO_READ
         jz      .go
-        mov     word [x_tmo], TMO_OPEN
+        mov     ax, TMO_OPEN
 .go:
+        call    set_tmo
+        pop     ax
         call    xact
         jc      .ret
         or      ax, ax
@@ -318,47 +363,59 @@ bdinfo:
 .ret:
         ret
 
-; unit_load: copies the BDINFO record in x_ans into the unit at DI and
-; validates the geometry. out: CF=0 ready and usable, CF=1 not.
-; Clobbers AX.
+; unit_load: takes the BDINFO record in x_ans for the unit at DI. The
+; state, flags and generation are always copied; geometry, drive type and
+; token only when the record describes a usable image (so an ejected floppy
+; keeps answering AH=08h with the last geometry). Heads are capped at 255.
+; out: CF=0 ready and usable, CF=1 not (token cleared). Clobbers AX.
 unit_load:
         mov     al, [x_ans+BI_STATE]
         mov     [di+U_STATE], al
         mov     al, [x_ans+BI_FLAGS]
         mov     [di+U_FLAGS], al
-        mov     al, [x_ans+BI_FDTYPE]
-        mov     [di+U_FDTYPE], al
         mov     al, [x_ans+BI_GEN]
         mov     [di+U_GEN], al
+        cmp     byte [x_ans+BI_STATE], BD_STATE_READY
+        jne     .bad
+        mov     ax, [x_ans+BI_SPT]
+        dec     ax
+        cmp     ax, 63
+        jae     .bad                            ; spt 1..63
+        mov     ax, [x_ans+BI_HEADS]
+        or      ax, ax
+        jz      .bad
+        mov     ax, [x_ans+BI_CYL]
+        dec     ax
+        cmp     ax, 1024
+        jae     .bad                            ; cylinders 1..1024
+        mov     ax, [x_ans+BI_TOTAL]
+        or      ax, [x_ans+BI_TOTAL+2]
+        jz      .bad
+        mov     ax, [x_ans+BI_HEADS]
+        cmp     ax, 255
+        jbe     .h
+        mov     ax, 255
+.h:
+        mov     [di+U_HEADS], ax
         mov     ax, [x_ans+BI_CYL]
         mov     [di+U_CYL], ax
-        mov     ax, [x_ans+BI_HEADS]
-        mov     [di+U_HEADS], ax
         mov     ax, [x_ans+BI_SPT]
         mov     [di+U_SPT], ax
         mov     ax, [x_ans+BI_TOTAL]
         mov     [di+U_TOTAL], ax
         mov     ax, [x_ans+BI_TOTAL+2]
         mov     [di+U_TOTAL+2], ax
-        cmp     byte [di+U_STATE], 1
-        jne     .bad
-        mov     ax, [di+U_SPT]
-        dec     ax
-        cmp     ax, 63
-        jae     .bad                    ; spt 1..63
-        mov     ax, [di+U_HEADS]
-        dec     ax
-        cmp     ax, 256
-        jae     .bad                    ; heads 1..256
-        mov     ax, [di+U_CYL]
-        dec     ax
-        cmp     ax, 1024
-        jae     .bad                    ; cylinders 1..1024
-        mov     ax, [di+U_TOTAL]
-        or      ax, [di+U_TOTAL+2]
-        jz      .bad
+        mov     al, [x_ans+BI_FDTYPE]
+        mov     [di+U_FDTYPE], al
+        mov     ax, [x_ans+BI_TOKEN]
+        mov     [di+U_TOKEN], ax
+        mov     ax, [x_ans+BI_TOKEN+2]
+        mov     [di+U_TOKEN+2], ax
         clc
         ret
 .bad:
+        xor     ax, ax
+        mov     [di+U_TOKEN], ax
+        mov     [di+U_TOKEN+2], ax
         stc
         ret

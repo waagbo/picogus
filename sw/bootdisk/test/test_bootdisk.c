@@ -19,14 +19,16 @@
 #include "bootdisk.h"
 #include "bd_geometry.h"
 #include "ramdisk_diskio.h"
+#include "../usb_msc/msc_app.h"     /* msc_app_get_stats(): the RAM disk keeps the counters */
 
 bool bd_test_fastseek(int u);   /* bootdisk.c, BD_HOST_TEST */
 
 /* ---- platform stubs -------------------------------------------------------- */
 
 static FATFS fatfs;
+static uint32_t test_ms = 1000;
 
-uint32_t dfs_platform_millis(void) { return 1000; }
+uint32_t dfs_platform_millis(void) { return test_ms; }
 FATFS *dfs_platform_fatfs(void) { return &fatfs; }
 
 /* ---- check infrastructure -------------------------------------------------- */
@@ -63,6 +65,7 @@ static uint8_t bd_opts;
 static uint8_t  buf[DFS_BUF_SIZE];
 static uint8_t *const pl = buf + DFS_HDR_LEN;
 static uint16_t ans_len;        /* answer payload length */
+static uint32_t tok[BD_UNITS];  /* image tokens from the last BDINFO, echoed like the ROM does */
 
 /* One frame the way the ROM sends it: header + payload in, answer out. */
 static uint16_t frame(uint8_t drive, uint8_t al, const uint8_t *payload, uint32_t plen) {
@@ -85,12 +88,17 @@ static uint16_t bdinfo(uint8_t unit, uint8_t flags) {
     return frame(0, BD_AL_INFO, p, 2);
 }
 
-static uint16_t bdread(uint8_t unit, uint8_t count, uint32_t lba) {
+static uint16_t bdread_t(uint8_t unit, uint8_t count, uint32_t lba, uint32_t token) {
     uint8_t p[BD_IO_HDR_LEN];
     p[0] = unit;
     p[1] = count;
     wr32(p + 2, lba);
+    wr32(p + 6, token);
     return frame(0, BD_AL_READ, p, BD_IO_HDR_LEN);
+}
+
+static uint16_t bdread(uint8_t unit, uint8_t count, uint32_t lba) {
+    return bdread_t(unit, count, lba, unit < BD_UNITS ? tok[unit] : 0);
 }
 
 /* data: count sectors, built directly in the frame buffer */
@@ -100,6 +108,7 @@ static uint16_t bdwrite(uint8_t unit, uint8_t count, uint32_t lba, const uint8_t
     req[0] = unit;
     req[1] = count;
     wr32(req + 2, lba);
+    wr32(req + 6, unit < BD_UNITS ? tok[unit] : 0);
     memcpy(req + BD_IO_HDR_LEN, data, datalen);
     return frame(0, BD_AL_WRITE, req, BD_IO_HDR_LEN + datalen);
 }
@@ -123,7 +132,7 @@ static void read_name(uint8_t unit, char *out, size_t cap) {
 typedef struct {
     uint8_t  ver, state, type, flags, drvtype, gen, nlen;
     uint16_t cyl, heads, spt;
-    uint32_t total;
+    uint32_t total, token;
     char     name[64];
 } info_t;
 
@@ -143,6 +152,9 @@ static uint16_t get_info(uint8_t unit, uint8_t flags, info_t *i) {
     i->drvtype = pl[16];
     i->gen = pl[17];
     i->nlen = pl[18];
+    i->token = rd32(pl + 20);
+    CHECK((i->state == BD_STATE_READY) == (i->token != 0), "token %08X in state %u", i->token, i->state);
+    tok[unit] = i->token;
     CHECK(ans_len == BD_INFO_LEN + i->nlen, "info length %u != 32 + %u", ans_len, i->nlen);
     if (i->nlen < sizeof(i->name)) {
         memcpy(i->name, pl + BD_INFO_LEN, i->nlen);
@@ -340,6 +352,10 @@ static void test_harddisk_geometry(void) {
           "MBR 255/63 2000M: %u/%u/%u", g.cyl, g.heads, g.spt);
     CHECK(bd_geom_harddisk(3900u << 20, &s0, NULL, &g) && g.cyl == 497 && g.total == (3900u << 11),
           "3900M 255/63: %u cylinders, total %u", g.cyl, g.total);
+    make_mbr(sec, 255, 63, 63, 1000000);        /* end head 255 would make 256 heads */
+    sec0_from(&s0, sec);
+    CHECK(bd_geom_harddisk(2000u << 20, &s0, NULL, &g) && g.heads == 255 && g.spt == 63,
+          "MBR end head 255: heads capped at %u", g.heads);
     make_mbr(sec, 15, 63, 63, 1000000);
     sec0_from(&s0, sec);
     CHECK(bd_geom_harddisk(2000u << 20, &s0, NULL, &g) && g.heads == 16 && g.cyl == 1024 &&
@@ -570,6 +586,7 @@ static void test_floppy(void) {
         uint8_t e[BD_INFO_LEN];
         memcpy(e, expect, sizeof(e));
         e[17] = gen;
+        wr32(e + 20, i.token);
         CHECK(ans_len == 32 + 15 && memcmp(pl, e, BD_INFO_LEN) == 0 && memcmp(pl + 32, "\\IMAGES\\DOS.IMG", 15) == 0,
               "record bytes");
         for (int k = 0; k < BD_INFO_LEN && memcmp(pl, e, BD_INFO_LEN); k++) {
@@ -823,47 +840,88 @@ static void test_interlock(void) {
     CHECK(bd_path_holds_open_image("\\IMAGES") && !bd_path_holds_open_image("\\IMAGE"), "directory prefix");
 }
 
-static void test_fastseek_and_faults(void) {
+/* An image of `sectors` patterned sectors in `frags` fragments: a filler file
+ * grows by one cluster (one sector on this volume) between the fragments. */
+static bool make_fragmented(const char *path, const char *filler, uint32_t sectors, uint32_t frags, uint8_t tag) {
     FIL a, b;
     UINT bw;
     uint8_t s[512];
-    info_t i;
-    int frags;
-
-    SECTION("fragmented images: link map and fallback");
-    for (int pass = 0; pass < 2; pass++) {
-        const char *name = pass ? "FRAG12.IMG" : "FRAG3.IMG";
-        uint32_t lba = 0;
-        frags = pass ? 12 : 3;
-        CHECK(f_open(&a, name, FA_WRITE | FA_CREATE_ALWAYS) == FR_OK, "create %s", name);
-        CHECK(f_open(&b, pass ? "FILL12.TMP" : "FILL3.TMP", FA_WRITE | FA_CREATE_ALWAYS) == FR_OK, "create filler");
-        for (int f = 0; f < frags; f++) {
-            uint32_t n = (f == frags - 1) ? 2880 - lba : 2880 / frags;
-            for (uint32_t k = 0; k < n; k++, lba++) {
-                fill_sector(s, lba, 0x5A);
-                f_write(&a, s, 512, &bw);
-            }
-            f_sync(&a);
-            f_write(&b, s, 512, &bw);                   /* one cluster in between */
-            f_sync(&b);
+    uint32_t lba = 0;
+    bool ok = f_open(&a, path, FA_WRITE | FA_CREATE_ALWAYS) == FR_OK;
+    ok = ok && f_open(&b, filler, FA_WRITE | FA_OPEN_APPEND) == FR_OK;
+    for (uint32_t f = 0; ok && f < frags; f++) {
+        uint32_t n = (f == frags - 1) ? sectors - lba : sectors / frags;
+        for (uint32_t k = 0; ok && k < n; k++, lba++) {
+            fill_sector(s, lba, tag);
+            ok = f_write(&a, s, 512, &bw) == FR_OK && bw == 512;
         }
-        f_close(&a);
-        f_close(&b);
-        set_name(0, name);
-        CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.total == 2880, "%s ready", name);
-        CHECK(bd_test_fastseek(0) == (pass == 0), "%s: link map %s", name, pass ? "does not fit -> plain seek" : "in use");
-        {
-            bool ok = true;
-            /* backwards across every fragment boundary, 8 sectors at a time */
-            for (int32_t l = 2880 - 8; l >= 0 && ok; l -= 37) {
-                ok = bdread(0, 8, (uint32_t)l) == 0;
-                for (int k = 0; ok && k < 8; k++) ok = sector_ok(pl + 512 * k, (uint32_t)l + k, 0x5A);
-            }
-            CHECK(ok, "%s: random reads correct", name);
-        }
-        fill_sector(s, 1500, 0xC3);
-        CHECK(bdwrite(0, 1, 1500, s, 512) == 0 && bdread(0, 1, 1500) == 0 && sector_ok(pl, 1500, 0xC3), "%s: write", name);
+        ok = ok && f_sync(&a) == FR_OK;
+        ok = ok && f_write(&b, s, 512, &bw) == FR_OK && f_sync(&b) == FR_OK;
     }
+    f_close(&a);
+    f_close(&b);
+    return ok;
+}
+
+static bool reads_ok(uint8_t unit, uint32_t total, uint8_t tag) {
+    /* backwards across the fragment boundaries, 8 sectors at a time */
+    for (int32_t l = (int32_t)total - 8; l >= 0; l -= 37) {
+        if (bdread(unit, 8, (uint32_t)l) != 0) return false;
+        for (int k = 0; k < 8; k++) if (!sector_ok(pl + 512 * k, (uint32_t)l + k, tag)) return false;
+    }
+    return true;
+}
+
+static void test_fastseek_and_faults(void) {
+    uint8_t s[512];
+    info_t i;
+
+    SECTION("fragmented images: link map pool");
+    CHECK(make_fragmented("FRAG3.IMG", "FILL.TMP", 2880, 3, 0x5A), "3-fragment floppy image");
+    CHECK(make_fragmented("FRAG60.IMG", "FILL.TMP", 2880, 60, 0x5B), "60-fragment floppy image");
+    CHECK(make_fragmented("FRAG90.IMG", "FILL.TMP", 2880, 90, 0x5C), "90-fragment floppy image");
+    CHECK(make_fragmented("HDF150.IMG", "FILL.TMP", 8192, 150, 0x5D), "150-fragment hard disk image");
+    CHECK(make_fragmented("HDF300.IMG", "FILL.TMP", 8192, 300, 0x5E), "300-fragment hard disk image");
+
+    set_name(0, "FRAG3.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.total == 2880 && bd_test_fastseek(0),
+          "FRAG3: ready with a link map (state %u)", i.state);
+    CHECK(reads_ok(0, 2880, 0x5A), "FRAG3: random reads correct");
+    set_name(0, "FRAG90.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && !bd_test_fastseek(0),
+          "FRAG90: floppy map over its share -> documented chain-walk fallback (state %u)", i.state);
+    CHECK(reads_ok(0, 2880, 0x5C), "FRAG90: random reads correct without the map");
+    fill_sector(s, 1500, 0xC3);
+    CHECK(bdwrite(0, 1, 1500, s, 512) == 0 && bdread(0, 1, 1500) == 0 && sector_ok(pl, 1500, 0xC3), "FRAG90: write");
+
+    /* floppy map at the bottom, hard disk map after it; then the floppy
+     * map is released and rebuilt: the hard disk map moves down under it */
+    set_name(0, "FRAG60.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && bd_test_fastseek(0), "FRAG60: map (122 DWORDs)");
+    set_name(1, "HDF150.IMG");
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_READY && bd_test_fastseek(1) && i.total == 8192,
+          "HDF150: map (302 DWORDs) fits next to the floppy's (state %u)", i.state);
+    CHECK(reads_ok(1, 8192, 0x5D), "HDF150: random reads correct");
+    set_name(0, "FRAG3.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && bd_test_fastseek(0), "floppy swapped: new map");
+    CHECK(reads_ok(1, 8192, 0x5D), "HDF150: still correct after its map moved");
+    CHECK(reads_ok(0, 2880, 0x5A), "FRAG3: correct");
+    set_name(0, "FRAG60.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && bd_test_fastseek(0) && reads_ok(0, 2880, 0x5B) && reads_ok(1, 8192, 0x5D),
+          "both maps correct after another swap");
+
+    set_name(1, "HDF300.IMG");
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_FRAGMENTED && i.type == BD_TYPE_HARDDISK &&
+          i.token == 0 && i.total == 0, "HDF300: map does not fit -> state %u (5)", i.state);
+    CHECK(bdread(1, 1, 0) == BD_ST_NOTREADY, "HDF300: read -> 80h");
+    CHECK(!bd_test_fastseek(1), "no map held");
+    set_name(0, "");
+    get_info(0, 0, &i);
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_FRAGMENTED, "HDF300: too fragmented even for the whole pool");
+    set_name(1, "HDF150.IMG");
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_READY && reads_ok(1, 8192, 0x5D), "HDF150 again");
+    set_name(1, "HD16.IMG");
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_READY, "back to HD16");
 
     SECTION("disk faults -> 20h, then recovery");
     set_name(0, "IMAGES/DOS.IMG");
@@ -894,30 +952,211 @@ static void test_fastseek_and_faults(void) {
     }
 }
 
+static void test_tokens(void) {
+    info_t i;
+    uint32_t t0, t1;
+    uint8_t s[512];
+
+    SECTION("image tokens");
+    set_name(0, "IMAGES/DOS.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.token != 0, "floppy token %08X", i.token);
+    t0 = i.token;
+    CHECK(get_info(0, 0, &i) == 0 && i.token == t0, "stable across BDINFO");
+    CHECK(bdread_t(0, 1, 0, t0 ^ 1) == BD_ST_CHANGED && ans_len == 0, "floppy wrong token -> 06h");
+    CHECK(bdread_t(0, 1, 0, 0) == BD_ST_CHANGED, "floppy token 0 -> 06h");
+    CHECK(bdread_t(0, 1, 5000, t0 ^ 1) == BD_ST_CHANGED, "token checked before the range");
+    CHECK(bdread_t(0, 1, 0, t0) == 0 && sector_ok(pl, 0, 0x11), "right token reads");
+    get_info(1, 0, &i);
+    t1 = i.token;
+    CHECK(i.state == BD_STATE_READY && t1 != 0 && t1 != t0, "hard disk token %08X differs", t1);
+    CHECK(bdread_t(1, 1, 0, t1 + 1) == BD_ST_NOTREADY, "hard disk wrong token -> 80h");
+    CHECK(bdread_t(1, 1, 0, t0) == BD_ST_NOTREADY, "the floppy's token on the hard disk -> 80h");
+    tok[1] = t1 + 1;
+    fill_sector(s, 1000, 0xEE);
+    CHECK(bdwrite(1, 1, 1000, s, 512) == BD_ST_NOTREADY, "hard disk write with a wrong token -> 80h");
+    tok[1] = t1;
+    CHECK(bdread(1, 1, 1000) == 0 && sector_ok(pl, 1000, 0xD1), "and nothing was written");
+    tok[0] = t0 ^ 1;
+    CHECK(bdwrite(0, 1, 5, s, 512) == BD_ST_CHANGED, "floppy write with a wrong token -> 06h");
+    bd_ctl_opts_write(BD_OPT_FD_RO);
+    CHECK(bdwrite(0, 1, 5, s, 512) == BD_ST_CHANGED, "token checked before write protection");
+    bd_ctl_opts_write(0);
+    tok[0] = t0;
+
+    /* a swap to the same file is still a new token (the ROM must refresh) */
+    set_name(0, "IMAGES/DOS.IMG");
+    CHECK(bdread_t(0, 1, 0, t0) == BD_ST_CHANGED, "same name committed again: old token -> 06h");
+    CHECK(get_info(0, 0, &i) == 0 && i.token != t0 && (i.flags & BD_FLAG_CHANGED), "new token %08X, changed", i.token);
+    CHECK(bdread(0, 1, 0) == 0, "new token reads");
+    t0 = i.token;
+    /* OPEN also gives a new token */
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.token != t1, "hard disk OPEN: new token");
+    CHECK(bdread_t(1, 1, 0, t1) == BD_ST_NOTREADY, "the token from before the OPEN -> 80h");
+    /* a hard disk commit does not touch the token */
+    t1 = i.token;
+    set_name(1, "HD8.IMG");
+    CHECK(get_info(1, 0, &i) == 0 && i.token == t1 && bdread(1, 1, 0) == 0, "hard disk commit keeps the token");
+    set_name(1, "HD16.IMG");
+    CHECK(get_info(1, 0, &i) == 0 && i.token == t1, "and so does committing the old name back");
+    CHECK(get_info(0, 0, &i) == 0 && i.token == t0, "floppy token unchanged by all that");
+}
+
+static void test_sync(void) {
+    info_t i;
+    uint8_t s[512];
+    FILINFO fi;
+    const char *img = "IMAGES/DOS.IMG";
+
+    SECTION("write-back of the directory entry");
+    set_name(0, img);                           /* fresh open: nothing synced yet */
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY, "floppy open");
+    CHECK(f_chmod(img, 0, AM_ARC) == FR_OK && f_stat(img, &fi) == FR_OK && !(fi.fattrib & AM_ARC), "archive bit cleared");
+    test_ms += 5000;
+    fill_sector(s, 10, 0x11);
+    CHECK(bdwrite(0, 1, 10, s, 512) == 0, "first write");
+    CHECK(f_stat(img, &fi) == FR_OK && (fi.fattrib & AM_ARC), "first write after the open synced the entry");
+    CHECK(f_chmod(img, 0, AM_ARC) == FR_OK, "clear the archive bit again");
+    fill_sector(s, 11, 0xA7);
+    CHECK(bdwrite(0, 1, 11, s, 512) == 0, "second write");
+    CHECK(file_sector(img, 11, s) && sector_ok(s, 11, 0xA7), "the data is on the disk at once");
+    CHECK(f_stat(img, &fi) == FR_OK && !(fi.fattrib & AM_ARC), "entry not synced yet");
+    test_ms += 500;
+    bd_tasks();
+    CHECK(f_stat(img, &fi) == FR_OK && !(fi.fattrib & AM_ARC), "not after 0.5 s");
+    fill_sector(s, 12, 0x11);
+    CHECK(bdwrite(0, 1, 12, s, 512) == 0, "another write restarts the idle time");
+    test_ms += 700;
+    bd_tasks();
+    CHECK(f_stat(img, &fi) == FR_OK && !(fi.fattrib & AM_ARC), "0.7 s after the last write: still pending");
+    test_ms += 400;
+    bd_tasks();
+    CHECK(f_stat(img, &fi) == FR_OK && (fi.fattrib & AM_ARC), "synced after 1 s idle");
+    /* a pending entry is written back when the image is closed */
+    CHECK(f_chmod(img, 0, AM_ARC) == FR_OK, "clear the archive bit");
+    fill_sector(s, 11, 0x11);
+    CHECK(bdwrite(0, 1, 11, s, 512) == 0, "write, then swap at once");
+    set_name(0, "IMAGES/B720.IMA");
+    CHECK(f_stat(img, &fi) == FR_OK && (fi.fattrib & AM_ARC), "the swap's close synced the entry");
+    CHECK(file_sector(img, 11, s) && sector_ok(s, 11, 0x11), "data restored");
+    /* sync failure is retried */
+    set_name(0, img);
+    get_info(0, 0, &i);
+    fill_sector(s, 13, 0x11);
+    CHECK(bdwrite(0, 1, 13, s, 512) == 0 && bdwrite(0, 1, 13, s, 512) == 0, "two writes, the second leaves a pending sync");
+    CHECK(f_chmod(img, 0, AM_ARC) == FR_OK, "clear the archive bit");
+    ramdisk_set_write_fault(true);
+    {
+        uint32_t w0 = msc_app_get_stats()->writes, w1, fails0 = msc_app_get_stats()->write_csw_err;
+        test_ms += 1500;
+        bd_tasks();
+        CHECK(msc_app_get_stats()->write_csw_err > fails0, "idle sync attempted and failed");
+        ramdisk_set_write_fault(false);
+        w0 = msc_app_get_stats()->writes;
+        test_ms += 500;
+        bd_tasks();
+        CHECK(msc_app_get_stats()->writes == w0, "no retry before another idle second");
+        test_ms += 600;
+        bd_tasks();
+        w1 = msc_app_get_stats()->writes;
+        CHECK(w1 > w0, "retried after another idle second (%u writes)", w1 - w0);
+        test_ms += 5000;
+        bd_tasks();
+        CHECK(msc_app_get_stats()->writes == w1, "nothing pending afterwards");
+    }
+    CHECK(f_stat(img, &fi) == FR_OK && (fi.fattrib & AM_ARC), "entry written back");
+    CHECK(bdread(0, 1, 13) == 0 && sector_ok(pl, 13, 0x11), "the unit still serves");
+}
+
+static void test_card_reboot(void) {
+    info_t i;
+    uint32_t t0, t1;
+
+    SECTION("card reboot: nothing opens until OPEN");
+    set_name(0, "IMAGES/DOS.IMG");
+    get_info(0, 0, &i);
+    t0 = i.token;
+    get_info(1, 0, &i);
+    t1 = i.token;
+    CHECK(t0 && t1, "both units ready before the reboot");
+    /* the card reboots (mode switch): settings keep the names, the drive mounts again */
+    unmount_drive();
+    CHECK(strcmp(fd_name, "IMAGES/DOS.IMG") == 0 && strcmp(hd_name, "HD16.IMG") == 0, "settings hold both names");
+    dfs_server_init();
+    bd_init(fd_name, hd_name, &bd_opts);
+    bd_set_boot_nonce(0x12345678);
+    /* the ROM's wait loop asks without OPEN before the stick has mounted */
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_NODRIVE && i.token == 0,
+          "configured floppy before the mount after a card boot: state %u (want NODRIVE)", i.state);
+    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_NODRIVE, "configured hard disk before the mount: state %u", i.state);
+    mount_drive();
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_NONE && i.token == 0 && i.nlen == 0,
+          "floppy not opened at mount: state %u", i.state);
+    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_NONE && i.token == 0, "hard disk not opened: state %u", i.state);
+    CHECK(bdread_t(0, 1, 0, t0) == BD_ST_NOTREADY && bdread_t(1, 1, 0, t1) == BD_ST_NOTREADY,
+          "the old system's requests -> 80h");
+    CHECK(!bd_path_is_open_image("\\HD16.IMG"), "nothing open for the interlock");
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_READY && i.token != 0 && i.token != t1,
+          "OPEN after the reboot: ready, new token %08X", i.token);
+    CHECK(bdread_t(1, 1, 0, t1) == BD_ST_NOTREADY, "old hard disk token still refused");
+    CHECK(bdread(1, 1, 1000) == 0 && sector_ok(pl, 1000, 0xD1), "new token reads");
+    CHECK(get_info(0, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_READY && i.token != t0, "floppy OPEN");
+    CHECK(bdread_t(0, 1, 0, t0) == BD_ST_CHANGED, "old floppy token -> 06h");
+    /* a floppy commit arms the floppy too (an explicit swap by the user) */
+    unmount_drive();
+    bd_init(fd_name, hd_name, &bd_opts);
+    mount_drive();
+    set_name(0, "IMAGES/DOS.IMG");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY, "floppy commit after a card boot opens it");
+    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_NONE, "the hard disk stays closed");
+    CHECK(get_info(1, BD_INFO_OPEN, &i) == 0 && i.state == BD_STATE_READY, "until OPEN");
+}
+
 static void test_unmount(void) {
     info_t i;
     uint8_t g0, g1;
+    uint32_t t0, t1;
 
     SECTION("unmount / remount");
     set_name(0, "IMAGES/DOS.IMG");
     get_info(0, 0, &i);
     g0 = i.gen;
+    t0 = i.token;
     get_info(1, 0, &i);
     g1 = i.gen;
+    t1 = i.token;
     unmount_drive();
-    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_NODRIVE && (i.flags & BD_FLAG_CHANGED) && i.gen == (uint8_t)(g0 + 1) &&
-          i.total == 0, "floppy after unmount: state %u flags %02X", i.state, i.flags);
-    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_NODRIVE && i.gen == (uint8_t)(g1 + 1), "hard disk: state %u", i.state);
-    CHECK(bdread(0, 1, 0) == BD_ST_NOTREADY && bdread(1, 1, 0) == BD_ST_NOTREADY, "reads -> 80h");
-    CHECK(bdwrite(0, 1, 0, pl, 512) == BD_ST_NOTREADY, "write -> 80h");
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_NODRIVE && i.token == 0 && i.total == 0 && i.gen == g0,
+          "floppy after unmount: state %u, token 0, same generation", i.state);
+    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_NODRIVE && i.gen == g1, "hard disk: state %u", i.state);
+    CHECK(bdread_t(0, 1, 0, t0) == BD_ST_NOTREADY && bdread_t(1, 1, 0, t1) == BD_ST_NOTREADY, "reads -> 80h");
     CHECK(!bd_path_is_open_image("\\IMAGES\\DOS.IMG"), "nothing open");
+    mount_drive();
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.token == t0 && i.gen == g0 && !(i.flags & BD_FLAG_CHANGED),
+          "replug: floppy reopened with the same token, no media change (flags %02X)", i.flags);
+    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_READY && i.token == t1 && i.gen == g1, "hard disk: same token");
+    CHECK(bdread_t(1, 1, 1000, t1) == 0 && sector_ok(pl, 1000, 0xD1) && bdread_t(0, 1, 0, t0) == 0,
+          "the running system goes on with its tokens");
+
+    /* the image was replaced on the stick while it was out: new token */
+    unmount_drive();
+    f_mount(&fatfs, "", 1);
+    CHECK(f_unlink("IMAGES/DOS.IMG") == FR_OK && make_image("FILLER.TMP", 1, 0, NULL, NULL, 0) &&
+          make_image("IMAGES/DOS.IMG", 2880, 0x12, NULL, NULL, 0), "floppy image rewritten elsewhere");
+    f_unmount("");
+    mount_drive();
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.token != t0 && (i.flags & BD_FLAG_CHANGED) &&
+          i.gen == (uint8_t)(g0 + 1), "different file: new token, media change (gen %u)", i.gen);
+    CHECK(bdread_t(0, 1, 0, t0) == BD_ST_CHANGED, "old floppy token -> 06h");
+    CHECK(bdread(0, 1, 7) == 0 && sector_ok(pl, 7, 0x12), "new content");
+
     /* a floppy swap while unplugged is remembered */
+    unmount_drive();
     set_name(0, "Long Image Name.img");
     CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_NODRIVE && strcmp(i.name, "\\Long Image Name.img") == 0, "swap while unplugged");
     mount_drive();
-    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.total == 1440 && (i.flags & BD_FLAG_CHANGED),
+    CHECK(get_info(0, 0, &i) == 0 && i.state == BD_STATE_READY && i.total == 1440,
           "remount opens the new floppy: state %u total %u flags %02X", i.state, i.total, i.flags);
-    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_READY && i.total == 32768, "and the hard disk");
+    CHECK(get_info(1, 0, &i) == 0 && i.state == BD_STATE_READY && i.total == 32768 && i.token == t1, "and the hard disk");
     CHECK(bdread(1, 1, 1000) == 0 && sector_ok(pl, 1000, 0xD1), "hard disk content survived");
     /* PGDFS's own requests still behave */
     CHECK(frame(0, 0xF0, (const uint8_t *)"echo", 4) == 0 && ans_len == 4, "ECHO");
@@ -935,7 +1174,10 @@ int main(void) {
         test_harddisk();
         test_interlock();
         test_fastseek_and_faults();
+        test_tokens();
+        test_sync();
         test_unmount();
+        test_card_reboot();
     }
     unmount_drive();
     ramdisk_free();

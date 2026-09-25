@@ -17,7 +17,13 @@
  *
  *  Each unit keeps its image open in its own FIL with a fast seek cluster
  *  link map, so a random sector read costs one seek in the map instead of a
- *  walk down the FAT chain. Writes are synced before the answer.
+ *  walk down the FAT chain. Written sectors reach the drive before the
+ *  answer; the directory entry follows when the unit goes idle.
+ *
+ *  Safety against serving the wrong disk: after a card boot no unit opens
+ *  until the ROM asks (BDINFO OPEN), and every BDREAD/BDWRITE carries the
+ *  image token from BDINFO, which covers the card boot (nonce), the explicit
+ *  open and the file itself.
  *
  *  Portable C: no Pico SDK headers, so the host tests and the emulator's
  *  card simulator build the same file.
@@ -38,6 +44,7 @@
 #include "ff.h"
 #include "bootdisk.h"
 #include "bd_geometry.h"
+#include "../dfs/dfs_server.h"         /* dfs_platform_millis() */
 
 #if FF_FS_READONLY || FF_MAX_SS != 512
 #error "PGBOOT needs FatFs with write support and 512-byte sectors"
@@ -50,11 +57,30 @@
 #define BD_PATH_BUF     (BD_NAME_BUF + 1)
 #define BD_SFN_BUF      (BD_NAME_BUF + 48)
 
-/* Fast seek cluster link map sizes (DWORDs): 2 per fragment + 2. A floppy
- * image is small and rarely fragmented; a hard disk image gets more room.
- * An image with more fragments falls back to plain f_lseek(). */
-#define BD_CLMT_FD      16
-#define BD_CLMT_HD      64
+/* Fast seek cluster link maps (CLMT) come from one pool shared by the two
+ * units, each map sized to what its file needs: 2 DWORDs per fragment + 2.
+ * The floppy may take at most BD_CLMT_FD_MAX of it; a floppy image whose map
+ * does not fit is served with plain seeks, which walk its short FAT chain
+ * (at most 2.88 MB). A hard disk image whose map does not fit the rest of
+ * the pool is refused (BD_STATE_FRAGMENTED): walking the chain of a large
+ * image on every seek would stall core 1 for too long. */
+#define BD_CLMT_POOL    512             /* DWORDs: 2 KB, about 250 fragments */
+#define BD_CLMT_FD_MAX  128             /* DWORDs: 63 fragments */
+
+/* Write-back of the directory entry (time stamp, archive bit): data sectors
+ * go straight to the drive in f_write(); the entry is synced on the first
+ * write after an open, then once the unit has been idle this long. */
+#define BD_SYNC_IDLE_MS 1000
+
+/* FatFs private FIL.flag bits (ff.c). FA_DIRTY: the FIL's sector buffer
+ * holds data not yet written; whole-sector aligned writes never set it,
+ * checked anyway. FA_MODIFIED: the directory entry needs a write-back. */
+#ifndef FA_DIRTY
+#define FA_DIRTY        0x80
+#endif
+#ifndef FA_MODIFIED
+#define FA_MODIFIED     0x40            /* FatFs private: the entry needs a write-back */
+#endif
 
 /* ---- core 0 state (register handlers) ------------------------------------- */
 
@@ -72,8 +98,15 @@ typedef struct {
     bool      file_ro;          /* opened read-only (AM_RDO attribute or write-protected) */
     bool      vhd;              /* fixed VHD: the footer is not part of the disk */
     bool      changed;          /* media changed since the last BDINFO */
+    bool      sync_pending;     /* written since the last f_sync() */
+    bool      synced_once;      /* f_sync() done since the open */
     uint8_t   state;            /* BD_STATE_* */
     uint8_t   gen;              /* media generation */
+    uint16_t  clmt_off;         /* the unit's link map in clmt_pool, 0 DWORDs = none */
+    uint16_t  clmt_len;
+    uint32_t  epoch;            /* explicit (re)opens: BDINFO OPEN, floppy commit */
+    uint32_t  token;            /* image token of the last open image (kept across an unplug) */
+    uint32_t  last_write_ms;
     uint32_t  applied_seq;      /* commit_seq value the path was copied at */
     bd_geom_t geom;
     char      path[BD_PATH_BUF];/* active image path, normalised; "" = none */
@@ -82,9 +115,9 @@ typedef struct {
 
 static bd_unit_t units[BD_UNITS];
 static bool      mounted;
+static uint32_t  boot_nonce;
 #if FF_USE_FASTSEEK
-static DWORD     clmt_fd[BD_CLMT_FD];
-static DWORD     clmt_hd[BD_CLMT_HD];
+static DWORD     clmt_pool[BD_CLMT_POOL];
 #endif
 static FILINFO   fno;               /* 8.3 alias lookup */
 static bd_sec0_t sec0;              /* identification scratch */
@@ -187,25 +220,117 @@ static void fetch_name(int u) {
     un->applied_seq = s;
 }
 
-static void forget_image(bd_unit_t *un) {
-    un->open = false;
-    un->file_ro = false;
-    un->vhd = false;
-    un->sfn[0] = 0;
-    memset(&un->geom, 0, sizeof(un->geom));
+/* ---- fast seek link map pool -------------------------------------------------- */
+
+/* Invariant: a unit holding a map has it at clmt_off with clmt_len > 0, and
+ * when only one map exists it starts at 0; a new map goes right after the
+ * existing one. Releasing the lower map moves the upper one down (the maps
+ * hold cluster numbers only, and core 1 is between FatFs calls here). */
+static void clmt_release(int u) {
 #if FF_USE_FASTSEEK
+    bd_unit_t *un = &units[u], *ot = &units[1 - u];
+    if (un->clmt_len && ot->clmt_len && ot->clmt_off > un->clmt_off) {
+        memmove(&clmt_pool[un->clmt_off], &clmt_pool[ot->clmt_off], (size_t)ot->clmt_len * sizeof(DWORD));
+        ot->clmt_off = un->clmt_off;
+        ot->fil.cltbl = &clmt_pool[ot->clmt_off];
+    }
+    un->clmt_off = 0;
+    un->clmt_len = 0;
     un->fil.cltbl = NULL;
+#else
+    (void)u;
 #endif
 }
 
-static void close_image(bd_unit_t *un) {
-    if (un->open && mounted) f_close(&un->fil);     /* never dirty: every write is synced */
-    forget_image(un);
+/* Build unit u's map. BD_STATE_READY, BD_STATE_FRAGMENTED (hard disk map
+ * does not fit) or BD_STATE_UNUSABLE (disk error). */
+static uint8_t clmt_build(int u) {
+#if FF_USE_FASTSEEK
+    bd_unit_t *un = &units[u], *ot = &units[1 - u];
+    uint32_t off = ot->clmt_len ? (uint32_t)ot->clmt_off + ot->clmt_len : 0;
+    uint32_t room = BD_CLMT_POOL - off;
+    DWORD *tbl = &clmt_pool[off];
+    FRESULT fr;
+
+    if (u == BD_UNIT_FD && room > BD_CLMT_FD_MAX) room = BD_CLMT_FD_MAX;
+    if (room < 4) {                         /* not even one fragment */
+        un->fil.cltbl = NULL;
+        return (u == BD_UNIT_FD) ? BD_STATE_READY : BD_STATE_FRAGMENTED;
+    }
+    tbl[0] = room;
+    un->fil.cltbl = tbl;
+    fr = f_lseek(&un->fil, CREATE_LINKMAP);
+    if (fr == FR_OK) {
+        un->clmt_off = (uint16_t)off;
+        un->clmt_len = (uint16_t)tbl[0];    /* DWORDs used, terminator included */
+        return BD_STATE_READY;
+    }
+    un->fil.cltbl = NULL;
+    if (fr == FR_NOT_ENOUGH_CORE) {         /* tbl[0] = what it would need */
+        return (u == BD_UNIT_FD) ? BD_STATE_READY : BD_STATE_FRAGMENTED;
+    }
+    return BD_STATE_UNUSABLE;
+#else
+    (void)u;
+    return BD_STATE_READY;
+#endif
+}
+
+/* ---- open / close -------------------------------------------------------------- */
+
+static void forget_image(int u) {
+    bd_unit_t *un = &units[u];
+    clmt_release(u);
+    un->open = false;
+    un->file_ro = false;
+    un->vhd = false;
+    un->sync_pending = false;
+    un->synced_once = false;
+    un->sfn[0] = 0;
+    memset(&un->geom, 0, sizeof(un->geom));
+}
+
+static void close_image(int u) {
+    bd_unit_t *un = &units[u];
+    /* f_close() writes back the directory entry of a written image */
+    if (un->open && mounted) f_close(&un->fil);
+    forget_image(u);
 }
 
 static void media_changed(bd_unit_t *un) {
     un->gen++;
     un->changed = true;
+}
+
+static uint32_t fnv(uint32_t h, const void *p, size_t n) {
+    const uint8_t *b = (const uint8_t *)p;
+    while (n--) {
+        h ^= *b++;
+        h *= 16777619u;
+    }
+    return h;
+}
+
+static uint32_t fnv32(uint32_t h, uint32_t v) {
+    uint8_t b[4];
+    put32(b, v);
+    return fnv(h, b, 4);
+}
+
+/* Identifies this card boot, this unit, this explicit open and this file. */
+static uint32_t make_token(int u) {
+    const bd_unit_t *un = &units[u];
+    uint32_t h = 2166136261u;
+    h = fnv32(h, boot_nonce);
+    h = fnv32(h, (uint32_t)u);
+    h = fnv32(h, un->epoch);
+    for (const char *p = un->path; *p; p++) {
+        char c = upper(*p);
+        h = fnv(h, &c, 1);
+    }
+    h = fnv32(h, (uint32_t)un->fil.obj.sclust);
+    h = fnv32(h, (uint32_t)f_size(&un->fil));
+    return h ? h : 1;
 }
 
 static bool read_at(FIL *fp, uint32_t ofs, void *dst, UINT len) {
@@ -214,7 +339,8 @@ static bool read_at(FIL *fp, uint32_t ofs, void *dst, UINT len) {
     return f_read(fp, dst, len, &br) == FR_OK && br == len;
 }
 
-/* Recognise the open image of unit u: format, data size and geometry. */
+/* Recognise the open image of unit u: format, data size and geometry.
+ * The link map is already built, so the reads here seek through it. */
 static bool identify(int u) {
     bd_unit_t *un = &units[u];
     FIL *fp = &un->fil;
@@ -223,21 +349,6 @@ static bool identify(int u) {
     int kind = BD_VHD_NONE;
     bool have_sec0 = false, ok;
 
-#if FF_USE_FASTSEEK
-    {
-        DWORD *tbl = (u == BD_UNIT_FD) ? clmt_fd : clmt_hd;
-        FRESULT fr;
-        tbl[0] = (u == BD_UNIT_FD) ? BD_CLMT_FD : BD_CLMT_HD;
-        fp->cltbl = tbl;
-        fr = f_lseek(fp, CREATE_LINKMAP);
-        if (fr == FR_NOT_ENOUGH_CORE) {
-            fp->cltbl = NULL;           /* too fragmented for the map: plain seeks */
-        } else if (fr != FR_OK) {
-            fp->cltbl = NULL;
-            return false;
-        }
-    }
-#endif
     memset(&vhd, 0, sizeof(vhd));
     if (size >= 2 * BD_SECTOR && (size % BD_SECTOR) == 0) {
         /* the footer in pieces: bytes 128..511 for the checksum, then the head */
@@ -298,13 +409,13 @@ static void build_sfn(bd_unit_t *un) {
     }
 }
 
-/* Close unit u and open its active path again. Always a media change. */
-static void reopen(int u) {
+/* Open unit u's active path (closed before). Sets state and token. */
+static void open_image(int u) {
     bd_unit_t *un = &units[u];
     FRESULT fr;
+    uint8_t st;
 
-    close_image(un);
-    media_changed(un);
+    un->token = 0;
     if (un->path[0] == 0) {
         un->state = BD_STATE_NONE;
         return;
@@ -326,13 +437,29 @@ static void reopen(int u) {
     }
     un->open = true;
     if (un->fil.obj.attr & AM_RDO) un->file_ro = true;
-    if (!identify(u)) {
-        close_image(un);
-        un->state = BD_STATE_UNUSABLE;
+    st = clmt_build(u);
+    if (st == BD_STATE_READY && !identify(u)) st = BD_STATE_UNUSABLE;
+    if (st != BD_STATE_READY) {
+        close_image(u);
+        un->state = st;
         return;
     }
     build_sfn(un);
+    un->token = make_token(u);
     un->state = BD_STATE_READY;
+}
+
+/* Close unit u and open its active path again. explicit: a BDINFO OPEN or a
+ * floppy commit, always a media change and a new token; otherwise a USB
+ * replug, a change only when the image differs from the one before. */
+static void reopen(int u, bool explicit) {
+    bd_unit_t *un = &units[u];
+    uint32_t before = un->token;
+
+    close_image(u);
+    if (explicit) un->epoch++;
+    open_image(u);
+    if (explicit || un->token != before) media_changed(un);
 }
 
 /* ---- setup ------------------------------------------------------------------ */
@@ -350,12 +477,18 @@ void bd_init(char *fd_name, char *hd_name, uint8_t *opts) {
         wr_pos[u] = 0;
         rd_pos[u] = 0;
         commit_seq[u] = 0;
+        /* Nothing is armed after a card boot: a running system whose card
+         * rebooted must not be handed an image it did not boot with, so a
+         * unit only opens at the ROM's BDINFO with OPEN (or a floppy commit). */
         memset(&units[u], 0, sizeof(units[u]));
-        fetch_name(u);
-        units[u].state = units[u].path[0] ? BD_STATE_NODRIVE : BD_STATE_NONE;
+        units[u].state = BD_STATE_NONE;
     }
     if (opts) *opts &= BD_OPT_MASK;
     mounted = false;
+}
+
+void bd_set_boot_nonce(uint32_t nonce) {
+    boot_nonce = nonce;
 }
 
 /* ---- core 1 hooks ------------------------------------------------------------- */
@@ -365,30 +498,43 @@ void bd_tasks(void) {
      * for the next BDINFO with OPEN (the next boot). */
     if (commit_seq[BD_UNIT_FD] != units[BD_UNIT_FD].applied_seq) {
         fetch_name(BD_UNIT_FD);
-        reopen(BD_UNIT_FD);
+        reopen(BD_UNIT_FD, true);
+    }
+    for (int u = 0; u < BD_UNITS; u++) {
+        bd_unit_t *un = &units[u];
+        uint32_t now;
+        if (!un->open || !un->sync_pending) continue;
+        now = dfs_platform_millis();
+        if ((uint32_t)(now - un->last_write_ms) < BD_SYNC_IDLE_MS) continue;
+        if (f_sync(&un->fil) == FR_OK) {
+            un->sync_pending = false;
+        } else {
+            /* try again after another idle period; FatFs dropped its
+             * "entry modified" mark although the write-back failed */
+            un->fil.err = 0;
+            un->fil.flag |= FA_MODIFIED;
+            un->last_write_ms = now;
+        }
     }
 }
 
 void bd_on_drive_mounted(void) {
     mounted = true;
+    /* reopen exactly the units that were in use before the unplug */
     for (int u = 0; u < BD_UNITS; u++) {
-        if (units[u].path[0]) reopen(u);
+        if (units[u].path[0]) reopen(u, false);
     }
 }
 
 void bd_on_drive_unmounted(void) {
     /* The volume is gone: forget the FILs, no FatFs call. Only marks state,
-     * so it is safe even if it ever runs underneath bd_process(). */
+     * so it is safe even if it ever runs underneath bd_process(). The token
+     * is kept: a replug of the same stick reopens the same image. */
     mounted = false;
     for (int u = 0; u < BD_UNITS; u++) {
         bd_unit_t *un = &units[u];
-        forget_image(un);
-        if (un->path[0]) {
-            un->state = BD_STATE_NODRIVE;
-            media_changed(un);
-        } else {
-            un->state = BD_STATE_NONE;
-        }
+        forget_image(u);
+        un->state = un->path[0] ? BD_STATE_NODRIVE : BD_STATE_NONE;
     }
 }
 
@@ -421,13 +567,18 @@ static uint16_t do_info(const uint8_t *req, uint16_t req_len, uint8_t *answ, uin
     u = req[0];
     if (req_len >= 2 && (req[1] & BD_INFO_OPEN)) {
         fetch_name(u);
-        reopen(u);
+        reopen(u, true);
     }
     un = &units[u];
 
     memset(rec, 0, sizeof(rec));
     rec[BD_INFO_OFF_VERSION] = BD_INFO_VERSION;
     rec[BD_INFO_OFF_STATE] = un->state;
+    /* Before the first OPEN after a card boot the unit reads NONE; while no
+     * USB drive is mounted and an image is configured, say NODRIVE instead,
+     * so the ROM's wait loop (BDINFO without OPEN) keeps waiting. */
+    if (!mounted && un->state == BD_STATE_NONE && cfg_name[u] && cfg_name[u][0])
+        rec[BD_INFO_OFF_STATE] = BD_STATE_NODRIVE;
     if (un->state != BD_STATE_NONE) {
         rec[BD_INFO_OFF_TYPE] = (u == BD_UNIT_FD) ? BD_TYPE_FLOPPY : BD_TYPE_HARDDISK;
         if (unit_ro(u)) flags |= BD_FLAG_RO;
@@ -441,6 +592,7 @@ static uint16_t do_info(const uint8_t *req, uint16_t req_len, uint8_t *answ, uin
     put32(rec + BD_INFO_OFF_TOTAL, un->geom.total);
     rec[BD_INFO_OFF_DRVTYPE] = un->geom.drive_type;
     rec[BD_INFO_OFF_GEN] = un->gen;
+    if (un->state == BD_STATE_READY) put32(rec + BD_INFO_OFF_TOKEN, un->token);
     un->changed = false;
 
     n = display_name(un, name);
@@ -456,13 +608,14 @@ static uint16_t do_info(const uint8_t *req, uint16_t req_len, uint8_t *answ, uin
 static uint16_t check_io(const uint8_t *req, uint16_t req_len, bool write, uint16_t maxpl,
                          bd_unit_t **un_out, uint32_t *ofs, uint32_t *len) {
     uint8_t u, nn;
-    uint32_t lba, total;
+    uint32_t lba, total, token;
     bd_unit_t *un;
 
     if (req_len < BD_IO_HDR_LEN) return BD_ST_BADCMD;
     u = req[0];
     nn = req[1];
     lba = get32(req + 2);
+    token = get32(req + 6);
     if (u >= BD_UNITS || nn == 0) return BD_ST_BADCMD;
     *len = (uint32_t)nn * BD_SECTOR;
     if (write) {
@@ -472,6 +625,10 @@ static uint16_t check_io(const uint8_t *req, uint16_t req_len, bool write, uint1
     }
     un = &units[u];
     if (un->state != BD_STATE_READY || !un->open) return BD_ST_NOTREADY;
+    /* not the image the caller got from BDINFO: a floppy swap is a media
+     * change the ROM reports to DOS; a hard disk must never change under a
+     * running system */
+    if (token != un->token) return (u == BD_UNIT_FD) ? BD_ST_CHANGED : BD_ST_NOTREADY;
     if (write && unit_ro(u)) return BD_ST_WRPROT;
     total = un->geom.total;
     if (lba >= total || nn > total - lba) return BD_ST_NOSECTOR;
@@ -518,8 +675,23 @@ static uint16_t do_write(const uint8_t *req, uint16_t req_len, uint16_t *ax) {
     fr = f_lseek(&un->fil, ofs);
     if (fr == FR_OK) fr = f_write(&un->fil, req + BD_IO_HDR_LEN, (UINT)len, &bw);
     if (fr == FR_OK && bw != len) fr = FR_DISK_ERR;     /* never extends: cannot run out of space */
-    if (fr == FR_OK) fr = f_sync(&un->fil);
-    if (fr != FR_OK || !un->open) *ax = io_failed(un);
+    /* Whole aligned sectors go straight to the drive (FatFs's direct path
+     * refreshes, never dirties, the FIL's sector buffer), so what is left is
+     * the directory entry: synced on the first write, then when idle. */
+    if (fr == FR_OK && (!un->synced_once || (un->fil.flag & FA_DIRTY))) {
+        fr = f_sync(&un->fil);
+        if (fr == FR_OK) un->synced_once = true;
+    }
+    if (fr != FR_OK || !un->open) {
+        *ax = io_failed(un);
+        if (un->open) {                     /* the entry is written back later */
+            un->fil.flag |= FA_MODIFIED;
+            un->sync_pending = true;
+        }
+    } else if (un->fil.flag & FA_MODIFIED) {
+        un->sync_pending = true;            /* bd_tasks() syncs when idle */
+    }
+    un->last_write_ms = dfs_platform_millis();
     return 0;
 }
 

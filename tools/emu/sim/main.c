@@ -209,8 +209,9 @@ static void log_request(void) {
     if (sim_log_level < 1) return;
     if (al == 0xF4 || al == 0xF5) {
         uint32_t lba = (uint32_t)(pl[2] | (pl[3] << 8) | (pl[4] << 16) | ((uint32_t)pl[5] << 24));
-        logmsg("REQ #%u %-9s len=%u unit=%u count=%u lba=%u (%u bytes streamed)",
-               frame_no, al_name(al), len, pl[0], pl[1], lba, req_bytes);
+        uint32_t tok = (uint32_t)(pl[6] | (pl[7] << 8) | (pl[8] << 16) | ((uint32_t)pl[9] << 24));
+        logmsg("REQ #%u %-9s len=%u unit=%u count=%u lba=%u token=%08x (%u bytes streamed)",
+               frame_no, al_name(al), len, pl[0], pl[1], lba, tok, req_bytes);
     } else if (al == 0xF3) {
         logmsg("REQ #%u %-9s len=%u unit=%u flags=%02x (%u bytes streamed)",
                frame_no, al_name(al), len, pl[0], pl[1], req_bytes);
@@ -568,6 +569,8 @@ int main(int argc, char **argv) {
 
     /* card boot, core 0: settings, then the servers (before core 1 starts) */
     bd_init(bd_fd_name, bd_hd_name, &bd_opts);
+    /* per-boot nonce for the image tokens: a new sim process is a new card boot */
+    bd_set_boot_nonce((uint32_t)time(NULL) ^ ((uint32_t)getpid() << 16) ^ (uint32_t)now_ms());
     dfs_init();
 
     int lfd = socket(AF_UNIX, SOCK_STREAM, 0);
