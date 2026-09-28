@@ -1501,7 +1501,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 90.805 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -1574,7 +1574,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "THT: Vishay K222J15C0GF5TH5 (DK BC1050CT-ND, 1744). 0805 SMD: Yageo CC0805JRNPO9BN222 (DK 311-1103-1-ND, 126390) / CC0805JKNPO9BN222 (LCSC C107103, 165360)."
+		(property "Alternatives" "Vishay K222J15C0GF5TH5 (DK BC1050CT-ND, 1744)."
 			(at 90.805 50.8 0)
 			(hide yes)
 			(effects
@@ -1630,7 +1630,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 22.86 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -1694,16 +1694,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 22.86 47.625 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 22.86 47.625 0)
 			(hide yes)
 			(effects
@@ -1759,7 +1749,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 80.01 66.04 0)
 			(hide yes)
 			(show_name no)
@@ -1823,16 +1813,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 80.01 66.04 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 80.01 66.04 0)
 			(hide yes)
 			(effects
@@ -1891,7 +1871,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 77.47 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -1964,16 +1944,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD: Samsung CL21A225KAFNNNE 25V X5R (DK 1276-1763-1-ND, 83806; LCSC C87994, 38740)."
-			(at 77.47 57.15 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "f0bee376-e2e7-49b4-b3f2-3f109f522452")
 		)
@@ -2020,7 +1990,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 90.805 43.18 0)
 			(hide yes)
 			(show_name no)
@@ -2093,7 +2063,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "THT: Vishay K222J15C0GF5TH5 (DK BC1050CT-ND, 1744). 0805 SMD: Yageo CC0805JRNPO9BN222 (DK 311-1103-1-ND, 126390) / CC0805JKNPO9BN222 (LCSC C107103, 165360)."
+		(property "Alternatives" "Vishay K222J15C0GF5TH5 (DK BC1050CT-ND, 1744)."
 			(at 90.805 43.18 0)
 			(hide yes)
 			(effects
@@ -2305,7 +2275,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 27.305 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -2378,16 +2348,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
-			(at 27.305 47.625 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "d893dd8e-d8fd-4777-8bf8-0018fdb61861")
 		)
@@ -2436,7 +2396,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 36.195 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -2509,16 +2469,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD 25V X5R: Taiyo Yuden EMK212BJ106KG-T (DK 587-1295-1-ND, 1864) or Samsung CL21A106KAYNNNE (LCSC C15850, 878060)."
-			(at 36.195 47.625 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "bc1a640a-b7c1-4ad4-b14f-2118528fe45b")
 		)
@@ -2568,7 +2518,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 77.47 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -2632,16 +2582,6 @@
 			)
 		)
 		(property "LCSC" "C1623182"
-			(at 77.47 71.12 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD: Samsung CL21A225KAFNNNE 25V X5R (DK 1276-1763-1-ND, 83806; LCSC C87994, 38740)."
 			(at 77.47 71.12 0)
 			(hide yes)
 			(effects
@@ -3114,7 +3054,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 80.01 48.26 0)
 			(hide yes)
 			(show_name no)
@@ -3178,16 +3118,6 @@
 			)
 		)
 		(property "LCSC" "C58592 (UNI-ROYAL MFR0W4F4700A50)"
-			(at 80.01 48.26 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07470RL (DK 311-470CRCT-ND, 109044), UNI-ROYAL 0805W8F (LCSC C17710, 2072700)."
 			(at 80.01 48.26 0)
 			(hide yes)
 			(effects
@@ -3475,7 +3405,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 31.75 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -3539,16 +3469,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 31.75 47.625 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 31.75 47.625 0)
 			(hide yes)
 			(effects
@@ -3760,7 +3680,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 80.01 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -3824,16 +3744,6 @@
 			)
 		)
 		(property "LCSC" "C58592 (UNI-ROYAL MFR0W4F4700A50)"
-			(at 80.01 45.72 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07470RL (DK 311-470CRCT-ND, 109044), UNI-ROYAL 0805W8F (LCSC C17710, 2072700)."
 			(at 80.01 45.72 0)
 			(hide yes)
 			(effects

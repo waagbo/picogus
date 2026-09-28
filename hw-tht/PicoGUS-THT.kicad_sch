@@ -9,7 +9,7 @@
 		(date "2026-09-28")
 		(rev "v1.3.0")
 		(comment 1 "Through-hole variant of PicoGUS v1.2 with Waveblaster header")
-		(comment 2 "DIP logic footprints also accept a TSSOP (hybrid footprints)")
+		(comment 2 "Through-hole parts only; U3/U4, U8 and U9 exist in SMD only")
 	)
 	(lib_symbols
 		(symbol "74FST3257DR2G_1"
@@ -17069,7 +17069,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 240.792 144.145 90)
 			(hide yes)
 			(show_name no)
@@ -17142,16 +17142,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-071KL (DK 311-1.00KCRCT-ND, 732526), UNI-ROYAL 0805W8F (LCSC C17513, 26812400)."
-			(at 242.57 144.145 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "c588f339-d5b3-44e4-b1cc-37a594f8e08c")
 		)
@@ -17201,7 +17191,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 266.192 144.145 90)
 			(hide yes)
 			(show_name no)
@@ -17265,16 +17255,6 @@
 			)
 		)
 		(property "LCSC" "C3556390"
-			(at 267.97 144.145 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0715KL (DK 311-15.0KCRCT-ND, 127426), UNI-ROYAL 0805W8F (LCSC C17475, 524100)."
 			(at 267.97 144.145 0)
 			(hide yes)
 			(effects
@@ -18185,7 +18165,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 63.8302 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -18258,16 +18238,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD: Yageo CC0805KKX7R9BB105 (DK 311-1886-1-ND, 82107; LCSC C91185, 809080)."
-			(at 62.865 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "d7122cf5-d6f6-4e24-960c-f6ad0cdb01b6")
 		)
@@ -18315,7 +18285,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 240.03 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -18337,7 +18307,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 240.03 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -18378,17 +18348,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 240.03 42.545 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 240.03 42.545 0)
 			(hide yes)
 			(effects
@@ -18559,7 +18519,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 53.6702 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -18632,16 +18592,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
-			(at 52.705 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "e6bad0fc-adb0-42fd-927f-4c221cb77bc7")
 		)
@@ -18689,7 +18639,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 187.96 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -18711,7 +18661,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 187.96 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -18752,17 +18702,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 187.96 134.62 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 187.96 134.62 0)
 			(hide yes)
 			(effects
@@ -18934,7 +18874,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-20_W7.62mm_TSSOP-20_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-20_W7.62mm"
 			(at 132.715 131.445 0)
 			(hide yes)
 			(show_name no)
@@ -18956,7 +18896,7 @@
 				)
 			)
 		)
-		(property "Description" "Octal buffer, 3V3, 5V-tolerant inputs. DIP-20 or TSSOP-20 (74LVC244A)"
+		(property "Description" "Octal buffer, 3V3, 5V-tolerant inputs"
 			(at 132.715 131.445 0)
 			(hide yes)
 			(show_name no)
@@ -18997,7 +18937,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7668 (SN74LVC244APWR (TSSOP-20, fits the pads beside the DIP))"
+		(property "LCSC" "C1548228"
 			(at 132.715 131.445 0)
 			(hide yes)
 			(effects
@@ -19007,7 +18947,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC244N-ND (9380). TSSOP at DigiKey: SN74AHC244PWR 296-1097-1-ND (19811). LCSC DIP SN74AHC244N C1548228 has 0 stock."
+		(property "Alternatives" "Rochester 2156-SN74AHC244N-ND (9380)."
 			(at 132.715 131.445 0)
 			(hide yes)
 			(effects
@@ -19271,7 +19211,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 28.2702 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -19344,16 +19284,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
-			(at 27.305 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "ed5a456d-0800-40d2-8c9c-8eb19a17344e")
 		)
@@ -19401,7 +19331,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 187.96 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -19423,7 +19353,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 187.96 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -19464,17 +19394,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 187.96 114.3 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 187.96 114.3 0)
 			(hide yes)
 			(effects
@@ -19898,7 +19818,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 33.3502 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -19971,16 +19891,6 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
-			(at 32.385 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(pin "1"
 			(uuid "1ef2245a-efc5-4dcf-80b9-4540c046169e")
 		)
@@ -20028,7 +19938,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 203.2 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -20050,7 +19960,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 203.2 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -20091,7 +20001,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 203.2 116.84 0)
 			(hide yes)
 			(effects
@@ -20101,7 +20011,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 203.2 116.84 0)
 			(hide yes)
 			(effects
@@ -20194,7 +20104,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 240.665 132.715 0)
 			(hide yes)
 			(show_name no)
@@ -20216,7 +20126,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 240.665 132.715 0)
 			(hide yes)
 			(show_name no)
@@ -20257,17 +20167,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 240.665 132.715 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 240.665 132.715 0)
 			(hide yes)
 			(effects
@@ -20360,7 +20260,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 255.905 135.255 0)
 			(hide yes)
 			(show_name no)
@@ -20382,7 +20282,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 255.905 135.255 0)
 			(hide yes)
 			(show_name no)
@@ -20423,7 +20323,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 255.905 135.255 0)
 			(hide yes)
 			(effects
@@ -20433,7 +20333,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 255.905 135.255 0)
 			(hide yes)
 			(effects
@@ -20692,7 +20592,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 243.5352 159.385 0)
 			(hide yes)
 			(show_name no)
@@ -20756,16 +20656,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 242.57 155.575 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 242.57 155.575 0)
 			(hide yes)
 			(effects
@@ -21067,7 +20957,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 232.918 56.515 90)
 			(hide yes)
 			(show_name no)
@@ -21131,16 +21021,6 @@
 			)
 		)
 		(property "LCSC" "C3537012 (Yageo MFR-25FBF52-220R)"
-			(at 231.14 56.515 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07220RL (DK 311-220CRCT-ND, 420320), UNI-ROYAL 0805W8F (LCSC C17557, 569300)."
 			(at 231.14 56.515 0)
 			(hide yes)
 			(effects
@@ -21352,7 +21232,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 255.905 149.225 0)
 			(hide yes)
 			(show_name no)
@@ -21374,7 +21254,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 255.905 149.225 0)
 			(hide yes)
 			(show_name no)
@@ -21415,7 +21295,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 255.905 149.225 0)
 			(hide yes)
 			(effects
@@ -21425,7 +21305,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 255.905 149.225 0)
 			(hide yes)
 			(effects
@@ -22133,7 +22013,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 147.32 180.34 0)
 			(hide yes)
 			(show_name no)
@@ -22155,7 +22035,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 147.32 180.34 0)
 			(hide yes)
 			(show_name no)
@@ -22196,17 +22076,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 147.32 180.34 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 147.32 180.34 0)
 			(hide yes)
 			(effects
@@ -22377,7 +22247,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 95.885 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -22399,7 +22269,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 95.885 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -22440,7 +22310,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 95.885 179.07 0)
 			(hide yes)
 			(effects
@@ -22450,7 +22320,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 95.885 179.07 0)
 			(hide yes)
 			(effects
@@ -23203,7 +23073,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 58.7502 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -23267,16 +23137,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 57.785 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 57.785 186.69 0)
 			(hide yes)
 			(effects
@@ -23642,7 +23502,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 224.79 72.263 90)
 			(hide yes)
 			(show_name no)
@@ -23706,16 +23566,6 @@
 			)
 		)
 		(property "LCSC" "C3537012 (Yageo MFR-25FBF52-220R)"
-			(at 224.79 70.485 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07220RL (DK 311-220CRCT-ND, 420320), UNI-ROYAL 0805W8F (LCSC C17557, 569300)."
 			(at 224.79 70.485 0)
 			(hide yes)
 			(effects
@@ -23849,7 +23699,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 219.837 155.575 90)
 			(hide yes)
 			(show_name no)
@@ -23913,16 +23763,6 @@
 			)
 		)
 		(property "LCSC" "C3556390"
-			(at 221.615 155.575 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0715KL (DK 311-15.0KCRCT-ND, 127426), UNI-ROYAL 0805W8F (LCSC C17475, 524100)."
 			(at 221.615 155.575 0)
 			(hide yes)
 			(effects
@@ -24056,7 +23896,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 203.2 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -24078,7 +23918,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 203.2 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -24119,7 +23959,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 203.2 132.08 0)
 			(hide yes)
 			(effects
@@ -24129,7 +23969,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 203.2 132.08 0)
 			(hide yes)
 			(effects
@@ -24343,7 +24183,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 229.235 151.765 0)
 			(hide yes)
 			(show_name no)
@@ -24365,7 +24205,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 229.235 151.765 0)
 			(hide yes)
 			(show_name no)
@@ -24406,17 +24246,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 229.235 151.765 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 229.235 151.765 0)
 			(hide yes)
 			(effects
@@ -24784,7 +24614,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 162.687 121.92 90)
 			(hide yes)
 			(show_name no)
@@ -24848,16 +24678,6 @@
 			)
 		)
 		(property "LCSC" "C3556390"
-			(at 164.465 121.92 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0715KL (DK 311-15.0KCRCT-ND, 127426), UNI-ROYAL 0805W8F (LCSC C17475, 524100)."
 			(at 164.465 121.92 0)
 			(hide yes)
 			(effects
@@ -24981,7 +24801,7 @@
 				)
 			)
 		)
-		(property "Value" "1k@100MHz"
+		(property "Value" "Ferrite bead"
 			(at 236.22 66.675 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24991,7 +24811,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:FerriteBead_Axial_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal"
 			(at 232.41 72.263 90)
 			(hide yes)
 			(show_name no)
@@ -25013,7 +24833,7 @@
 				)
 			)
 		)
-		(property "Description" "Ferrite bead: axial THT bead, 0805 SMD bead, or wire link"
+		(property "Description" "Axial ferrite bead (bead on leads), MIDI out EMI filter"
 			(at 232.41 70.485 0)
 			(hide yes)
 			(show_name no)
@@ -25024,7 +24844,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Murata"
+		(property "Manufacturer" "Fair-Rite"
 			(at 232.41 70.485 0)
 			(hide yes)
 			(effects
@@ -25034,7 +24854,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "BLM21AG102SN1D"
+		(property "MPN" "2743002112"
 			(at 232.41 70.485 0)
 			(hide yes)
 			(effects
@@ -25044,7 +24864,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey" "490-1041-1-ND"
+		(property "DigiKey" "1934-1477-1-ND"
 			(at 232.41 70.485 0)
 			(hide yes)
 			(effects
@@ -25054,7 +24874,17 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C85835"
+		(property "LCSC" "C192455 (FH RH3.5x0.8x9P52E (100R@100MHz))"
+			(at 232.41 70.485 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "Fair-Rite 2761001112 (DK 1934-1423-1-ND, 33346). A wire link also works (slightly worse EMI)."
 			(at 232.41 70.485 0)
 			(hide yes)
 			(effects
@@ -25100,7 +24930,7 @@
 				)
 			)
 		)
-		(property "Value" "1k@100MHz"
+		(property "Value" "Ferrite bead"
 			(at 241.3 56.515 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -25110,7 +24940,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:FerriteBead_Axial_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal"
 			(at 240.03 62.103 90)
 			(hide yes)
 			(show_name no)
@@ -25132,7 +24962,7 @@
 				)
 			)
 		)
-		(property "Description" "Ferrite bead: axial THT bead, 0805 SMD bead, or wire link"
+		(property "Description" "Axial ferrite bead (bead on leads), MIDI out EMI filter"
 			(at 240.03 60.325 0)
 			(hide yes)
 			(show_name no)
@@ -25143,7 +24973,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Murata"
+		(property "Manufacturer" "Fair-Rite"
 			(at 240.03 60.325 0)
 			(hide yes)
 			(effects
@@ -25153,7 +24983,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "BLM21AG102SN1D"
+		(property "MPN" "2743002112"
 			(at 240.03 60.325 0)
 			(hide yes)
 			(effects
@@ -25163,7 +24993,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey" "490-1041-1-ND"
+		(property "DigiKey" "1934-1477-1-ND"
 			(at 240.03 60.325 0)
 			(hide yes)
 			(effects
@@ -25173,7 +25003,17 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C85835"
+		(property "LCSC" "C192455 (FH RH3.5x0.8x9P52E (100R@100MHz))"
+			(at 240.03 60.325 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "Fair-Rite 2761001112 (DK 1934-1423-1-ND, 33346). A wire link also works (slightly worse EMI)."
 			(at 240.03 60.325 0)
 			(hide yes)
 			(effects
@@ -25231,7 +25071,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 43.5102 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -25295,16 +25135,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 42.545 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 42.545 186.69 0)
 			(hide yes)
 			(effects
@@ -25439,7 +25269,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 48.5902 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -25503,16 +25333,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 47.625 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 47.625 186.69 0)
 			(hide yes)
 			(effects
@@ -25723,7 +25543,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 84.455 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -25745,7 +25565,7 @@
 				)
 			)
 		)
-		(property "Description" "Hex Schmitt inverter, 3V3. DIP-14 or TSSOP-14 (must be AHC)"
+		(property "Description" "Hex Schmitt inverter, 3V3"
 			(at 84.455 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -25786,17 +25606,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7460 (SN74AHC14PWR (TSSOP-14, fits inside the DIP))"
-			(at 84.455 179.07 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "LCSC 74AHC14PW,118 C138310 (4075); DigiKey TSSOP 74AHC14PW,118 1727-3988-1-ND (2565)."
+		(property "LCSC" "C2879116"
 			(at 84.455 179.07 0)
 			(hide yes)
 			(effects
@@ -26120,7 +25930,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 38.4302 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -26184,16 +25994,6 @@
 			)
 		)
 		(property "LCSC" "C527620"
-			(at 37.465 186.69 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 37.465 186.69 0)
 			(hide yes)
 			(effects
@@ -26749,7 +26549,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 179.07 124.46 0)
 			(hide yes)
 			(show_name no)
@@ -26771,7 +26571,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 179.07 124.46 0)
 			(hide yes)
 			(show_name no)
@@ -26815,7 +26615,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 179.07 124.46 0)
 			(hide yes)
 			(show_name no)
@@ -26826,7 +26626,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 179.07 124.46 0)
 			(hide yes)
 			(effects
@@ -26887,7 +26687,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 109.22 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -26909,7 +26709,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad NAND, 3V3. DIP-14 or TSSOP-14 (74AHC00/74LVC00A)"
+		(property "Description" "Quad NAND, 3V3"
 			(at 109.22 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -26953,7 +26753,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHC00N-ND (21358). DigiKey TSSOP SN74LVC00APWR 296-1216-1-ND (1292) or 74LVC00APW,118 1727-3086-1-ND."
+		(property "Alternatives" "Rochester 2156-SN74AHC00N-ND (21358)."
 			(at 109.22 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -26964,7 +26764,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C7803 (SN74LVC00APWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C2879122"
 			(at 109.22 179.07 0)
 			(hide yes)
 			(effects
@@ -27020,7 +26820,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 186.69 155.575 0)
 			(hide yes)
 			(show_name no)
@@ -27042,7 +26842,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad 3-state buffer, active-high OE, +5V. DIP-14 or TSSOP-14"
+		(property "Description" "Quad 3-state buffer, active-high OE, +5V"
 			(at 186.69 155.575 0)
 			(hide yes)
 			(show_name no)
@@ -27086,7 +26886,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHCT126N-ND (58265). DigiKey TSSOP SN74AHCT126PWR 296-4660-1-ND (12850). LCSC 74AHCT126PW,118 C554511 (245)."
+		(property "Alternatives" "Rochester 2156-SN74AHCT126N-ND (58265)."
 			(at 186.69 155.575 0)
 			(hide yes)
 			(show_name no)
@@ -27097,7 +26897,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C155177 (SN74AHCT126PWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C1548378"
 			(at 186.69 155.575 0)
 			(hide yes)
 			(effects
@@ -27271,7 +27071,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:DIP-14_W7.62mm_TSSOP-14_Hybrid"
+		(property "Footprint" "Package_DIP:DIP-14_W7.62mm"
 			(at 267.97 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -27293,7 +27093,7 @@
 				)
 			)
 		)
-		(property "Description" "Quad 3-state buffer, active-high OE, +5V. DIP-14 or TSSOP-14"
+		(property "Description" "Quad 3-state buffer, active-high OE, +5V"
 			(at 267.97 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -27337,7 +27137,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "DIP also as Rochester 2156-SN74AHCT126N-ND (58265). DigiKey TSSOP SN74AHCT126PWR 296-4660-1-ND (12850). LCSC 74AHCT126PW,118 C554511 (245)."
+		(property "Alternatives" "Rochester 2156-SN74AHCT126N-ND (58265)."
 			(at 267.97 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -27348,7 +27148,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C155177 (SN74AHCT126PWR (TSSOP-14, fits inside the DIP))"
+		(property "LCSC" "C1548378"
 			(at 267.97 42.545 0)
 			(hide yes)
 			(effects
@@ -27567,7 +27367,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 280.67 30.48 0)
 			(hide yes)
 			(show_name no)
@@ -27623,17 +27423,6 @@
 			)
 		)
 		(property "DigiKey" "10.0KXBK-ND"
-			(at 280.67 30.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0710KL (DK 311-10.0KCRCT-ND, 2120333), UNI-ROYAL 0805W8F (LCSC C17414, 43352900)."
 			(at 280.67 30.48 0)
 			(hide yes)
 			(show_name no)
@@ -27803,7 +27592,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
 			(at 210.82 152.4 0)
 			(hide yes)
 			(show_name no)
@@ -27859,17 +27648,6 @@
 			)
 		)
 		(property "DigiKey" "100KXBK-ND"
-			(at 210.82 152.4 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07100KL (DK 311-100KCRCT-ND, 1068493), UNI-ROYAL 0805W8F (LCSC C149504, 3119100)."
 			(at 210.82 152.4 0)
 			(hide yes)
 			(show_name no)
