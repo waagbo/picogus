@@ -151,7 +151,7 @@ def resistor_axial_0805():
     fp = load('Resistor_THT', 'R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal')
     smd = load('Resistor_SMD', 'R_0805_2012Metric')
     merge_smd(fp, smd, 0, 5.08, 0, '0805')
-    bbox_courtyard(fp)
+    # the axial courtyard already covers the 0805 pads: keep it, so rows pack at the usual pitch
     finish(fp, 'R_Axial_DIN0207_P10.16mm_0805_Hybrid',
            'Hybrid resistor footprint: 1/4 W axial THT resistor (DIN0207, 10.16 mm pitch) OR an '
            '0805 SMD resistor between the holes. Fit ONE only.',
