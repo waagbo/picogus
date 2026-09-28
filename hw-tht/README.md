@@ -131,6 +131,13 @@ WT L (J9.24) -- 10uF (C22) --+-- RV1A --- 10k (R12)   +--|+ /
 * The `+3.3V` power symbols are renamed `+3V3`. KiCad 8+ names power nets after the symbol value, so the
   upgraded v1.2 sheets would otherwise have split the 3.3 V rail into two nets.
 * The symbol fields of U3/U4 now name the CB3T3257 that is actually used (the v1.2 fields still said 74FST3257DR2G).
+* **Layout is grouped by circuit block.** Each chip and its decoupling caps and resistors form a KiCad group,
+  so a block can be selected and moved as one: DAC (U9), Mixer + line out (U11, J8), WT volume (RV1),
+  Waveblaster header (J9), MIDI out (J5), Pico + power (U1), ISA bus switches (U3, U4), ISA buffer (U2),
+  74AHC14 (U5), 74AHC00 (U6, U7), 74AHCT126 (U10), PSRAM (U8), IRQ/DMA jumpers (J1).
+* **Layout for audio quality:** every decoupling cap sits next to its chip's supply pin, with a short
+  return to GND. The PCM5102 is rotated so that its outputs, output RC filter (R7/R8, C19/C20) and the
+  mixer op-amp form one short, straight path to the line-out jack, away from the Pico and the ISA logic.
 
 ## Ordering
 
@@ -140,6 +147,8 @@ against findchips distributor data, and LCSC numbers against the LCSC product AP
 
 * **Logic ICs (U2, U5, U6, U7, U10): order from DigiKey.** LCSC lists the DIPs, but has 0–74 in stock.
   Everything else is available from both.
+* **DigiKey BOM cost** (2026-09-28, parts only, no PCB): about **$50** for one board, or about **$38 per
+  board** for a 10-board order. The optional parts add about $4.
 * **Ceramic capacitors must have 5.0 mm (or 5.08 mm) lead pitch.** 2.5 mm parts don't fit (e.g. TDK FG1x, Vishay K…L2).
 
 Mistakes found in the v1.2 BOM/JLCPCB data (don't copy these from the v1.2 files):
