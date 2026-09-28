@@ -133,20 +133,6 @@ def dip20_tssop20():
     return dip
 
 
-def cap_disc_dual_pitch():
-    """Radial MLCC footprint taking either 2.5 mm or 5.0 mm lead spacing (3 holes)."""
-    fp = load('Capacitor_THT', 'C_Disc_D5.0mm_W2.5mm_P5.00mm')
-    p2 = [p for p in fp.Pads() if p.GetNumber() == '2'][0]
-    extra = pcbnew.PAD(p2)
-    extra.SetParent(fp)
-    extra.SetPosition(VECTOR2I(FromMM(2.5), 0))
-    fp.Add(extra)
-    finish(fp, 'C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm',
-           'Radial ceramic capacitor, D5.0 x W2.5 mm body, accepts 2.5 mm OR 5.0 mm lead spacing '
-           '(pin 2 has two holes)', 'C disc radial ceramic MLCC 2.5 5.0 dual pitch')
-    return fp
-
-
 def ferrite_axial_0805():
     """Axial THT bead/inductor (10.16 mm pitch) OR an 0805 bead OR a wire link."""
     fp = load('Resistor_THT', 'R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal')
@@ -173,11 +159,24 @@ def resistor_axial_0805():
     return fp
 
 
+def cap_disc_p5_0805():
+    """Radial ceramic capacitor on 5.0/5.08 mm pitch OR an 0805 SMD capacitor between the holes."""
+    fp = load('Capacitor_THT', 'C_Disc_D5.0mm_W2.5mm_P5.00mm')
+    smd = load('Capacitor_SMD', 'C_0805_2012Metric')
+    merge_smd(fp, smd, 0, 2.5, 0, '0805')
+    # the disc courtyard already covers the 0805 pads: keep it, so the footprint packs like a plain disc
+    finish(fp, 'C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid',
+           'Hybrid capacitor footprint: radial MLCC / ceramic disc on 5.0 or 5.08 mm lead pitch OR an 0805 '
+           'SMD capacitor between the holes. Fit ONE only.',
+           'capacitor disc radial 0805 hybrid THT SMD')
+    return fp
+
+
 if __name__ == '__main__':
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), '..', LIB_NAME + '.pretty')
     os.makedirs(out, exist_ok=True)
     io = pcbnew.PCB_IO_MGR.FindPlugin(pcbnew.PCB_IO_MGR.KICAD_SEXP)
-    for fp in (dip14_tssop14(), dip20_tssop20(), cap_disc_dual_pitch(), ferrite_axial_0805(),
-               resistor_axial_0805()):
+    for fp in (dip14_tssop14(), dip20_tssop20(), ferrite_axial_0805(),
+               resistor_axial_0805(), cap_disc_p5_0805()):
         io.FootprintSave(out, fp)
         print('wrote', fp.GetFPID().GetLibItemName())

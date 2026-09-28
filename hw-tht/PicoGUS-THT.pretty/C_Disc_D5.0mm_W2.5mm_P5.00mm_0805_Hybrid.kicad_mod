@@ -1,14 +1,14 @@
-(footprint "C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+(footprint "C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 	(version 20260206)
 	(generator "pcbnew")
 	(generator_version "10.0")
 	(layer "F.Cu")
-	(descr "Radial ceramic capacitor, D5.0 x W2.5 mm body, accepts 2.5 mm OR 5.0 mm lead spacing (pin 2 has two holes)")
-	(tags "C disc radial ceramic MLCC 2.5 5.0 dual pitch")
+	(descr "Hybrid capacitor footprint: radial MLCC / ceramic disc on 5.0 or 5.08 mm lead pitch OR an 0805 SMD capacitor between the holes. Fit ONE only.")
+	(tags "capacitor disc radial 0805 hybrid THT SMD")
 	(property "Reference" "REF**"
 		(at 2.5 -2.5 0)
 		(layer "F.SilkS")
-		(uuid "0489544b-e525-42cc-ac84-39749932416d")
+		(uuid "86c89a21-0c83-43ad-9e26-61739e8518a5")
 		(effects
 			(font
 				(size 1 1)
@@ -16,10 +16,10 @@
 			)
 		)
 	)
-	(property "Value" "C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+	(property "Value" "C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 		(at 2.5 2.5 0)
 		(layer "F.Fab")
-		(uuid "0282540b-b2c2-4e86-86c6-64817c4bd462")
+		(uuid "3c061b4b-63dd-4e38-8d57-2468a5946cb5")
 		(effects
 			(font
 				(size 1 1)
@@ -31,7 +31,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "f2682441-8088-41b7-9131-b2ea8bdf20ab")
+		(uuid "f1277ebb-671a-4882-8b0f-5f7707e582a2")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -42,7 +42,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "c49212d7-d6c0-4304-8e36-463e7510a215")
+		(uuid "96cc59fd-aa3a-4161-b459-a25f11c7e4a7")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -53,7 +53,7 @@
 		(at 0 0 0)
 		(layer "F.SilkS")
 		(hide yes)
-		(uuid "4e6ea381-107b-41e6-8e41-d952db4a5261")
+		(uuid "d9754db3-2bc3-4336-8a17-60846b747e84")
 		(effects
 			(font
 				(size 1 1)
@@ -71,7 +71,7 @@
 			(type solid)
 		)
 		(layer "F.SilkS")
-		(uuid "a72d1c5a-9bfe-4fdd-8db4-fce8426e6dee")
+		(uuid "825bf55a-fc07-45b7-94e8-e2114b7a596a")
 	)
 	(fp_line
 		(start -0.12 -1.033)
@@ -81,7 +81,7 @@
 			(type solid)
 		)
 		(layer "F.SilkS")
-		(uuid "bb97b585-8cee-4c0d-a4e3-b472b077c596")
+		(uuid "2bb4e3dc-85e1-4c97-acbd-000c7954b53d")
 	)
 	(fp_line
 		(start -0.12 1.37)
@@ -91,7 +91,27 @@
 			(type solid)
 		)
 		(layer "F.SilkS")
-		(uuid "4df0207c-81d2-452c-8c22-40445b53c5a6")
+		(uuid "e3550273-497a-4479-a02a-40a2dc58bced")
+	)
+	(fp_line
+		(start 2.238748 -0.735)
+		(end 2.761252 -0.735)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "d7567350-5479-4767-b96b-aea586bae15a")
+	)
+	(fp_line
+		(start 2.238748 0.735)
+		(end 2.761252 0.735)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "28973f56-6e64-45c1-838a-47ea07e20a5a")
 	)
 	(fp_line
 		(start 5.12 -1.37)
@@ -101,7 +121,7 @@
 			(type solid)
 		)
 		(layer "F.SilkS")
-		(uuid "db97ddd0-bdb2-44bf-908e-8be4c0af0b15")
+		(uuid "3d1b5380-2b44-4ac4-bfbc-326149def9b6")
 	)
 	(fp_line
 		(start 5.12 1.033)
@@ -111,7 +131,7 @@
 			(type solid)
 		)
 		(layer "F.SilkS")
-		(uuid "5043eb0d-8731-4d6a-98bb-71a6e2f60ef0")
+		(uuid "2b3dc7e0-9893-4f43-8ed0-e3c88362e5d7")
 	)
 	(fp_line
 		(start 5.12 1.37)
@@ -121,7 +141,7 @@
 			(type solid)
 		)
 		(layer "F.SilkS")
-		(uuid "6a3daf17-d109-4ffa-8501-4998d9e32db8")
+		(uuid "76e0ef27-a72f-47d3-a0a2-7548effb3715")
 	)
 	(fp_rect
 		(start -1.05 -1.5)
@@ -132,7 +152,18 @@
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "7da316be-915a-4b10-b42a-d4c343b1dc47")
+		(uuid "bf0905ae-c8cb-4ae6-a630-7ef36104b7bb")
+	)
+	(fp_rect
+		(start 0.8 -0.98)
+		(end 4.2 0.98)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "486c25f9-c717-4724-b231-7c0d5e77781e")
 	)
 	(fp_rect
 		(start 0 -1.25)
@@ -143,12 +174,23 @@
 		)
 		(fill no)
 		(layer "F.Fab")
-		(uuid "bd532c64-6dbe-46b4-bffd-3148be9bd93c")
+		(uuid "f5847606-9a47-4c3f-a6f7-0f7b8cb97969")
+	)
+	(fp_rect
+		(start 1.5 -0.625)
+		(end 3.5 0.625)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "3c0880ba-f0d7-445c-a9db-04a7366fd63a")
 	)
 	(fp_text user "${REFERENCE}"
 		(at 2.5 0 0)
 		(layer "F.Fab")
-		(uuid "85a81877-2e46-4403-9965-bcdfe793b7b6")
+		(uuid "2b1d83a4-d851-4c09-88a9-962c35270c83")
 		(effects
 			(font
 				(size 1 1)
@@ -162,15 +204,21 @@
 		(drill 0.8)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "e2e32b6e-6e16-4138-acb1-d37b8b385591")
+		(uuid "49a64fd0-c1e7-481a-b0ff-2224d4ab30ab")
 	)
-	(pad "2" thru_hole circle
-		(at 2.5 0)
-		(size 1.6 1.6)
-		(drill 0.8)
-		(layers "*.Cu" "*.Mask")
-		(remove_unused_layers no)
-		(uuid "6457c5e1-6ac4-4bca-a72c-bcb8e7548f99")
+	(pad "1" smd roundrect
+		(at 1.55 0)
+		(size 1 1.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(uuid "38ab8b60-3cdb-4b24-84f9-e9b4f6ff34c0")
+	)
+	(pad "2" smd roundrect
+		(at 3.45 0)
+		(size 1 1.45)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(uuid "809040d6-c200-4021-bfb7-a0f834f946c9")
 	)
 	(pad "2" thru_hole circle
 		(at 5 0)
@@ -178,7 +226,7 @@
 		(drill 0.8)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "6457c5e1-6ac4-4bca-a72c-bcb8e7548f99")
+		(uuid "b681987b-6dd4-44cb-8fbd-148a914a8d62")
 	)
 	(embedded_fonts no)
 	(model "${KICAD10_3DMODEL_DIR}/Capacitor_THT.3dshapes/C_Disc_D5.0mm_W2.5mm_P5.00mm.step"

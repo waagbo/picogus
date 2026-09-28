@@ -18,7 +18,7 @@ Files:
 | `wavetable.kicad_sch` | New: Waveblaster header, WT control logic, WT volume, op-amp mixer, line-out jack |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
 | `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers (stock checked 2026-09-28) |
-| `PicoGUS-THT.pretty/` | Board-specific footprints (DIP/TSSOP hybrids, axial/0805 resistor and ferrite hybrids, dual-pitch MLCC) |
+| `PicoGUS-THT.pretty/` | Board-specific footprints (DIP/TSSOP hybrids, axial/0805 resistor, ferrite and capacitor hybrids) |
 | `tools/gen_hybrid_footprints.py` | Generator for the footprints above (run it with KiCad 10's Python) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
@@ -30,7 +30,8 @@ The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, 
 | Part | v1.2 | THT board |
 |---|---|---|
 | Resistors | 0805 | 1/4 W axial (10.16 mm) **or** 0805 SMD: each resistor footprint has 0805 pads between the axial holes |
-| Caps | 0805 / 1206 | radial MLCC (2.5 **or** 5.0 mm pitch) / 5 mm radial electrolytics |
+| Ceramic caps | 0805 / 1206 | radial MLCC on **5.0 mm** pitch **or** 0805 SMD: 0805 pads between the two holes |
+| Electrolytics | 1206 / SMD | 5 mm radial electrolytics |
 | D1 | B5819W SOD-123 | 1N5819 DO-41 |
 | U2 | 74LVC244 TSSOP-20 | **74AHC244 DIP-20** (TSSOP-20 pads beside it) |
 | U5 | 74AHC14 SOIC-14 | **74AHC14 DIP-14** (TSSOP-14 pads inside it) |
@@ -150,8 +151,9 @@ WT L (J9.24) -- 10uF (C22) --+-- RV1A --- 10k (R12)   +--|+ /
 against findchips distributor data, and LCSC numbers against the LCSC product API.
 
 * **DigiKey builders**: use the DIP logic ICs (TI SN74AHC…N / SN74AHCT126N) and the NE5532P.
-* **Resistors**: every resistor line also lists an 0805 part (Yageo RC0805 at DigiKey, UNI-ROYAL 0805W8F at LCSC).
-  Fit either the axial or the 0805 part, never both.
+* **Resistors and ceramic capacitors**: every line also lists an 0805 part (resistors: Yageo RC0805 at DigiKey,
+  UNI-ROYAL 0805W8F at LCSC; capacitors: Samsung/Yageo/Taiyo Yuden). Fit either the leaded or the 0805 part, never both.
+* **Ceramic capacitors must have 5.0 mm (or 5.08 mm) lead pitch.** 2.5 mm parts don't fit (e.g. TDK FG1x, Vishay K…L2).
 * **LCSC builders**: use the TSSOP alternatives in the "LCSC" column (the DIPs are not stocked there).
   The LCSC TSSOPs for U2/U6/U7 are 74**LVC** parts, which are faster and have better input thresholds than AHC.
 

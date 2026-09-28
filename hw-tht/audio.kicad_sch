@@ -1501,7 +1501,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 90.805 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -1564,7 +1564,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C454405 (TORCH CC4-0805-CG-100V-2200pF-J-L (2.54 mm pitch))"
+		(property "LCSC" "C22391154 (Dersonic CD1H222JC9PECHD000 (5.08 mm pitch))"
 			(at 90.805 50.8 0)
 			(hide yes)
 			(effects
@@ -1574,7 +1574,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "KEMET C320C222J1G5TA (DK 399-4281-ND), Vishay K222J15C0GF5TL2 (DK BC1029CT-ND)."
+		(property "Alternatives" "THT: Vishay K222J15C0GF5TH5 (DK BC1050CT-ND, 1744). 0805 SMD: Yageo CC0805JRNPO9BN222 (DK 311-1103-1-ND, 126390) / CC0805JKNPO9BN222 (LCSC C107103, 165360)."
 			(at 90.805 50.8 0)
 			(hide yes)
 			(effects
@@ -1630,7 +1630,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 22.86 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -1694,6 +1694,16 @@
 			)
 		)
 		(property "LCSC" "C527620"
+			(at 22.86 47.625 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 22.86 47.625 0)
 			(hide yes)
 			(effects
@@ -1749,7 +1759,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 80.01 66.04 0)
 			(hide yes)
 			(show_name no)
@@ -1813,6 +1823,16 @@
 			)
 		)
 		(property "LCSC" "C527620"
+			(at 80.01 66.04 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 80.01 66.04 0)
 			(hide yes)
 			(effects
@@ -1871,7 +1891,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 77.47 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -1944,7 +1964,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "2.5 mm pitch FG14X7R1H225KRT06 (DK 445-173138-1-ND)."
+		(property "Alternatives" "0805 SMD: Samsung CL21A225KAFNNNE 25V X5R (DK 1276-1763-1-ND, 83806; LCSC C87994, 38740)."
 			(at 77.47 57.15 0)
 			(hide yes)
 			(effects
@@ -2000,7 +2020,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 90.805 43.18 0)
 			(hide yes)
 			(show_name no)
@@ -2063,7 +2083,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C454405 (TORCH CC4-0805-CG-100V-2200pF-J-L (2.54 mm pitch))"
+		(property "LCSC" "C22391154 (Dersonic CD1H222JC9PECHD000 (5.08 mm pitch))"
 			(at 90.805 43.18 0)
 			(hide yes)
 			(effects
@@ -2073,7 +2093,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "KEMET C320C222J1G5TA (DK 399-4281-ND), Vishay K222J15C0GF5TL2 (DK BC1029CT-ND)."
+		(property "Alternatives" "THT: Vishay K222J15C0GF5TH5 (DK BC1050CT-ND, 1744). 0805 SMD: Yageo CC0805JRNPO9BN222 (DK 311-1103-1-ND, 126390) / CC0805JKNPO9BN222 (LCSC C107103, 165360)."
 			(at 90.805 43.18 0)
 			(hide yes)
 			(effects
@@ -2285,7 +2305,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 27.305 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -2358,6 +2378,16 @@
 				(hide yes)
 			)
 		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
+			(at 27.305 47.625 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d893dd8e-d8fd-4777-8bf8-0018fdb61861")
 		)
@@ -2406,7 +2436,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 36.195 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -2479,6 +2509,16 @@
 				(hide yes)
 			)
 		)
+		(property "Alternatives" "0805 SMD 25V X5R: Taiyo Yuden EMK212BJ106KG-T (DK 587-1295-1-ND, 1864) or Samsung CL21A106KAYNNNE (LCSC C15850, 878060)."
+			(at 36.195 47.625 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "bc1a640a-b7c1-4ad4-b14f-2118528fe45b")
 		)
@@ -2528,7 +2568,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 77.47 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -2601,7 +2641,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "2.5 mm pitch FG14X7R1H225KRT06 (DK 445-173138-1-ND)."
+		(property "Alternatives" "0805 SMD: Samsung CL21A225KAFNNNE 25V X5R (DK 1276-1763-1-ND, 83806; LCSC C87994, 38740)."
 			(at 77.47 71.12 0)
 			(hide yes)
 			(effects
@@ -3435,7 +3475,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P2.50mm_P5.00mm"
+		(property "Footprint" "PicoGUS-THT:C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid"
 			(at 31.75 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -3499,6 +3539,16 @@
 			)
 		)
 		(property "LCSC" "C527620"
+			(at 31.75 47.625 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Samsung CL21B104KBCNNNC (DK 1276-1003-1-ND, 4889645; LCSC C1711, 1029920)."
 			(at 31.75 47.625 0)
 			(hide yes)
 			(effects
