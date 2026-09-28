@@ -495,6 +495,6 @@ check_bootsel:
 
         // Wait until BOOTSEL is released (+ additional debounce delay)
         while (!(sio_hw->gpio_hi_in & SIO_GPIO_HI_IN_QSPI_CSN_BITS)) {};
-        delay_ms(50);
+        sleep_ms(50);
     }
 }

@@ -344,7 +344,7 @@ endfunction()
 option(SOUND_WSS "Build SB firmware with WSS (AD1848) support instead of SB16 DSP" OFF)
 ################################################################################
 # Build SB firmware
-function(build_sb_8950 TARGET_NAME MULTIFW)
+function(build_sb_emu8950 TARGET_NAME MULTIFW)
     set(USB_JOYSTICK TRUE)
     set(SOUND_MPU TRUE)
     set(SOUND_OPL TRUE)
@@ -474,7 +474,7 @@ endfunction()
 ################################################################################
 # Build AdLib firmware — DOSBox OPL3 core
 function(build_adlib_dbopl3 TARGET_NAME MULTIFW)
-    set(USE_DBOPL3_OPL TRUE)
+    set(USE_DBOPL_OPL TRUE)
     set(USB_JOYSTICK TRUE)
     set(USB_MOUSE TRUE)
     set(SOUND_MPU TRUE)
