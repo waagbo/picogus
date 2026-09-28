@@ -160,10 +160,24 @@ def ferrite_axial_0805():
     return fp
 
 
+def resistor_axial_0805():
+    """1/4 W axial resistor (10.16 mm pitch) OR an 0805 SMD resistor between the holes."""
+    fp = load('Resistor_THT', 'R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal')
+    smd = load('Resistor_SMD', 'R_0805_2012Metric')
+    merge_smd(fp, smd, 0, 5.08, 0, '0805')
+    bbox_courtyard(fp)
+    finish(fp, 'R_Axial_DIN0207_P10.16mm_0805_Hybrid',
+           'Hybrid resistor footprint: 1/4 W axial THT resistor (DIN0207, 10.16 mm pitch) OR an '
+           '0805 SMD resistor between the holes. Fit ONE only.',
+           'resistor axial 0805 hybrid THT SMD')
+    return fp
+
+
 if __name__ == '__main__':
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), '..', LIB_NAME + '.pretty')
     os.makedirs(out, exist_ok=True)
     io = pcbnew.PCB_IO_MGR.FindPlugin(pcbnew.PCB_IO_MGR.KICAD_SEXP)
-    for fp in (dip14_tssop14(), dip20_tssop20(), cap_disc_dual_pitch(), ferrite_axial_0805()):
+    for fp in (dip14_tssop14(), dip20_tssop20(), cap_disc_dual_pitch(), ferrite_axial_0805(),
+               resistor_axial_0805()):
         io.FootprintSave(out, fp)
         print('wrote', fp.GetFPID().GetLibItemName())

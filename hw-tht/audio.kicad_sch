@@ -7,7 +7,7 @@
 	(title_block
 		(title "PicoGUS THT - PCM510x DAC")
 		(date "2026-09-28")
-		(rev "v1.2-THT")
+		(rev "v1.3.0")
 		(comment 1 "U9 stays SMD (TSSOP-20): PCM5100A/5101A/5102A only exist as SMD")
 	)
 	(lib_symbols
@@ -3074,7 +3074,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 80.01 48.26 0)
 			(hide yes)
 			(show_name no)
@@ -3138,6 +3138,16 @@
 			)
 		)
 		(property "LCSC" "C58592 (UNI-ROYAL MFR0W4F4700A50)"
+			(at 80.01 48.26 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07470RL (DK 311-470CRCT-ND, 109044), UNI-ROYAL 0805W8F (LCSC C17710, 2072700)."
 			(at 80.01 48.26 0)
 			(hide yes)
 			(effects
@@ -3700,7 +3710,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 80.01 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -3764,6 +3774,16 @@
 			)
 		)
 		(property "LCSC" "C58592 (UNI-ROYAL MFR0W4F4700A50)"
+			(at 80.01 45.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07470RL (DK 311-470CRCT-ND, 109044), UNI-ROYAL 0805W8F (LCSC C17710, 2072700)."
 			(at 80.01 45.72 0)
 			(hide yes)
 			(effects

@@ -7,7 +7,7 @@
 	(title_block
 		(title "PicoGUS THT")
 		(date "2026-09-28")
-		(rev "v1.2-THT")
+		(rev "v1.3.0")
 		(comment 1 "Through-hole variant of PicoGUS v1.2 with Waveblaster header")
 		(comment 2 "DIP logic footprints also accept a TSSOP (hybrid footprints)")
 	)
@@ -17787,7 +17787,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 240.792 144.145 90)
 			(hide yes)
 			(show_name no)
@@ -17860,6 +17860,16 @@
 				(hide yes)
 			)
 		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-071KL (DK 311-1.00KCRCT-ND, 732526), UNI-ROYAL 0805W8F (LCSC C17513, 26812400)."
+			(at 242.57 144.145 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c588f339-d5b3-44e4-b1cc-37a594f8e08c")
 		)
@@ -17909,7 +17919,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 266.192 144.145 90)
 			(hide yes)
 			(show_name no)
@@ -17973,6 +17983,16 @@
 			)
 		)
 		(property "LCSC" "C3556390"
+			(at 267.97 144.145 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0715KL (DK 311-15.0KCRCT-ND, 127426), UNI-ROYAL 0805W8F (LCSC C17475, 524100)."
 			(at 267.97 144.145 0)
 			(hide yes)
 			(effects
@@ -21715,7 +21735,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 232.918 56.515 90)
 			(hide yes)
 			(show_name no)
@@ -21779,6 +21799,16 @@
 			)
 		)
 		(property "LCSC" "C3537012 (Yageo MFR-25FBF52-220R)"
+			(at 231.14 56.515 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07220RL (DK 311-220CRCT-ND, 420320), UNI-ROYAL 0805W8F (LCSC C17557, 569300)."
 			(at 231.14 56.515 0)
 			(hide yes)
 			(effects
@@ -24529,7 +24559,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 224.79 72.263 90)
 			(hide yes)
 			(show_name no)
@@ -24593,6 +24623,16 @@
 			)
 		)
 		(property "LCSC" "C3537012 (Yageo MFR-25FBF52-220R)"
+			(at 224.79 70.485 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07220RL (DK 311-220CRCT-ND, 420320), UNI-ROYAL 0805W8F (LCSC C17557, 569300)."
 			(at 224.79 70.485 0)
 			(hide yes)
 			(effects
@@ -24726,7 +24766,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 219.837 155.575 90)
 			(hide yes)
 			(show_name no)
@@ -24790,6 +24830,16 @@
 			)
 		)
 		(property "LCSC" "C3556390"
+			(at 221.615 155.575 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0715KL (DK 311-15.0KCRCT-ND, 127426), UNI-ROYAL 0805W8F (LCSC C17475, 524100)."
 			(at 221.615 155.575 0)
 			(hide yes)
 			(effects
@@ -25651,7 +25701,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 162.687 121.92 90)
 			(hide yes)
 			(show_name no)
@@ -25715,6 +25765,16 @@
 			)
 		)
 		(property "LCSC" "C3556390"
+			(at 164.465 121.92 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0715KL (DK 311-15.0KCRCT-ND, 127426), UNI-ROYAL 0805W8F (LCSC C17475, 524100)."
 			(at 164.465 121.92 0)
 			(hide yes)
 			(effects
@@ -28394,7 +28454,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 280.67 30.48 0)
 			(hide yes)
 			(show_name no)
@@ -28450,6 +28510,17 @@
 			)
 		)
 		(property "DigiKey" "10.0KXBK-ND"
+			(at 280.67 30.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-0710KL (DK 311-10.0KCRCT-ND, 2120333), UNI-ROYAL 0805W8F (LCSC C17414, 43352900)."
 			(at 280.67 30.48 0)
 			(hide yes)
 			(show_name no)
@@ -28619,7 +28690,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
+		(property "Footprint" "PicoGUS-THT:R_Axial_DIN0207_P10.16mm_0805_Hybrid"
 			(at 210.82 152.4 0)
 			(hide yes)
 			(show_name no)
@@ -28675,6 +28746,17 @@
 			)
 		)
 		(property "DigiKey" "100KXBK-ND"
+			(at 210.82 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternatives" "0805 SMD (fits between the holes): Yageo RC0805FR-07100KL (DK 311-100KCRCT-ND, 1068493), UNI-ROYAL 0805W8F (LCSC C149504, 3119100)."
 			(at 210.82 152.4 0)
 			(hide yes)
 			(show_name no)
