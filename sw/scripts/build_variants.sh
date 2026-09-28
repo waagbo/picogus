@@ -30,7 +30,7 @@ declare -A PROJECT_TYPES=(
     [sb-ym3812]=SB_YM3812          [sb-emu8950]=SB_EMU8950
     [adlib]=ADLIB                  [adlib-ymf262]=ADLIB_YMF262
     [adlib-ym3812]=ADLIB_YM3812    [adlib-dbopl3]=ADLIB_DBOPL3
-    [analyzer]=ANALYZER
+    [analyzer]=ANALYZER            [sb-ne2k]=SB_NE2K
 )
 declare -A OUTPUTS=(
     [multifw]=picogus              [ne2k]=pg-ne2k
@@ -40,12 +40,13 @@ declare -A OUTPUTS=(
     [sb-ym3812]=pg-sb-ym3812       [sb-emu8950]=pg-sb-emu8950
     [adlib]=pg-adlib               [adlib-ymf262]=pg-adlib-ymf262
     [adlib-ym3812]=pg-adlib-ym3812 [adlib-dbopl3]=pg-adlib-dbopl3
-    [analyzer]=pg-analyzer
+    [analyzer]=pg-analyzer         [sb-ne2k]=pg-sb-ne2k
 )
-ALL_VARIANTS=(multifw ne2k gus sb sb-ymf262 sb-ym3812 sb-emu8950 adlib adlib-ymf262 adlib-ym3812 adlib-dbopl3 mpu psg usb analyzer)
+ALL_VARIANTS=(multifw ne2k gus sb sb-ymf262 sb-ym3812 sb-emu8950 adlib adlib-ymf262 adlib-ym3812 adlib-dbopl3 mpu psg usb analyzer sb-ne2k)
 DEFAULT_VARIANTS=(multifw ne2k)
-# The ISA analyzer uses RP2350-only hardware (QMI PSRAM)
-declare -A CHIP_ONLY=([analyzer]=rp2350)
+# The ISA analyzer uses RP2350-only hardware (QMI PSRAM); SB + NE2000 is an
+# RP2350 experiment (sw/docs/sb-ne2000-rp2350.md)
+declare -A CHIP_ONLY=([analyzer]=rp2350 [sb-ne2k]=rp2350)
 
 usage() {
     cat <<EOF

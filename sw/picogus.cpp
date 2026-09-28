@@ -1377,13 +1377,13 @@ int main()
     multicore_launch_core1(&play_psg);
 #endif // (SOUND_TANDY || SOUND_CMS)
 
-#ifdef NE2000
+#if defined(NE2000) && !defined(SOUND_OPL)
 extern void PIC_ActivateIRQ(void);
 extern void PIC_DeActivateIRQ(void);
 
     DBG_PUTS("Creating NE2000");
     multicore_launch_core1(&play_ne2000);
-#endif
+#endif // with SB, play_adlib() on core 1 services the NE2000 too
 
 #ifdef USB_JOYSTICK
     // Init joystick as centered with no buttons pressed

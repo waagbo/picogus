@@ -15,12 +15,12 @@ if(PICO_PLATFORM MATCHES "riscv")
 endif()
 if(NOT PICO_BOARD)
     if(PICO_PLATFORM MATCHES "^rp2350")
-        if(PROJECT_TYPE STREQUAL "NE2K")
+        if(PROJECT_TYPE MATCHES "NE2K")
             set(PICO_BOARD "pico2w_fast")
         else()
             set(PICO_BOARD "pico2_fast")
         endif()
-    elseif(PROJECT_TYPE STREQUAL "NE2K")
+    elseif(PROJECT_TYPE MATCHES "NE2K")
         set(PICO_BOARD "picow_fast")
     else()
         set(PICO_BOARD "picogus2")
@@ -406,6 +406,7 @@ endfunction()
 
 ################################################################################
 # Build SB firmware — DOSBox OPL3 core
+# Optional third argument: program name, for firmwares built on top of this one
 function(build_sb_dbopl3 TARGET_NAME MULTIFW)
     set(USE_DBOPL_OPL TRUE)
     set(USB_JOYSTICK TRUE)
@@ -413,7 +414,11 @@ function(build_sb_dbopl3 TARGET_NAME MULTIFW)
     set(SOUND_OPL TRUE)
     set(CDROM TRUE)
     config_target(${TARGET_NAME} ${MULTIFW})
-    pico_set_program_name(${TARGET_NAME} "picogus-sb-dbopl3")
+    if(ARGC GREATER 2)
+        pico_set_program_name(${TARGET_NAME} ${ARGV2})
+    else()
+        pico_set_program_name(${TARGET_NAME} "picogus-sb-dbopl3")
+    endif()
     target_sources(${TARGET_NAME} PRIVATE
         audio/volctrl.cpp
         sbdsp/sbdsp.cpp
@@ -594,9 +599,8 @@ function(build_usb TARGET_NAME MULTIFW)
 endfunction()
 
 
-function(build_ne2k TARGET_NAME MULTIFW)
-    config_target(${TARGET_NAME} ${MULTIFW})
-    pico_set_program_name(${TARGET_NAME} "picogus-ne2k")
+# NE2000 emulation over the CYW43 WiFi chip of a Pico W / Pico 2 W
+function(add_ne2000 TARGET_NAME)
     # The CYW43 PIO SPI takes 2 PIO cycles per bit. On RP2350 keep the clock
     # within the CYW43439's 50MHz gSPI limit: 370MHz / 4 / 2 = 46.25MHz.
     if(PICOGUS_CHIP STREQUAL "rp2350")
@@ -617,6 +621,28 @@ function(build_ne2k TARGET_NAME MULTIFW)
         ${TARGET_NAME}
         ne2000        
     )
+endfunction()
+
+function(build_ne2k TARGET_NAME MULTIFW)
+    config_target(${TARGET_NAME} ${MULTIFW})
+    pico_set_program_name(${TARGET_NAME} "picogus-ne2k")
+    add_ne2000(${TARGET_NAME})
+endfunction()
+
+################################################################################
+# Build SB + NE2000 firmware (experimental, see docs/sb-ne2000-rp2350.md)
+# Needs a Pico 2 W. The card has one IRQ output, which the NE2000 shares with
+# the SB unless SB_NE2K_IRQ_PIN names a GPIO wired to a second ISA IRQ line.
+set(SB_NE2K_IRQ_PIN "" CACHE STRING "GPIO driving a dedicated NE2000 IRQ line in SB_NE2K builds (empty: share the card IRQ)")
+function(build_sb_ne2k TARGET_NAME MULTIFW)
+    if(NOT PICOGUS_CHIP STREQUAL "rp2350")
+        message(FATAL_ERROR "SB_NE2K needs an RP2350 (Pico 2 W)")
+    endif()
+    build_sb_dbopl3(${TARGET_NAME} ${MULTIFW} "picogus-sb-ne2k")
+    add_ne2000(${TARGET_NAME})
+    if(NOT SB_NE2K_IRQ_PIN STREQUAL "")
+        target_compile_definitions(${TARGET_NAME} PRIVATE NE2K_IRQ_PIN=${SB_NE2K_IRQ_PIN})
+    endif()
 endfunction()
 
 
@@ -793,6 +819,9 @@ elseif(PROJECT_TYPE STREQUAL "USB")
 elseif(PROJECT_TYPE STREQUAL "NE2K")
     set(FW_TARGET pg-ne2k)
     build_ne2k(pg-ne2k FALSE)
+elseif(PROJECT_TYPE STREQUAL "SB_NE2K")
+    set(FW_TARGET pg-sb-ne2k)
+    build_sb_ne2k(pg-sb-ne2k FALSE)
 elseif(PROJECT_TYPE STREQUAL "ANALYZER")
     set(FW_TARGET pg-analyzer)
     add_executable(pg-analyzer isa_analyzer.cpp)
