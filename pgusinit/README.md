@@ -16,6 +16,11 @@ Firmware files that comes with release:
   modes, use the `/mode x` option in pgusinit.
 * `pg-ne2k.uf2` - Special firmware for NE2000/WiFi. Only works on PicoGUS
   Femto and PicoGUS v1.x boards with a Pico W installed.
+* `picogus-rp2350.uf2` and `pg-ne2k-rp2350.uf2` - the same firmwares for boards
+  with an RP2350-based Raspberry Pi Pico 2 (or Pico 2 W for NE2000) installed
+  instead of a Pico (or Pico W). The RP2040 and RP2350 firmwares are not
+  interchangeable; firmware from this release onwards refuses to `/flash` a
+  file made for the other chip.
 
 pgusinit must be run with firmware it is compatible with. If run with an
 incompatible firmware, pgusinit will complain about a protocol mismatch. One
