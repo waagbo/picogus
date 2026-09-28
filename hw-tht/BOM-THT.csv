@@ -37,7 +37,6 @@ U11,1,NE5532,THT DIP-8,DIP-8_W7.62mm,Texas Instruments,NE5532P,296-1410-5-ND,126
 "R14, R15, R18",3,100k,THT | SMD alt,R_Axial_DIN0207_P10.16mm_0805_Hybrid,Yageo,MFR-25FBF52-100K,100KXBK-ND,41215,C1364475,11650,"0805 SMD (fits between the holes): Yageo RC0805FR-07100KL (DK 311-100KCRCT-ND, 1068493), UNI-ROYAL 0805W8F (LCSC C149504, 3119100).",
 "R21, R22",2,100R,THT | SMD alt,R_Axial_DIN0207_P10.16mm_0805_Hybrid,Yageo,MFR-25FBF52-100R,100XBK-ND,79374,C6300650,9300,"0805 SMD (fits between the holes): Yageo RC0805FR-07100RL (DK 311-100CRCT-ND, 1562462), UNI-ROYAL 0805W8F (LCSC C17408, 7823800).",
 "C30, C31",2,100pF C0G,THT | SMD alt,C_Disc_D5.0mm_W2.5mm_P5.00mm_0805_Hybrid,Vishay,K101J15C0GF5TH5,BC1042CT-ND,1259,C400081 [TORCH CC4-0805-CG-100V-100PF-J (5.08 mm pitch)],2570,"THT: TDK FG28C0G1H101JNT06 (DK 445-173472-1-ND). 0805 SMD: Samsung CL21C101JBANNNC (DK 1276-1014-1-ND, 104603; LCSC C1790, 186200).","C0G, 5.0 mm (Vishay) or 5.08 mm (TORCH) pitch."
-J2,0,ISA debug (DNP),not fitted,PinHeader_2x31_P2.54mm_Vertical,,,,,,,,ISA bus probe header - not fitted (as v1.2)
 J3,0,Bus_ISA_8bit,not fitted,BUS_PC_chamfer,,,,,,,,"ISA card edge (PCB gold fingers, order with chamfered/bevelled edge)"
 H1,0,MountingHole_3.2mm_M3_Pad,not fitted,MountingHole_3.2mm_M3_Pad,,,,,,,,Bracket mounting hole
 H2,0,MountingHole_3.2mm_M3_Pad,not fitted,MountingHole_3.2mm_M3_Pad,,,,,,,,Bracket mounting hole
