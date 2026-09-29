@@ -139,10 +139,11 @@ tied to GND and its output was unconnected.
 | Jumper | Where | Connects |
 |---|---|---|
 | **J10** ("GP3 IRQ") | next to the PSRAM (U8) | Pico **GPIO3** → U2 pin 13 (R25, 10 k, pulls it low when open) |
-| **J11** ("2ND IRQ" / "IRQ3") | next to J1 | U2 pin 7 → ISA **IRQ3** |
+| **J11** ("NE2000 IRQ3") | next to J1 | U2 pin 7 → ISA **IRQ3** |
 
-* **Leave both open for normal use** (park the shunts on one pin). J10 sits right at the PSRAM, so the
-  fast SPI line only gets a few millimetres of stub.
+* **Leave both open for normal use** (park the shunts on one pin). J11 is what puts the card on
+  IRQ3. J10 only exists to keep the fast PSRAM line clean: it sits right at the PSRAM, so while it is
+  open the SPI line gets a few millimetres of stub, not a trace running all the way to U2.
 * GPIO3 is also the PSRAM's SPI_TX line: all 26 Pico GPIOs are in use on this design. So this only
   works with firmware that leaves the PSRAM idle (no GUS mode) and drives GPIO3 as the second IRQ.
   The PSRAM ignores its SPI data-in pin while chip select (GPIO1) is high.
