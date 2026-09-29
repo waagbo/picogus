@@ -590,6 +590,10 @@
       {
         "netclass": "GND",
         "pattern": "GND"
+      },
+      {
+        "netclass": "pwr",
+        "pattern": "*AVDD"
       }
     ]
   },

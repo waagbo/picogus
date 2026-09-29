@@ -95,7 +95,7 @@ PCM510x OUTL --- 470R ---+--- 10k (R10) ---+-------+---- 100pF (C30) ---+
                        2.2nF               |       |                    |
                          |                 |       +--|- \              |
                         GND                |          |NE5532 >---------+--- 100R (R21) --> LINE OUT L (J8)
-WT L (J9.24) -- 10uF (C22) --+-- RV1A --- 10k (R12)   +--|+ /
+WT L (J9.24) -- 10uF bipolar (C22) --+-- RV1A --- 10k (R12)   +--|+ /
                              |   10k log   (from wiper)    |
                          100k (R14)                       GND
                              |
@@ -109,12 +109,25 @@ WT L (J9.24) -- 10uF (C22) --+-- RV1A --- 10k (R12)   +--|+ /
   level. Its shaft goes through the ISA bracket between the MIDI and line-out jacks. The signal is on the
   CW-end terminals (3/6) and GND is on the CCW end (1/4), so the level rises clockwise. The 10 k summing
   resistor loads the wiper only a little, because a log pot's wiper is near the GND end for most of its travel.
-* C22/C23 (10 µF, + towards J9) block any DC offset from the daughterboard. R14/R15 (100 k) give the
+* C22/C23 (10 µF **bipolar** electrolytics, Panasonic SU) block any DC offset from the daughterboard.
+  The DC across them depends on the daughterboard (some outputs are AC-coupled, some carry an offset), so a
+  polarised cap could end up reverse-biased; a bipolar one doesn't care. R14/R15 (100 k) give the
   capacitors a defined DC level when no daughterboard is fitted. Without a daughterboard, RV1's setting doesn't matter.
 * The PCM510x sees a ~10.5 kΩ load (its datasheet minimum is 1 kΩ). The output is DC-coupled, which is fine because the
   DAC's outputs are ground-centred; expect a few mV of offset at the jack.
 * R21/R22 (100 Ω) isolate the op-amp from cable capacitance. The NE5532 drives 600 Ω headphones
   easily, but this is still a line output.
+* **Op-amp supply filter.** The ISA ±12 V rails carry PSU ripple and noise from other cards. They reach U11
+  through R23/R24 (10 Ω) and C32/C33 (47 µF), an RC low-pass at about 340 Hz, with C28/C29 (0.1 µF) at the
+  op-amp pins. The NE5532's supply rejection falls at high frequencies, which is where this filter works.
+  The daughterboard still gets the plain ±12 V (decoupled at J9); it has its own regulators and filtering.
+* **DAC analogue supply.** On v1.2 the PCM510x AVDD (pin 8) shares the Pico's switch-mode 3.3 V with all
+  the logic. Here AVDD has its own rail behind ferrite bead FB3 (the same part as FB1/FB2), with C13
+  (0.1 µF) and C15 (10 µF) at the pin. DVDD/CPVDD stay on the plain 3.3 V. The bead drops only millivolts
+  at the DAC's ~10 mA.
+* **Capacitor types in the signal path:** C19/C20 (DAC output filter) and C30/C31 (op-amp feedback) are
+  **C0G/NP0**, which has no voltage or temperature coefficient and so adds no distortion. X7R is used only for
+  supply decoupling.
 
 ### Other changes
 
@@ -136,7 +149,7 @@ WT L (J9.24) -- 10uF (C22) --+-- RV1A --- 10k (R12)   +--|+ /
   Waveblaster header (J9), MIDI out (J5), Pico + power (U1), ISA bus switches (U3, U4), ISA buffer (U2),
   74AHC14 (U5), 74AHC00 (U6, U7), 74AHCT126 (U10), PSRAM (U8), IRQ/DMA jumpers (J1).
 * **Layout for audio quality:** every decoupling cap sits next to its chip's supply pin, with a short
-  return to GND. The PCM5102 is rotated so that its outputs, output RC filter (R7/R8, C19/C20) and the
+  return to GND. FB3 sits next to C13/C15. The ±12 V filter (R23/R24, C32/C33) sits above U11. The PCM5102 is rotated so that its outputs, output RC filter (R7/R8, C19/C20) and the
   mixer op-amp form one short, straight path to the line-out jack, away from the Pico and the ISA logic.
 
 ## Ordering
@@ -147,8 +160,17 @@ against findchips distributor data, and LCSC numbers against the LCSC product AP
 
 * **Logic ICs (U2, U5, U6, U7, U10): order from DigiKey.** LCSC lists the DIPs, but has 0–74 in stock.
   Everything else is available from both.
-* **DigiKey BOM cost** (2026-09-28, parts only, no PCB): about **$50** for one board, or about **$38 per
-  board** for a 10-board order. The optional parts add about $4.
+* **DigiKey BOM cost** (2026-09-28, parts only, no PCB, no shipping), from DigiKey's price breaks:
+
+  | | 1 board | per board, 10-board order |
+  |---|---|---|
+  | NOK excl. MVA (digikey.no) | ~495 kr | ~373 kr |
+  | NOK incl. 25 % MVA | ~618 kr | ~466 kr |
+  | USD | ~$52 | ~$39 |
+
+  The optional sockets and Pico headers add ~39 kr (~$4). NOK figures are DigiKey's USD prices converted
+  at 9.53 NOK/USD, so digikey.no can differ by a few percent. The Pico (44 kr), RV1 (45 kr),
+  U3/U4 (40 kr) and the 18 × 0.1 µF (59 kr) are the big items.
 * **Ceramic capacitors must have 5.0 mm (or 5.08 mm) lead pitch.** 2.5 mm parts don't fit (e.g. TDK FG1x, Vishay K…L2).
 
 Mistakes found in the v1.2 BOM/JLCPCB data (don't copy these from the v1.2 files):

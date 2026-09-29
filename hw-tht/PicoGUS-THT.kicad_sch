@@ -22513,7 +22513,7 @@
 				)
 			)
 		)
-		(property "Description" "47uF 16V aluminium electrolytic, 5mm dia, 2mm pitch"
+		(property "Description" "47uF 35V aluminium electrolytic, 5mm dia, 2mm pitch"
 			(at 67.945 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -24085,7 +24085,7 @@
 				)
 			)
 		)
-		(property "Description" "47uF 16V aluminium electrolytic, 5mm dia, 2mm pitch"
+		(property "Description" "47uF 35V aluminium electrolytic, 5mm dia, 2mm pitch"
 			(at 20.955 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -24833,7 +24833,7 @@
 				)
 			)
 		)
-		(property "Description" "Axial ferrite bead (bead on leads), MIDI out EMI filter"
+		(property "Description" "Axial ferrite bead (bead on leads): MIDI out EMI filter, DAC AVDD filter"
 			(at 232.41 70.485 0)
 			(hide yes)
 			(show_name no)
@@ -24884,7 +24884,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "Fair-Rite 2761001112 (DK 1934-1423-1-ND, 33346). A wire link also works (slightly worse EMI)."
+		(property "Alternatives" "Fair-Rite 2761001112 (DK 1934-1423-1-ND, 33346). A wire link also works (slightly worse EMI / DAC noise)."
 			(at 232.41 70.485 0)
 			(hide yes)
 			(effects
@@ -24962,7 +24962,7 @@
 				)
 			)
 		)
-		(property "Description" "Axial ferrite bead (bead on leads), MIDI out EMI filter"
+		(property "Description" "Axial ferrite bead (bead on leads): MIDI out EMI filter, DAC AVDD filter"
 			(at 240.03 60.325 0)
 			(hide yes)
 			(show_name no)
@@ -25013,7 +25013,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "Fair-Rite 2761001112 (DK 1934-1423-1-ND, 33346). A wire link also works (slightly worse EMI)."
+		(property "Alternatives" "Fair-Rite 2761001112 (DK 1934-1423-1-ND, 33346). A wire link also works (slightly worse EMI / DAC noise)."
 			(at 240.03 60.325 0)
 			(hide yes)
 			(effects
