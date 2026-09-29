@@ -20,6 +20,7 @@ through-hole board in [`hw-tht/`](../hw-tht/README.md):
 | `wavetable.kicad_sch` | New: Waveblaster header, WT control (U12), WT volume, op-amp mixer, line-out jack |
 | `PicoGUS-SMD-schematic.pdf` | Schematic PDF |
 | `BOM-SMD.csv` | BOM with a **DigiKey link** for every line, stock and NOK price (checked 2026-09-29) |
+| `BOM-SMD-digikey-upload.csv` | DigiKey cart/BOM upload: quantity, DigiKey part number, MPN, and the reference designators as Customer Reference (printed on each bag) |
 
 ## What changed compared to v1.2
 

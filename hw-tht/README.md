@@ -18,6 +18,7 @@ Files:
 | `wavetable.kicad_sch` | New: Waveblaster header, WT control logic, WT volume, op-amp mixer, line-out jack |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
 | `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers, plus a digikey.no link per line (stock checked 2026-09-28) |
+| `BOM-THT-digikey-upload.csv` (+ `-optional`) | DigiKey cart/BOM upload: quantity, DigiKey part number, MPN, and the reference designators as Customer Reference (printed on each bag) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
 All other footprints come from KiCad's standard libraries.
