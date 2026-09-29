@@ -65,14 +65,13 @@ module soldered almost flat over the DAC area. Fit one of the two, **never both*
 * Solder the module directly on its 2.54 mm male pins (6-pin I2S header + a 4-pin piece on the AGND ROUT
   AGND LROUT end of its 9-pin row), no sockets, so it stays well under a Waveblaster daughterboard. Its
   solder jumpers: **H1=L, H2=L, H3=H, H4=L**; it gets +5 V and SCK is grounded on the card.
-* The placement of this area is provisional (J10 sits where it does on the THT board); rearrange the
-  DAC parts under it as needed.
 
 ### Back silkscreen
 
-The back carries the "Mila and Alisa" artwork (the princesses, the castle and the PicoGUS logo) with the
-dedication below it: *This version is dedicated to Mila and Alisa, my two wonderful princesses, who fill
-my world with joy.* It is mirrored on B.SilkS so it reads correctly from the back. It sits on the lower half of the back, just above the ISA fingers (the same spot as on the THT board), with the dedication in its upper left corner; any pad or hole in the way is cut out 0.3 mm around it.
+The back carries the PicoGUS artwork (hw-common/art/picogus-artwork.svg: three game heroes over the
+PicoGUS logo), 76 × 27 mm, with the dedication centred below it: *This version is dedicated to Mila and
+Alisa, my two wonderful princesses, who fill my world with joy.* Both are mirrored on B.SilkS; any pad or
+hole in the way is cut out 0.3 mm around it.
 
 ## Card dimensions (ISA 8-bit)
 
