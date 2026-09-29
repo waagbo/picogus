@@ -1,0 +1,31 @@
+name: Hardware (JLCPCB files)
+on:
+  push:
+    paths: ['hw-tht/**', 'hw-smd/**', 'hw-common/**', '.github/workflows/hardware.yml']
+  pull_request:
+    paths: ['hw-tht/**', 'hw-smd/**', 'hw-common/**', '.github/workflows/hardware.yml']
+  workflow_dispatch:
+
+jobs:
+  jlcpcb:
+    runs-on: ubuntu-24.04
+    # the boards are KiCad 10 files
+    container:
+      image: kicad/kicad:10.0
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [hw-tht/PicoGUS-THT, hw-smd/PicoGUS-SMD]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: DRC + gerbers, drill, assembly BOM/CPL
+        run: hw-common/tools/jlcpcb.sh ${{ matrix.board }}.kicad_pcb out
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlcpcb-${{ strategy.job-index == 0 && 'tht' || 'smd' }}
+          path: out/

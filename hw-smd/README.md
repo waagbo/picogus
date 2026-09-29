@@ -86,6 +86,27 @@ Several v1.2 BOM lines are **out of stock at DigiKey today**, so they are replac
 
 This BOM doesn't include LCSC/JLCPCB assembly data. The `hw/jlcpcb` files are for v1.2.
 
+## JLCPCB files
+
+```
+hw-common/tools/jlcpcb.sh hw-smd/PicoGUS-SMD.kicad_pcb        # -> hw-smd/build/jlcpcb/
+```
+
+The script stops if DRC (including the schematic-parity check) finds errors. `FORCE=1` exports anyway. It writes:
+
+* `PicoGUS-SMD-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
+  and the Excellon drill files (PTH and NPTH separate, mm).
+* `PicoGUS-SMD-bom-jlc.csv` and `PicoGUS-SMD-cpl-jlc.csv`: the BOM and placement files for JLCPCB assembly (SMD parts only).
+  The LCSC column is empty for now (this BOM is DigiKey-only), so JLCPCB matches parts by MPN or you pick them in their BOM tool.
+* `PicoGUS-SMD-drc.rpt`: the DRC report.
+
+The **Hardware (JLCPCB files)** GitHub Action runs the same script on every push that touches the
+boards. The files can be downloaded as build artifacts (`jlcpcb-tht`, `jlcpcb-smd`).
+
+Order options: 2 layers, **1.6 mm**, and **Gold fingers: Yes** with the **45° finger chamfer** (the ISA
+edge connector). ENIG is a good choice for the rest of the board. Check the rotations in JLCPCB's
+placement preview before paying for assembly.
+
 ## Caveats
 
 1. **Untested.** The board is built from the proven v1.2 circuit plus the THT board's additions, but

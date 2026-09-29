@@ -188,6 +188,27 @@ Mistakes found in the v1.2 BOM/JLCPCB data (don't copy these from the v1.2 files
 C139966 is a Vilsion part, not the APS6404L. C2910528 is a 3.5 mm jack with a different pinout.
 C2905423 is a female header, not the Pico. C2935925 is DEALON, not Amphenol. C6942 is the SOIC SN74AHC14DR.
 
+## JLCPCB files
+
+```
+hw-common/tools/jlcpcb.sh hw-tht/PicoGUS-THT.kicad_pcb        # -> hw-tht/build/jlcpcb/
+```
+
+The script stops if DRC (including the schematic-parity check) finds errors. `FORCE=1` exports anyway. It writes:
+
+* `PicoGUS-THT-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
+  and the Excellon drill files (PTH and NPTH separate, mm).
+* `PicoGUS-THT-bom-jlc.csv` and `PicoGUS-THT-cpl-jlc.csv`: the BOM and placement files for JLCPCB assembly (SMD parts only).
+  Only U3/U4 (and U8/U9) are SMD on this board; the LCSC column comes from the schematic fields.
+* `PicoGUS-THT-drc.rpt`: the DRC report.
+
+The **Hardware (JLCPCB files)** GitHub Action runs the same script on every push that touches the
+boards. The files can be downloaded as build artifacts (`jlcpcb-tht`, `jlcpcb-smd`).
+
+Order options: 2 layers, **1.6 mm**, and **Gold fingers: Yes** with the **45° finger chamfer** (the ISA
+edge connector). ENIG is a good choice for the rest of the board. Check the rotations in JLCPCB's
+placement preview before paying for assembly.
+
 ## Caveats
 
 1. **Untested.** This board is built from the proven v1.2 circuit, but it hasn't been fabricated or
