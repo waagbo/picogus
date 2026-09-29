@@ -31141,7 +31141,7 @@
 		)
 	)
 	(gr_text "This version is dedicated to Mila and Alisa,\nmy two wonderful princesses,\nwho fill my world with joy."
-		(at 136 91.64 0)
+		(at 139.5 60.5 0)
 		(layer "B.SilkS")
 		(uuid "12b7b964-e8ff-436c-805a-fb0de44a1890")
 		(effects

@@ -159,7 +159,7 @@ the two, **never both** (two DAC outputs would drive the same line).
 ### Back silkscreen
 
 The back carries the PicoGUS artwork (hw-common/art/picogus-artwork.svg: three game heroes over the
-PicoGUS logo), 76 × 27 mm, just above the ISA fingers, with the dedication above it: *This version is
+PicoGUS logo), 76 × 27 mm, just above the ISA fingers, with the dedication higher up on the back, above the DAC area: *This version is
 dedicated to Mila and Alisa, my two wonderful princesses, who fill my world with joy.* Both are mirrored
 on B.SilkS so they read correctly from the back. The back is full of through-hole pads, so the artwork is
 cut out 0.3 mm around every pad and hole (silkscreen never lands on copper).
