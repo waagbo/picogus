@@ -138,30 +138,29 @@ the two, **never both** (two DAC outputs would drive the same line).
 
 | Build | Fit | Leave out |
 |---|---|---|
-| On-board DAC (default) | U9, C12–C20, FB3, R7, R8 | J10 (the module and its two sockets) |
-| GY-PCM5102 module | the module in J10 (1x6 + 1x4 female headers) | **U9, C12–C20, FB3, R7, R8** |
+| On-board DAC (default) | U9, C12–C20, FB3, R7, R8 | J10 (the module) |
+| GY-PCM5102 module | the module, soldered almost flat in J10 | **U9, C12–C20, FB3, R7, R8** |
 
-* The parts to leave out for the module are exactly the ones inside the **dashed "DAC" outline** on the
-  silkscreen, headed "DAC -OR- J10 MODULE". That includes the DAC's output filter (R7/R8 470 Ω, C19/C20
-  2.2 nF): the module has the same 470 Ω / 2.2 nF filter on board, so its outputs join the audio path
-  after it (AUDIO_L/AUDIO_R, straight into the mixer).
-* The module plugs in on female headers right of the Waveblaster area, over the low parts between the Pico
-  and the mixer (its dashed outline is on the silkscreen, labelled "J10: GY-PCM5102"). It sits about
-  11 mm above the card and does not reach into the Waveblaster daughterboard area.
-* On the module: solder the 6-pin I2S header (SCK BCK DIN LCK GND VIN) and a **4-pin header on the
-  AGND ROUT AGND LROUT end** of its 9-pin row, both pointing down, and set its solder jumpers
-  **H1=L, H2=L, H3=H, H4=L**. The module gets +5 V (it has its own 3.3 V regulator); SCK is grounded
-  on the card. Its own 3.5 mm jack is not used: the audio goes through the mixer to J8.
-* Either way the mixer, the Waveblaster mix and the firmware are the same. This makes the board fully through-hole
-  apart from U3/U4 and the SOIC-8 PSRAM.
-* The module is not sold by DigiKey (AliExpress, eBay and the like); the two female headers are in the
-  optional BOM lines.
+* The module lies **over the DAC area**: the parts to leave out for it are exactly the ones inside the
+  module's **dashed J10 outline** on the silkscreen, headed "DAC -OR- GY-PCM5102". That includes the
+  DAC's output filter (R7/R8 470 Ω, C19/C20 2.2 nF): the module has the same 470 Ω / 2.2 nF filter on
+  board, so its outputs join the audio path after it (AUDIO_L/AUDIO_R, straight into the mixer).
+* Solder the module **almost flat, directly on its 2.54 mm male pins** (no sockets): its 6-pin I2S header
+  (SCK BCK DIN LCK GND VIN) and a 4-pin piece of the 1x40 strip on the **AGND ROUT AGND LROUT end** of
+  its 9-pin row, both pointing down. It then sits a few mm above the card, well under a Waveblaster
+  daughterboard (~11 mm); on 8.5 mm sockets it would hit one.
+* Set the module's solder jumpers **H1=L, H2=L, H3=H, H4=L**. It gets +5 V (it has its own 3.3 V
+  regulator); SCK is grounded on the card. Its own 3.5 mm jack is not used: the audio goes through the
+  mixer to J8.
+* Either way the mixer, the Waveblaster mix and the firmware are the same. With the module the board is
+  fully through-hole apart from U3/U4 and the SOIC-8 PSRAM.
+* The module is not sold by DigiKey (AliExpress, eBay and the like).
 
 ### Back silkscreen
 
 The back carries the "Mila and Alisa" artwork (the princesses, the castle and the PicoGUS logo) with the
 dedication below it: *This version is dedicated to Mila and Alisa, my two wonderful princesses, who fill
-my world with joy.* It is mirrored on B.SilkS so it reads correctly from the back. On this board the back is full of through-hole pads, so the artwork is cut out 0.3 mm around every pad and hole (silkscreen never lands on copper) and the dedication sits in the one pad-free strip below it.
+my world with joy.* It is mirrored on B.SilkS so it reads correctly from the back. It sits on the lower half of the back, just above the ISA fingers, with the dedication in its upper left corner. The back is full of through-hole pads, so the artwork is cut out 0.3 mm around every pad and hole (silkscreen never lands on copper).
 
 ### Other changes
 
