@@ -131,6 +131,32 @@ WT L (J9.24) -- 10uF bipolar (C22) --+-- RV1A --- 10k (R12)   +--|+ /
   **C0G/NP0**, which has no voltage or temperature coefficient and so adds no distortion. X7R is used only for
   supply decoupling.
 
+### DAC option: on-board PCM5100A **or** a GY-PCM5102 module (J10)
+
+The PCM output can come from **either** the on-board DAC **or** a plug-in GY-PCM5102 module. Fit one of
+the two, **never both** (two DAC outputs would drive the same line).
+
+| Build | Fit | Leave out |
+|---|---|---|
+| On-board DAC (default) | U9, C12–C18, FB3 | J10 (the module and its two sockets) |
+| GY-PCM5102 module | the module in J10 (1x6 + 1x4 female headers) | **U9, C12, C13, C14, C15, C16, C17, C18, FB3** |
+
+* The parts to leave out for the module are inside the **dashed "DAC" outline** on the silkscreen, headed
+  "DAC -OR- J10 MODULE". R7/R8 and C19/C20 sit just outside it: they are fitted in **both** builds (the
+  470 Ω / 2.2 nF output filter in front of the mixer).
+* The module plugs in on female headers right of the Waveblaster area, over the low parts between the Pico
+  and the mixer (its dashed outline is on the silkscreen, labelled "J10: GY-PCM5102"). It sits about
+  11 mm above the card and does not reach into the Waveblaster daughterboard area.
+* On the module: solder the 6-pin I2S header (SCK BCK DIN LCK GND VIN) and a **4-pin header on the
+  AGND ROUT AGND LROUT end** of its 9-pin row, both pointing down, and set its solder jumpers
+  **H1=L, H2=L, H3=H, H4=L**. The module gets +5 V (it has its own 3.3 V regulator); SCK is grounded
+  on the card. Its own 3.5 mm jack is not used: the audio goes through the mixer to J8.
+* The module's outputs join U9's outputs (DAC_OUTL/DAC_OUTR), so the rest of the audio path, the
+  Waveblaster mix and the firmware are the same in both builds. This makes the board fully through-hole
+  apart from U3/U4 and the SOIC-8 PSRAM.
+* The module is not sold by DigiKey (AliExpress, eBay and the like); the two female headers are in the
+  optional BOM lines.
+
 ### Back silkscreen
 
 The back carries the "Mila and Alisa" artwork (the princesses, the castle and the PicoGUS logo) with the
@@ -139,9 +165,6 @@ my world with joy.* It is mirrored on B.SilkS so it reads correctly from the bac
 
 ### Other changes
 
-* The GY-PCM5102 **module option is removed** (I2S_DAC1/J4 of v1.2; on v1.2, J4 carried
-  AGND/ROUT/AGND/LROUT). The Waveblaster mix needs the on-board DAC, and the module's own jack would bypass
-  the mixer. The DAC itself stays SMD, as it must.
 * The board is **103.7 × 99.9 mm**. It has the same length, ISA edge connector and bracket holes as v1.2
   (the MIDI and line-out jacks are in the same places), but it is taller, like PicoGUS 2.0, to fit the
   Waveblaster header along the top edge. 1.6 mm FR4 (the v1.2 project file said 0.57 mm).
