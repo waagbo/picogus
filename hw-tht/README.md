@@ -138,12 +138,13 @@ the two, **never both** (two DAC outputs would drive the same line).
 
 | Build | Fit | Leave out |
 |---|---|---|
-| On-board DAC (default) | U9, C12–C18, FB3 | J10 (the module and its two sockets) |
-| GY-PCM5102 module | the module in J10 (1x6 + 1x4 female headers) | **U9, C12, C13, C14, C15, C16, C17, C18, FB3** |
+| On-board DAC (default) | U9, C12–C20, FB3, R7, R8 | J10 (the module and its two sockets) |
+| GY-PCM5102 module | the module in J10 (1x6 + 1x4 female headers) | **U9, C12–C20, FB3, R7, R8** |
 
-* The parts to leave out for the module are inside the **dashed "DAC" outline** on the silkscreen, headed
-  "DAC -OR- J10 MODULE". R7/R8 and C19/C20 sit just outside it: they are fitted in **both** builds (the
-  470 Ω / 2.2 nF output filter in front of the mixer).
+* The parts to leave out for the module are exactly the ones inside the **dashed "DAC" outline** on the
+  silkscreen, headed "DAC -OR- J10 MODULE". That includes the DAC's output filter (R7/R8 470 Ω, C19/C20
+  2.2 nF): the module has the same 470 Ω / 2.2 nF filter on board, so its outputs join the audio path
+  after it (AUDIO_L/AUDIO_R, straight into the mixer).
 * The module plugs in on female headers right of the Waveblaster area, over the low parts between the Pico
   and the mixer (its dashed outline is on the silkscreen, labelled "J10: GY-PCM5102"). It sits about
   11 mm above the card and does not reach into the Waveblaster daughterboard area.
@@ -151,8 +152,7 @@ the two, **never both** (two DAC outputs would drive the same line).
   AGND ROUT AGND LROUT end** of its 9-pin row, both pointing down, and set its solder jumpers
   **H1=L, H2=L, H3=H, H4=L**. The module gets +5 V (it has its own 3.3 V regulator); SCK is grounded
   on the card. Its own 3.5 mm jack is not used: the audio goes through the mixer to J8.
-* The module's outputs join U9's outputs (DAC_OUTL/DAC_OUTR), so the rest of the audio path, the
-  Waveblaster mix and the firmware are the same in both builds. This makes the board fully through-hole
+* Either way the mixer, the Waveblaster mix and the firmware are the same. This makes the board fully through-hole
   apart from U3/U4 and the SOIC-8 PSRAM.
 * The module is not sold by DigiKey (AliExpress, eBay and the like); the two female headers are in the
   optional BOM lines.

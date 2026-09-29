@@ -4864,7 +4864,7 @@
 				)
 			)
 		)
-		(property "Description" "OPTIONAL GY-PCM5102 DAC module on female headers, INSTEAD OF U9 + C12-C18 + FB3 (the DAC area). Fit one or the other, never both."
+		(property "Description" "OPTIONAL GY-PCM5102 DAC module on female headers, INSTEAD OF the DAC area: U9, C12-C20, FB3, R7, R8. Fit one or the other, never both."
 			(at 132.08 55.88 0)
 			(hide yes)
 			(show_name no)
@@ -5416,7 +5416,7 @@
 			)
 		)
 	)
-	(label "DAC_OUTR"
+	(label "AUDIO_R"
 		(at 144.78 52.07 0)
 		(effects
 			(font
@@ -5426,7 +5426,7 @@
 		)
 		(uuid "8f5225f6-95d4-589b-a528-c8de2564bfc4")
 	)
-	(label "DAC_OUTL"
+	(label "AUDIO_L"
 		(at 144.78 57.15 0)
 		(effects
 			(font
@@ -5456,7 +5456,7 @@
 		)
 		(uuid "ec0ec59b-a849-5524-936f-21adaed59b9f")
 	)
-	(text "OPTION: GY-PCM5102 module (J10) INSTEAD OF the on-board DAC.\nFit EITHER U9 + C12-C18 + FB3 OR the module - never both (two DAC outputs would fight).\nR7/R8 + C19/C20 are fitted in both cases. Module solder jumpers: H1=L H2=L H3=H H4=L."
+	(text "OPTION: GY-PCM5102 module (J10) INSTEAD OF the on-board DAC.\nFit EITHER U9 + C12-C20 + FB3 + R7/R8 OR the module - never both (two DAC outputs would fight).\nThe module has its own 470R/2.2nF output filter. Module solder jumpers: H1=L H2=L H3=H H4=L."
 		(exclude_from_sim no)
 		(at 111.76 38.1 0)
 		(effects
