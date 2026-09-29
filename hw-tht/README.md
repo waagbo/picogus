@@ -129,6 +129,26 @@ WT L (J9.24) -- 10uF bipolar (C22) --+-- RV1A --- 10k (R12)   +--|+ /
   **C0G/NP0**, which has no voltage or temperature coefficient and so adds no distortion. X7R is used only for
   supply decoupling.
 
+### Experimental second IRQ (J10, J11)
+
+For experiments with firmware that runs two devices at once (for example sound plus NE2000 network),
+the spare channel of U2 (input 2A2, pin 13 → output 2Y2, pin 7) can drive a second ISA IRQ. It has
+the same drive and the same bus enable (`~BUSOE`) as the normal IRQ output. On v1.2 its input was
+tied to GND and its output was unconnected.
+
+| Jumper | Where | Connects |
+|---|---|---|
+| **J10** ("GP3 IRQ") | next to the PSRAM (U8) | Pico **GPIO3** → U2 pin 13 (R25, 10 k, pulls it low when open) |
+| **J11** ("2ND IRQ" / "IRQ3") | next to J1 | U2 pin 7 → ISA **IRQ3** |
+
+* **Leave both open for normal use** (park the shunts on one pin). J10 sits right at the PSRAM, so the
+  fast SPI line only gets a few millimetres of stub.
+* GPIO3 is also the PSRAM's SPI_TX line: all 26 Pico GPIOs are in use on this design. So this only
+  works with firmware that leaves the PSRAM idle (no GUS mode) and drives GPIO3 as the second IRQ.
+  The PSRAM ignores its SPI data-in pin while chip select (GPIO1) is high.
+* Never fit J11 when J1 also selects IRQ3: two outputs would then drive the same line. While
+  J11 is fitted, the card drives IRQ3 whenever the bus is enabled, so IRQ3 isn't available to a serial port (COM2/COM4).
+
 ### Other changes
 
 * The GY-PCM5102 **module option is removed** (I2S_DAC1/J4 of v1.2; on v1.2, J4 carried

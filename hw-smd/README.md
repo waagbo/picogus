@@ -48,6 +48,26 @@ U7 74LVC1G00, U8 PSRAM, U9 PCM510x and U10 74LVC2G06, with the same footprints.
 * **Pico VBUS** gets a PWR_FLAG, which clears the one ERC error that v1.2 also had.
 * **1.6 mm FR4.** The v1.2 project file said 0.57 mm, which is too thin for an ISA edge connector.
 
+### Experimental second IRQ (J10, J11)
+
+For experiments with firmware that runs two devices at once (for example sound plus NE2000 network),
+the spare channel of U2 (input 2A2, pin 13 → output 2Y2, pin 7) can drive a second ISA IRQ. It has
+the same drive and the same bus enable (`~BUSOE`) as the normal IRQ output. On v1.2 its input was
+tied to GND and its output was unconnected.
+
+| Jumper | Where | Connects |
+|---|---|---|
+| **J10** ("GP3 IRQ") | next to the PSRAM (U8) | Pico **GPIO3** → U2 pin 13 (R25, 10 k, pulls it low when open) |
+| **J11** ("2ND IRQ" / "IRQ3") | next to J1 | U2 pin 7 → ISA **IRQ3** |
+
+* **Leave both open for normal use** (park the shunts on one pin). J10 sits right at the PSRAM, so the
+  fast SPI line only gets a few millimetres of stub.
+* GPIO3 is also the PSRAM's SPI_TX line: all 26 Pico GPIOs are in use on this design. So this only
+  works with firmware that leaves the PSRAM idle (no GUS mode) and drives GPIO3 as the second IRQ.
+  The PSRAM ignores its SPI data-in pin while chip select (GPIO1) is high.
+* Never fit J11 when J1 also selects IRQ3: two outputs would then drive the same line. While
+  J11 is fitted, the card drives IRQ3 whenever the bus is enabled, so IRQ3 isn't available to a serial port (COM2/COM4).
+
 ## Card dimensions (ISA 8-bit)
 
 The card is **103.7 mm long (bracket to far edge) × 99.9 mm tall** (fingers to top edge). The IBM PC/XT
@@ -65,9 +85,9 @@ line. Every line was in stock at DigiKey on 2026-09-29.
 
 | DigiKey, parts only (no PCB, no shipping) | 1 board | per board, 10-board order |
 |---|---|---|
-| NOK excl. MVA | ~389 kr | ~299 kr |
-| NOK incl. 25 % MVA | ~486 kr | ~373 kr |
-| USD | ~$41 | ~$31 |
+| NOK excl. MVA | ~395 kr | ~303 kr |
+| NOK incl. 25 % MVA | ~494 kr | ~379 kr |
+| USD | ~$41 | ~$32 |
 
 The NOK prices are DigiKey's price breaks converted by findchips.com, so digikey.no may differ by a
 few percent. The biggest items are RV1 (45 kr), the Pico (44 kr), the PCM5100A (25 kr) and U3/U4 (40 kr).
