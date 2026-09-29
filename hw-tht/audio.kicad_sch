@@ -4001,8 +4001,8 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "9fbb9b19-a851-5b36-b20b-db21d121f5e8")
-		(property "Reference" "#PWR159"
+		(uuid "06e0a112-62b5-5956-806c-a2271b3814f1")
+		(property "Reference" "#PWR158"
 			(at 22.86 45.085 0)
 			(hide yes)
 			(show_name no)
@@ -4057,12 +4057,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "2b1850f6-ac2f-51e8-b5c8-45952de84603")
+			(uuid "ef85df36-cfaf-5f03-87d6-e7c597fac143")
 		)
 		(instances
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/9d2ec422-e50e-4bcf-9c81-7933040dc4f5"
-					(reference "#PWR159")
+					(reference "#PWR158")
 					(unit 1)
 				)
 			)
@@ -4077,7 +4077,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ed7400db-d372-5a56-a159-4d072fed78ba")
+		(uuid "77b0842c-8b0b-596f-8f11-c6c01abd5143")
 	)
 	(label "AVDD"
 		(at 67.31 38.1 90)
@@ -4087,7 +4087,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1145c01e-c17f-591a-9efb-6031ef6b6d95")
+		(uuid "96e7bf1c-1d13-5223-bea9-8ad234c142a4")
 	)
 	(label "AVDD"
 		(at 27.305 45.085 0)
@@ -4097,7 +4097,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "b6369c1e-38ef-5d48-86e4-a392f3e3840a")
+		(uuid "d82c1c99-92e9-5e63-952d-4dd03118e324")
 	)
 	(label "AVDD"
 		(at 36.195 45.085 0)
@@ -4107,7 +4107,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "a3974e16-6416-5a8a-8274-702421243f2b")
+		(uuid "b07682a5-e868-5cf9-a4cc-e4c90d96470b")
 	)
 	(symbol
 		(lib_id "Device:FerriteBead")
@@ -4119,7 +4119,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "4d842ae6-561b-5d14-9e2a-768f6bbde9d9")
+		(uuid "c72b4d8d-9db7-5bd2-91ac-57c578b565a7")
 		(property "Reference" "FB3"
 			(at 39.37 29.845 90)
 			(show_name no)
@@ -4229,10 +4229,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "ca9a940b-a0be-587f-be6f-a9b693fb5085")
+			(uuid "91741c08-04c5-5f24-ade0-7918b22a9e63")
 		)
 		(pin "2"
-			(uuid "8affcb2f-1759-5f42-98af-75d2dbd3855c")
+			(uuid "d56065bf-bdd3-5325-b292-0dc9f23a6a83")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -4253,8 +4253,8 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "c323eef1-ded3-583a-be04-557a8b024903")
-		(property "Reference" "#PWR160"
+		(uuid "9163b804-8914-5414-9151-755401d3fafd")
+		(property "Reference" "#PWR159"
 			(at 35.56 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -4309,12 +4309,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "95d8cb6b-d99e-558e-9987-ae7852bd6556")
+			(uuid "a97d0cfe-3b92-5aa6-8495-832cd09b0d8e")
 		)
 		(instances
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/9d2ec422-e50e-4bcf-9c81-7933040dc4f5"
-					(reference "#PWR160")
+					(reference "#PWR159")
 					(unit 1)
 				)
 			)
@@ -4328,7 +4328,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "57be2541-5dc8-50a0-b0a1-b9249f5a9611")
+		(uuid "e0f2bd37-8e25-5971-8e60-5d22cc2bdf4c")
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
@@ -4340,7 +4340,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "b8ba4538-10dc-5c7d-a7bf-328e010520e0")
+		(uuid "e5428885-0d46-59b8-b82c-0ba7c8cc87f5")
 		(property "Reference" "#FLG103"
 			(at 43.18 33.02 0)
 			(hide yes)
@@ -4396,7 +4396,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "5bc43e0e-84f9-5b77-90aa-268e08a82e3f")
+			(uuid "851da403-68ed-5d4e-a6ea-cf5fadf4308f")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -4416,6 +4416,6 @@
 			)
 			(justify left top)
 		)
-		(uuid "cccba026-d32e-52f6-9d93-14a19988fa3b")
+		(uuid "4be5ff3c-2b45-5ffc-b5b1-78444d9c49a3")
 	)
 )

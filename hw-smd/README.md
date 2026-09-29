@@ -49,26 +49,11 @@ U7 74LVC1G00, U8 PSRAM, U9 PCM510x and U10 74LVC2G06, with the same footprints.
 * **Pico VBUS** gets a PWR_FLAG, which clears the one ERC error that v1.2 also had.
 * **1.6 mm FR4.** The v1.2 project file said 0.57 mm, which is too thin for an ISA edge connector.
 
-### Experimental second IRQ (J10, J11)
+### Back silkscreen
 
-For experiments with firmware that runs two devices at once (for example sound plus NE2000 network),
-the spare channel of U2 (input 2A2, pin 13 → output 2Y2, pin 7) can drive a second ISA IRQ. It has
-the same drive and the same bus enable (`~BUSOE`) as the normal IRQ output. On v1.2 its input was
-tied to GND and its output was unconnected.
-
-| Jumper | Where | Connects |
-|---|---|---|
-| **J10** ("GP3 IRQ") | next to the PSRAM (U8) | Pico **GPIO3** → U2 pin 13 (R25, 10 k, pulls it low when open) |
-| **J11** ("NE2000 IRQ3") | next to J1 | U2 pin 7 → ISA **IRQ3** |
-
-* **Leave both open for normal use** (park the shunts on one pin). J11 is what puts the card on
-  IRQ3. J10 only exists to keep the fast PSRAM line clean: it sits right at the PSRAM, so while it is
-  open the SPI line gets a few millimetres of stub, not a trace running all the way to U2.
-* GPIO3 is also the PSRAM's SPI_TX line: all 26 Pico GPIOs are in use on this design. So this only
-  works with firmware that leaves the PSRAM idle (no GUS mode) and drives GPIO3 as the second IRQ.
-  The PSRAM ignores its SPI data-in pin while chip select (GPIO1) is high.
-* Never fit J11 when J1 also selects IRQ3: two outputs would then drive the same line. While
-  J11 is fitted, the card drives IRQ3 whenever the bus is enabled, so IRQ3 isn't available to a serial port (COM2/COM4).
+The back carries the "Mila and Alisa" artwork (the princesses, the castle and the PicoGUS logo) with the
+dedication below it: *This version is dedicated to Mila and Alisa, my two wonderful princesses, who fill
+my world with joy.* It is mirrored on B.SilkS so it reads correctly from the back. It sits in the pad-free area above the ISA fingers; any pad or hole in the way is cut out 0.3 mm around it.
 
 ## Card dimensions (ISA 8-bit)
 
