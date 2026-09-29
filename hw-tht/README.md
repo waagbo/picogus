@@ -17,7 +17,7 @@ Files:
 | `audio.kicad_sch` | PCM510x DAC sheet (same circuit as v1.2, with THT passives) |
 | `wavetable.kicad_sch` | New: Waveblaster header, WT control logic, WT volume, op-amp mixer, line-out jack |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
-| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers (stock checked 2026-09-28) |
+| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers, plus a digikey.no link per line (stock checked 2026-09-28) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
 All other footprints come from KiCad's standard libraries.
@@ -151,6 +151,17 @@ WT L (J9.24) -- 10uF bipolar (C22) --+-- RV1A --- 10k (R12)   +--|+ /
 * **Layout for audio quality:** every decoupling cap sits next to its chip's supply pin, with a short
   return to GND. FB3 sits next to C13/C15. The ±12 V filter (R23/R24, C32/C33) sits above U11. The PCM5102 is rotated so that its outputs, output RC filter (R7/R8, C19/C20) and the
   mixer op-amp form one short, straight path to the line-out jack, away from the Pico and the ISA logic.
+
+## Card dimensions (ISA 8-bit)
+
+The card is **103.7 mm long × 99.9 mm tall** (bottom of the fingers to the top edge). The IBM PC/XT
+full-height limit is 4.2 in (106.7 mm), so the card is 6.8 mm under it; the AT limit is 4.8 in (121.9 mm).
+The edge connector (62 contacts, 0.1 in pitch), its position and the bracket holes are unchanged from
+v1.2, and the board is 1.6 mm, the standard ISA card thickness. A Waveblaster daughterboard sits about
+11 mm above the card, inside the 0.8 in (20.3 mm) AT slot pitch. Clip the THT leads short
+(≤ 2 mm) on the solder side, where the next card sits.
+
+The **SMD** version of this board is in [`hw-smd/`](../hw-smd/README.md).
 
 ## Ordering
 
