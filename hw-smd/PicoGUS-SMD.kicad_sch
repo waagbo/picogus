@@ -26610,7 +26610,7 @@
 		)
 		(uuid "80fcbb34-57dd-5d09-b70a-fbcd8161771d")
 	)
-	(text "v1.3: the GY-PCM5102 module option of v1.2\n(I2S_DAC1/J4) is removed - the on-board DAC\nfeeds the Waveblaster mixer."
+	(text "v1.3: the GY-PCM5102 module option of v1.2\n(I2S_DAC1/J4) is now J10 on the DAC sheet: it\nfeeds the Waveblaster mixer instead of U9."
 		(exclude_from_sim no)
 		(at 223.52 104.14 0)
 		(effects

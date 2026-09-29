@@ -45,16 +45,34 @@ U7 74LVC1G00, U8 PSRAM, U9 PCM510x and U10 74LVC2G06, with the same footprints.
   * The signal-path capacitors (C19/C20, C30/C31) are **C0G**. The signal-path resistors (R7/R8,
     R10–R13, R19/R20) are **0.1 % thin film**, which has lower noise and distortion than thick film and
     keeps left and right matched.
-* **Removed:** the GY-PCM5102 module option (I2S_DAC1/J4). The mixer needs the on-board DAC, and the
-  module's jack would bypass it. J2 (the ISA debug header, never fitted) is also removed.
+* **Removed:** J2 (the ISA debug header, never fitted).
 * **Pico VBUS** gets a PWR_FLAG, which clears the one ERC error that v1.2 also had.
 * **1.6 mm FR4.** The v1.2 project file said 0.57 mm, which is too thin for an ISA edge connector.
+
+### DAC option: on-board PCM5100A **or** a GY-PCM5102 module (J10)
+
+As on the THT board, the PCM output can come from **either** the on-board DAC **or** a GY-PCM5102
+module soldered almost flat over the DAC area. Fit one of the two, **never both**.
+
+| Build | Fit | Leave out |
+|---|---|---|
+| On-board DAC (default, JLCPCB assembly) | U9, C12–C20, FB3, R7, R8 | J10 (the module) |
+| GY-PCM5102 module | the module, soldered almost flat in J10 | **U9, C12–C20, FB3, R7, R8** (mark them DNP) |
+
+* The parts to leave out are exactly the ones inside the module's **dashed J10 outline**, headed
+  "DAC -OR- GY-PCM5102". That includes the DAC's output filter (R7/R8, C19/C20): the module has the same
+  470 Ω / 2.2 nF filter, so its outputs join AUDIO_L/AUDIO_R straight into the mixer.
+* Solder the module directly on its 2.54 mm male pins (6-pin I2S header + a 4-pin piece on the AGND ROUT
+  AGND LROUT end of its 9-pin row), no sockets, so it stays well under a Waveblaster daughterboard. Its
+  solder jumpers: **H1=L, H2=L, H3=H, H4=L**; it gets +5 V and SCK is grounded on the card.
+* The placement of this area is provisional (J10 sits where it does on the THT board); rearrange the
+  DAC parts under it as needed.
 
 ### Back silkscreen
 
 The back carries the "Mila and Alisa" artwork (the princesses, the castle and the PicoGUS logo) with the
 dedication below it: *This version is dedicated to Mila and Alisa, my two wonderful princesses, who fill
-my world with joy.* It is mirrored on B.SilkS so it reads correctly from the back. It sits in the pad-free area above the ISA fingers; any pad or hole in the way is cut out 0.3 mm around it.
+my world with joy.* It is mirrored on B.SilkS so it reads correctly from the back. It sits on the lower half of the back, just above the ISA fingers (the same spot as on the THT board), with the dedication in its upper left corner; any pad or hole in the way is cut out 0.3 mm around it.
 
 ## Card dimensions (ISA 8-bit)
 
