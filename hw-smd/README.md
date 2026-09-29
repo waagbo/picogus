@@ -21,6 +21,7 @@ through-hole board in [`hw-tht/`](../hw-tht/README.md):
 | `PicoGUS-SMD-schematic.pdf` | Schematic PDF |
 | `BOM-SMD.csv` | BOM with a **DigiKey link** for every line, stock and NOK price (checked 2026-09-29) |
 | `BOM-SMD-digikey-upload.csv` | DigiKey cart/BOM upload: quantity, DigiKey part number, MPN, and the reference designators as Customer Reference (printed on each bag) |
+| `BOM-SMD-digikey-upload-10x.csv` | The same for **10 boards**: every quantity ×10, except the 1x40 header strip (11 strips: one per board for the Pico, one more for all the 1x2 jumpers). DigiKey applies its 10-piece price breaks |
 
 ## What changed compared to v1.2
 

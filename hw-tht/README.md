@@ -19,6 +19,7 @@ Files:
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
 | `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers, plus a digikey.no link per line (stock checked 2026-09-28) |
 | `BOM-THT-digikey-upload.csv` (+ `-optional`) | DigiKey cart/BOM upload: quantity, DigiKey part number, MPN, and the reference designators as Customer Reference (printed on each bag) |
+| `BOM-THT-digikey-upload-10x.csv` (+ `-optional-10x`) | The same for **10 boards**: every quantity ×10, except the 1x40 header strip (11 strips: one per board for the Pico, one more for all the 1x2 jumpers). DigiKey applies its 10-piece price breaks |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
 All other footprints come from KiCad's standard libraries.

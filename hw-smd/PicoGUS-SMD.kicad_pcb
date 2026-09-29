@@ -1623,7 +1623,7 @@
 		(descr "TRS 3.5mm, horizontal, through-hole, with switch, https://www.cui.com/product/resource/sj1-353xng.pdf")
 		(tags "TRS audio jack stereo horizontal")
 		(property "Reference" "J8"
-			(at 5.495 3.8 0)
+			(at -2.55 5.9 0)
 			(layer "F.SilkS")
 			(uuid "4633a87b-2d62-4360-addc-f4718dd71750")
 			(effects
@@ -9013,7 +9013,7 @@
 		(descr "1221-5R1211, Dual Pot, Horizontal, Switch, Alps RK097 Dual, https://tech.alpsalpine.com/prod/e/pdf/potentiometer/rotarypotentiometers/rk097/rk097.pdf")
 		(tags "Potentiometer horizontal Alps RK097 Dual Switch")
 		(property "Reference" "RV1"
-			(at 0 8.5 0)
+			(at -3.2 2.5 0)
 			(layer "F.SilkS")
 			(uuid "5311bd0a-e607-4b5b-b647-365fd60fcbea")
 			(effects
@@ -16687,7 +16687,7 @@
 		(descr "TRS 3.5mm, horizontal, through-hole, with switch, https://www.cui.com/product/resource/sj1-353xng.pdf")
 		(tags "TRS audio jack stereo horizontal")
 		(property "Reference" "J5"
-			(at 0.1 -6.45 270)
+			(at -2.53 5.8975 0)
 			(layer "F.SilkS")
 			(uuid "b5c6df8e-fa0a-4433-b517-de3635f9be5e")
 			(effects
