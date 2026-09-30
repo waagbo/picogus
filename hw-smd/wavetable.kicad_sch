@@ -7666,7 +7666,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Alps Alpine"
+		(property "Manufacturer" "Bourns"
 			(at 152.4 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -7677,7 +7677,7 @@
 				)
 			)
 		)
-		(property "MPN" "RK09712200HA"
+		(property "MPN" "PTD902-2020K-A103"
 			(at 152.4 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -7688,7 +7688,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "4809-RK09712200HA-ND"
+		(property "DigiKey" "PTD902-2020K-A103-ND"
 			(at 152.4 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -9224,7 +9224,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Alps Alpine"
+		(property "Manufacturer" "Bourns"
 			(at 152.4 139.7 0)
 			(hide yes)
 			(show_name no)
@@ -9235,7 +9235,7 @@
 				)
 			)
 		)
-		(property "MPN" "RK09712200HA"
+		(property "MPN" "PTD902-2020K-A103"
 			(at 152.4 139.7 0)
 			(hide yes)
 			(show_name no)
@@ -9246,7 +9246,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "4809-RK09712200HA-ND"
+		(property "DigiKey" "PTD902-2020K-A103-ND"
 			(at 152.4 139.7 0)
 			(hide yes)
 			(show_name no)

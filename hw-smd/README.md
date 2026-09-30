@@ -90,12 +90,12 @@ line. Every line was in stock at DigiKey on 2026-09-29.
 
 | DigiKey, parts only (no PCB, no shipping) | 1 board | per board, 10-board order |
 |---|---|---|
-| NOK excl. MVA | ~395 kr | ~303 kr |
-| NOK incl. 25 % MVA | ~494 kr | ~379 kr |
-| USD | ~$41 | ~$32 |
+| NOK excl. MVA | ~374 kr | ~286 kr |
+| NOK incl. 25 % MVA | ~468 kr | ~357 kr |
+| USD | ~$39 | ~$30 |
 
 The NOK prices are DigiKey's price breaks converted by findchips.com, so digikey.no may differ by a
-few percent. The biggest items are RV1 (45 kr), the Pico (44 kr), the PCM5100A (25 kr) and U3/U4 (40 kr).
+few percent. The biggest items are the Pico (44 kr), U3/U4 (40 kr), the PCM5100A (25 kr) and RV1 (24 kr).
 
 Several v1.2 BOM lines are **out of stock at DigiKey today**, so they are replaced with equivalent parts:
 
@@ -140,9 +140,10 @@ placement preview before paying for assembly.
    output at all (not even PCM). Every AT/ATX PC power supply provides −12 V.
 3. **C22/C23 footprint.** KiCad has no non-polar SMD electrolytic footprint, so the silkscreen shows
    a "+". The parts are bipolar, so either orientation is correct.
-4. **RV1 availability.** Alps RK097 dual pots have low stock (DigiKey 210). The switched RK0971221Z0X
-   fits the same footprint. Cheaper alternative: Bourns PTD902-2020K-A103 (about half the price, same
-   2.5 mm pin grid, M7 bushing); test-fit one in the bracket first.
+4. **RV1.** The BOM uses the Bourns PTD902-2020K-A103 (DigiKey 426, 24 kr). It has the same 2.5 mm
+   pin grid and M7 bushing as the Alps RK097 the footprint was drawn for; test-fit one in the bracket
+   before a large order. The Alps RK09712200HA (45 kr) and the switched RK0971221Z0X also fit, but
+   have low stock.
 5. **ISA bracket.** Drill one more hole (about 7 mm, for RV1's bushing) between the MIDI and line-out
    jack holes.
 6. **Silkscreen.** Reference labels were placed automatically, and some sit on their default spot

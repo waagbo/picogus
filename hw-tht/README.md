@@ -107,7 +107,7 @@ WT L (J9.24) -- 10uF bipolar (C22) --+-- RV1A --- 10k (R12)   +--|+ /
 * The two sources are summed by a **NE5532 inverting summer** (U11, DIP-8, powered from ISA ±12 V).
   Both inputs have unity gain, so the PCM line out has the same level as on v1.2 (2.1 Vrms full scale),
   and the WT source is not attenuated by the mixing. The output is phase-inverted, which you can't hear.
-* **RV1** (dual-gang 10 k audio taper, Alps RK097 dual, right angle) sets the Waveblaster
+* **RV1** (dual-gang 10 k audio taper, right angle: Bourns PTD902-2020K-A103, or the Alps RK097 the footprint was drawn for) sets the Waveblaster
   level. Its shaft goes through the ISA bracket between the MIDI and line-out jacks. The signal is on the
   CW-end terminals (3/6) and GND is on the CCW end (1/4), so the level rises clockwise. The 10 k summing
   resistor loads the wiper only a little, because a log pot's wiper is near the GND end for most of its travel.
@@ -207,13 +207,13 @@ against findchips distributor data, and LCSC numbers against the LCSC product AP
 
   | | 1 board | per board, 10-board order |
   |---|---|---|
-  | NOK excl. MVA (digikey.no) | ~495 kr | ~373 kr |
-  | NOK incl. 25 % MVA | ~618 kr | ~466 kr |
-  | USD | ~$52 | ~$39 |
+  | NOK excl. MVA (digikey.no) | ~474 kr | ~356 kr |
+  | NOK incl. 25 % MVA | ~592 kr | ~444 kr |
+  | USD | ~$50 | ~$37 |
 
   The optional sockets and Pico headers add ~39 kr (~$4). NOK figures are DigiKey's USD prices converted
-  at 9.53 NOK/USD, so digikey.no can differ by a few percent. The Pico (44 kr), RV1 (45 kr),
-  U3/U4 (40 kr) and the 18 × 0.1 µF (59 kr) are the big items.
+  at 9.53 NOK/USD, so digikey.no can differ by a few percent. The Pico (44 kr), U3/U4 (40 kr)
+  and the 18 × 0.1 µF (59 kr) are the big items.
 * **Ceramic capacitors must have 5.0 mm (or 5.08 mm) lead pitch.** 2.5 mm parts don't fit (e.g. TDK FG1x, Vishay K…L2).
 
 Mistakes found in the v1.2 BOM/JLCPCB data (don't copy these from the v1.2 files):
@@ -260,11 +260,12 @@ placement preview before paying for assembly.
    under it (DIP ICs, axial resistors, radial MLCCs, the J1 jumper block as on PicoGUS 2.0). Electrolytics,
    the pot and the Pico are outside that area. IC sockets add ~4 mm and may touch a daughterboard
    that has parts on its underside, so solder the DIPs directly or check the clearance.
-6. **RV1 availability.** Alps RK097 dual pots have low stock at both distributors
-   (RK09712200HA: DigiKey 210 / LCSC 175). The switched RK0971221Z0X fits the same footprint.
-   Cheaper alternative: Bourns PTD902-2020K-A103 (about half the price, same 2.5 mm pin grid,
-   M7 bushing); test-fit one in the bracket first.
-   Alps North America has published a discontinuation notice that covers parts of the range.
+6. **RV1.** The BOM uses the Bourns PTD902-2020K-A103 (DigiKey 426, 24 kr). It has the same 2.5 mm
+   pin grid and M7 bushing as the Alps RK097 the footprint was drawn for; test-fit one in the bracket
+   before a large order. LCSC doesn't list it, so the LCSC column keeps the Alps RK09712200HA
+   (C470545). The Alps parts (RK09712200HA: DigiKey 210 / LCSC 175, 45 kr; the switched RK0971221Z0X
+   also fits) have low stock, and Alps North America has published a discontinuation notice that
+   covers parts of the range.
 7. **ISA bracket.** Drill one more hole (about 7 mm, for RV1's bushing) between the MIDI and
    line-out jack holes. Those two holes are where they are on v1.2.
 8. **Mixed LCSC stand-ins.** LCSC's 3.5 mm jacks are XKB PJ-325C5 equivalents. Their unused
