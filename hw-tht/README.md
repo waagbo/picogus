@@ -262,6 +262,8 @@ placement preview before paying for assembly.
    that has parts on its underside, so solder the DIPs directly or check the clearance.
 6. **RV1 availability.** Alps RK097 dual pots have low stock at both distributors
    (RK09712200HA: DigiKey 210 / LCSC 175). The switched RK0971221Z0X fits the same footprint.
+   Cheaper alternative: Bourns PTD902-2020K-A103 (about half the price, same 2.5 mm pin grid,
+   M7 bushing); test-fit one in the bracket first.
    Alps North America has published a discontinuation notice that covers parts of the range.
 7. **ISA bracket.** Drill one more hole (about 7 mm, for RV1's bushing) between the MIDI and
    line-out jack holes. Those two holes are where they are on v1.2.

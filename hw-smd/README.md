@@ -141,7 +141,8 @@ placement preview before paying for assembly.
 3. **C22/C23 footprint.** KiCad has no non-polar SMD electrolytic footprint, so the silkscreen shows
    a "+". The parts are bipolar, so either orientation is correct.
 4. **RV1 availability.** Alps RK097 dual pots have low stock (DigiKey 210). The switched RK0971221Z0X
-   fits the same footprint.
+   fits the same footprint. Cheaper alternative: Bourns PTD902-2020K-A103 (about half the price, same
+   2.5 mm pin grid, M7 bushing); test-fit one in the bracket first.
 5. **ISA bracket.** Drill one more hole (about 7 mm, for RV1's bushing) between the MIDI and line-out
    jack holes.
 6. **Silkscreen.** Reference labels were placed automatically, and some sit on their default spot
