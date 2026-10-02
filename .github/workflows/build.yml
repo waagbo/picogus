@@ -156,6 +156,40 @@ jobs:
             ${{env.OUTPUT_DIR}}/pgusdfs.exe
             ${{env.OUTPUT_DIR}}/dfsdiag.exe
 
+    # One download with everything a tester needs: the firmware .uf2 files, the
+    # DOS tools and their README. Built for every push and pull request.
+    bundle:
+      runs-on: ubuntu-22.04
+      needs: [build-firmware, build-pgusinit, build-pgusdfs]
+      env:
+        STAGING_DIR: ${{github.workspace}}/bundle
+      steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Name the bundle
+        id: name
+        shell: bash
+        run: |
+          REF="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          echo "name=picogus-${REF//\//-}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{env.STAGING_DIR}}
+          merge-multiple: true
+      - name: Add documentation
+        shell: bash
+        run: |
+          cp pgusinit/README.md $STAGING_DIR/PGUSINIT-README.md
+          cp pgusdfs/README.md $STAGING_DIR/PGUSDFS-README.md
+          cp sw/CHANGELOG.md $STAGING_DIR/CHANGELOG.md
+          ls -la $STAGING_DIR
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.name }}
+          path: ${{env.STAGING_DIR}}
+
     create-release:
       if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
       runs-on: ubuntu-22.04
