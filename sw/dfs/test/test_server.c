@@ -10,17 +10,24 @@
 #include <string.h>
 #include <stdint.h>
 #include "ff.h"
+#include "diskio.h"      /* DRESULT values reported by DIAG */
 #include "dfs.h"          /* DFS_BUF_SIZE, DFS_MAX_PAYLOAD */
 #include "dfs_server.h"
-#include "dfs_fs.h"        /* DFS_MAX_DIRS */
+#include "dfs_fs.h"        /* DFS_MAX_DIRS, DFS_CALL_* */
 #include "ramdisk_diskio.h"
+#include "../../usb_msc/msc_app.h"   /* msc_stats_t, MSC_IO_* (the RAM disk keeps them) */
 
-/* ---- platform stub --------------------------------------------------------- */
+/* ---- platform stubs -------------------------------------------------------- */
 
 static uint32_t test_clock_ms = 5000000;
+static FATFS fatfs;
 
 uint32_t dfs_platform_millis(void) {
     return test_clock_ms;
+}
+
+FATFS *dfs_platform_fatfs(void) {
+    return &fatfs;
 }
 
 /* ---- check infrastructure -------------------------------------------------- */
@@ -272,17 +279,82 @@ static int has_name(char names[][12], int n, const char *fcb) {
     return 0;
 }
 
+/* ---- DIAG helpers ---------------------------------------------------------- */
+
+typedef struct {
+    uint8_t  version, flags, fs_type;
+    uint32_t free_clst, n_fatent;
+    uint16_t csize;
+    uint8_t  last_fr, last_call, hard_fr, hard_call;
+    uint8_t  rd_res, wr_res, rd_cause, wr_cause, csw_status;
+    uint32_t reads, writes;
+    uint16_t rd_refused, wr_refused, rd_csw_err, wr_csw_err, timeouts, gone;
+    uint32_t wr_us, wr_lba;
+    uint16_t wr_count, stale;
+    uint32_t csw_residue;
+} diag_t;
+
+/* runs DFS_AL_DIAG and unpacks the record; AX and the length are checked here */
+static void op_diag(diag_t *d) {
+    uint16_t ax = run(DFS_AL_DIAG, NULL, 0);
+    CHECK(ax == 0, "diag -> AX %04X", ax);
+    CHECK(last_len == DFS_DIAG_LEN, "diag answer length %u != %u", last_len, DFS_DIAG_LEN);
+    memset(d, 0, sizeof(*d));
+    if (last_len < DFS_DIAG_LEN) return;
+    d->version     = pl[DFS_DIAG_OFF_VERSION];
+    d->flags       = pl[DFS_DIAG_OFF_FLAGS];
+    d->fs_type     = pl[DFS_DIAG_OFF_FSTYPE];
+    d->free_clst   = rd32(pl + DFS_DIAG_OFF_FREECLST);
+    d->n_fatent    = rd32(pl + DFS_DIAG_OFF_NFATENT);
+    d->csize       = rd16(pl + DFS_DIAG_OFF_CSIZE);
+    d->last_fr     = pl[DFS_DIAG_OFF_LASTFR];
+    d->last_call   = pl[DFS_DIAG_OFF_LASTCALL];
+    d->hard_fr     = pl[DFS_DIAG_OFF_HARDFR];
+    d->hard_call   = pl[DFS_DIAG_OFF_HARDCALL];
+    d->rd_res      = pl[DFS_DIAG_OFF_RDRES];
+    d->wr_res      = pl[DFS_DIAG_OFF_WRRES];
+    d->rd_cause    = pl[DFS_DIAG_OFF_RDCAUSE];
+    d->wr_cause    = pl[DFS_DIAG_OFF_WRCAUSE];
+    d->csw_status  = pl[DFS_DIAG_OFF_CSWSTAT];
+    d->reads       = rd32(pl + DFS_DIAG_OFF_READS);
+    d->writes      = rd32(pl + DFS_DIAG_OFF_WRITES);
+    d->rd_refused  = rd16(pl + DFS_DIAG_OFF_RDREFUSED);
+    d->wr_refused  = rd16(pl + DFS_DIAG_OFF_WRREFUSED);
+    d->stale       = rd16(pl + DFS_DIAG_OFF_STALE);
+    d->rd_csw_err  = rd16(pl + DFS_DIAG_OFF_RDCSWERR);
+    d->wr_csw_err  = rd16(pl + DFS_DIAG_OFF_WRCSWERR);
+    d->timeouts    = rd16(pl + DFS_DIAG_OFF_TIMEOUTS);
+    d->gone        = rd16(pl + DFS_DIAG_OFF_GONE);
+    d->wr_us       = rd32(pl + DFS_DIAG_OFF_WRUS);
+    d->wr_lba      = rd32(pl + DFS_DIAG_OFF_WRLBA);
+    d->wr_count    = rd16(pl + DFS_DIAG_OFF_WRCOUNT);
+    d->csw_residue = rd32(pl + DFS_DIAG_OFF_CSWRESID);
+}
+
 /* ---- the tests ------------------------------------------------------------- */
 
-static FATFS fatfs;
 static char names[64][12];
 
 static void test_setup(void) {
     static uint8_t work[FF_MAX_SS];
     MKFS_PARM opt = { FM_FAT32 | FM_SFD, 1, 0, 0, 512 };
     FRESULT fr;
+    diag_t d;
 
     SECTION("setup");
+    /* DIAG before anything exists: a valid record of zeros */
+    dfs_server_init();
+    op_diag(&d);
+    CHECK(d.version == DFS_DIAG_VERSION, "diag version %u", d.version);
+    {
+        int zero = 1;
+        for (int i = 1; i < DFS_DIAG_LEN; i++) if (pl[i] != 0) zero = 0;
+        CHECK(zero, "diag record is all zero before the first mount");
+    }
+    /* the record is clipped to a small buffer and stays AX = 0 */
+    wr16(buf, DFS_HDR_LEN); buf[2] = 0; buf[3] = DFS_AL_DIAG;
+    CHECK(run_frame(DFS_HDR_LEN, DFS_HDR_LEN + 16) == 0 && last_len == 16 && pl[0] == DFS_DIAG_VERSION, "diag clipped to a 16-byte payload: len %u", last_len);
+
     CHECK(ramdisk_init(64u * 1024 * 1024 / RAMDISK_SECTOR_SIZE), "ramdisk alloc");
     fr = f_mkfs("", &opt, work, sizeof(work));
     CHECK(fr == FR_OK, "f_mkfs -> %d", fr);
@@ -312,6 +384,22 @@ static void test_setup(void) {
         CHECK(p && strlen(p + 1) == 8, "serial is 8 hex digits");
         CHECK(atoi(strchr(s, '|') + 7) > 50 && atoi(strchr(s, '|') + 7) < 70, "size MB plausible");
     }
+    /* DIAG after the mount: geometry known, free count not scanned yet
+     * (FF_FS_NOFSINFO bit 0: the FSINFO count is not trusted, and the mount
+     * notification must not trigger the FAT scan), counters from f_mkfs */
+    op_diag(&d);
+    CHECK(d.flags == 1, "diag flags %02X: drive present", d.flags);
+    CHECK(d.fs_type == FS_FAT32, "diag fs type %u", d.fs_type);
+    CHECK(d.csize == 1, "diag sectors per cluster %u", d.csize);
+    CHECK(d.n_fatent > 100000 && d.n_fatent < 140000, "diag n_fatent %u", d.n_fatent);
+    CHECK(d.free_clst > d.n_fatent - 2, "diag free clusters unknown before the first DISKSPACE: %08X", d.free_clst);
+    CHECK(d.reads > 0 && d.writes > 0, "diag counters after mkfs: %u reads, %u writes", d.reads, d.writes);
+    CHECK(d.wr_res == RES_OK && d.wr_cause == MSC_IO_OK, "diag last write ok: res %u cause %u", d.wr_res, d.wr_cause);
+    CHECK(d.hard_fr == 0 && d.hard_call == 0, "diag no hard error yet: %u/%u", d.hard_fr, d.hard_call);
+    CHECK(d.stale == 0, "diag stale completions %u", d.stale);
+    CHECK(run(AL_DISKSPACE, NULL, 0) == 1, "diskspace scans the FAT");
+    op_diag(&d);
+    CHECK(d.free_clst <= d.n_fatent - 2, "diag free clusters known after DISKSPACE: %u of %u", d.free_clst, d.n_fatent - 2);
 }
 
 static void test_framing(void) {
@@ -631,6 +719,13 @@ static void test_find(void) {
     /* the truncating SPOPNFIL above reset NEW.TXT's attributes (DOS 3Ch semantics) */
     ax = op_findfirst(0x00, "\\SUB\\NEW.TXT", &s);
     CHECK(ax == 0 && s.attr == 0x20 && s.size == 0, "truncated NEW.TXT is a plain file: %04X attr %02X", ax, s.attr);
+    /* COMMAND.COM (PATHCRUNCH) decides "is this a directory" with CHDIR: a file must fail with 3 */
+    ax = run_str(AL_CHDIR, "\\SUB\\NEW.TXT");
+    CHECK(ax == 3, "chdir on a plain file -> 3 (path not found), got %04X", ax);
+    ax = run_str(AL_CHDIR, "\\SUB\\NEW.TXT\\");
+    CHECK(ax == 3, "chdir on a plain file with trailing separator -> 3, got %04X", ax);
+    ax = run_str(AL_CHDIR, "\\SUB\\");
+    CHECK(ax == 0, "chdir on a directory with trailing separator -> 0, got %04X", ax);
 
     /* interleaved searches in two directories (DIR /S, XCOPY) */
     n1 = collect(0x10, "\\FF\\????????.???", seq1, 32);
@@ -1025,6 +1120,112 @@ static void test_handles(void) {
     CHECK(ax == 6, "stale handle -> 6");
 }
 
+static void test_diag_faults(void) {
+    uint16_t ax, id = 0, written = 0;
+    uint32_t saved_free;
+    diag_t before, d;
+    SECTION("diag record / disk faults");
+
+    /* counters move with a write, and the last write is described */
+    op_diag(&before);
+    ax = op_open(AL_CREATE, 0, 0, 0, "\\DIAG.TXT", &id, NULL);
+    CHECK(ax == 0, "create DIAG.TXT -> %04X", ax);
+    CHECK(op_write(id, 0, "telemetry", 9, &written) == 0 && written == 9, "write DIAG.TXT");
+    op_diag(&d);
+    CHECK(d.writes > before.writes, "writes counted: %u -> %u", before.writes, d.writes);
+    CHECK(d.wr_res == RES_OK && d.wr_cause == MSC_IO_OK, "last write ok: res %u cause %u", d.wr_res, d.wr_cause);
+    CHECK(d.wr_count >= 1 && d.wr_lba > 0, "last write %u sector(s) at %u", d.wr_count, d.wr_lba);
+    CHECK(d.wr_us == 100u * d.wr_count, "last write time %u us", d.wr_us);
+    CHECK(d.wr_csw_err == 0 && d.csw_status == 0, "no write errors yet");
+    CHECK(d.last_fr == FR_NO_FILE || d.last_fr == FR_NO_PATH || d.last_fr == 0 || d.last_fr == FR_EXIST,
+          "last (soft) error is a lookup miss: %u from call %u", d.last_fr, d.last_call);
+
+    /* a failing disk write: WRITE answers 1Dh (write fault), not 15h */
+    ramdisk_set_write_fault(true);
+    ax = op_write(id, 9, " more", 5, &written);
+    ramdisk_set_write_fault(false);
+    CHECK(ax == DFS_ERR_WRFAULT, "write on a failing disk -> 1Dh, got %04X", ax);
+    op_diag(&d);
+    CHECK(d.hard_fr == FR_DISK_ERR, "diag hard error FR_DISK_ERR, got %u", d.hard_fr);
+    CHECK(d.hard_call == DFS_CALL_WRITE || d.hard_call == DFS_CALL_SYNC, "diag hard error from write/sync, got call %u", d.hard_call);
+    CHECK(d.last_fr == FR_DISK_ERR && d.last_call == d.hard_call, "diag last error is the same: %u/%u", d.last_fr, d.last_call);
+    CHECK(d.wr_res == RES_ERROR && d.wr_cause == MSC_IO_CSW, "diag last write failed: res %u cause %u", d.wr_res, d.wr_cause);
+    CHECK(d.wr_csw_err == 1 && d.csw_status == 1 && d.csw_residue == 512, "diag CSW telemetry: %u errors, status %u, residue %u", d.wr_csw_err, d.csw_status, d.csw_residue);
+    CHECK(d.wr_refused == 0 && d.timeouts == 0 && d.gone == 0, "diag other counters untouched");
+    /* the handle recovers once the disk does */
+    ax = op_write(id, 9, " more", 5, &written);
+    CHECK(ax == 0 && written == 5, "write after the fault cleared -> %04X/%u", ax, written);
+    ax = op_close(id);
+    CHECK(ax == 0, "close after the fault -> %04X", ax);
+
+    /* a failing disk write during CLOSE (pending data) is a write fault too */
+    ax = op_open(AL_OPEN, 2, 0, 0, "\\DIAG.TXT", &id, NULL);
+    CHECK(ax == 0, "reopen DIAG.TXT r/w");
+    if (ax == 0) {
+        ramdisk_set_write_fault(true);
+        ax = op_close(id);
+        ramdisk_set_write_fault(false);
+        CHECK(ax == 0 || ax == DFS_ERR_WRFAULT, "close with a failing disk -> 0 or 1Dh, got %04X", ax);
+        if (ax != 0) CHECK(op_close(id) == 6, "handle released although the flush failed");
+    }
+
+    /* a failing disk read: READ answers 1Eh (read fault) */
+    ax = op_open(AL_OPEN, 0, 0, 0, "\\DIAG.TXT", &id, NULL);
+    CHECK(ax == 0, "open DIAG.TXT for reading");
+    ramdisk_set_read_fault(true);
+    ax = op_read(id, 0, 14);
+    ramdisk_set_read_fault(false);
+    CHECK(ax == DFS_ERR_RDFAULT, "read on a failing disk -> 1Eh, got %04X", ax);
+    op_diag(&d);
+    CHECK(d.hard_fr == FR_DISK_ERR && d.hard_call == DFS_CALL_READ, "diag hard error from read: %u/%u", d.hard_fr, d.hard_call);
+    CHECK(d.rd_res == RES_ERROR && d.rd_cause == MSC_IO_CSW && d.rd_csw_err == 1, "diag last read failed: res %u cause %u errors %u", d.rd_res, d.rd_cause, d.rd_csw_err);
+    CHECK(op_close(id) == 0, "close after the read fault");
+
+    /* MKDIR on a failing disk: 1Dh, and the FatFs call is f_mkdir */
+    ramdisk_set_write_fault(true);
+    ax = run_str(AL_MKDIR, "\\FAULTDIR");
+    ramdisk_set_write_fault(false);
+    CHECK(ax == DFS_ERR_WRFAULT, "mkdir on a failing disk -> 1Dh, got %04X", ax);
+    op_diag(&d);
+    CHECK(d.hard_fr == FR_DISK_ERR && d.hard_call == DFS_CALL_MKDIR, "diag hard error from mkdir: %u/%u", d.hard_fr, d.hard_call);
+    CHECK(d.wr_res == RES_ERROR && d.wr_cause == MSC_IO_CSW, "diag last write failed in mkdir");
+    /* whatever FatFs left behind, the disk works again */
+    ax = run_str(AL_MKDIR, "\\FAULTDIR");
+    CHECK(ax == 0 || ax == 5, "mkdir after the fault cleared -> 0 or 5 (already there), got %04X", ax);
+    CHECK(run_str(AL_CHDIR, "\\FAULTDIR") == 0, "the directory exists afterwards");
+    CHECK(run_str(AL_RMDIR, "\\FAULTDIR") == 0, "rmdir FAULTDIR");
+    CHECK(run_str(AL_DELETE, "\\DIAG.TXT") == 0, "delete DIAG.TXT");
+
+    /* the field failure: FatFs believing the volume is full (a stale FSINFO
+     * count of 0, as sticks written by other OSes carry when FF_FS_NOFSINFO
+     * is 0) makes every allocation FR_DENIED = DOS 5 "Access denied", while
+     * the DIAG record shows 0 free clusters and FR_DENIED from f_mkdir */
+    saved_free = (uint32_t)fatfs.free_clst;
+    fatfs.free_clst = 0;
+    ax = run_str(AL_MKDIR, "\\FULLDIR");
+    CHECK(ax == 5, "mkdir with FatFs believing 0 free clusters -> 5, got %04X", ax);
+    op_diag(&d);
+    CHECK(d.free_clst == 0, "diag free clusters 0, got %u", d.free_clst);
+    CHECK(d.hard_fr == FR_DENIED && d.hard_call == DFS_CALL_MKDIR, "diag hard error FR_DENIED from mkdir: %u/%u", d.hard_fr, d.hard_call);
+    CHECK(d.wr_res == RES_OK, "no disk write was even attempted: last write res %u", d.wr_res);
+    ax = op_open(AL_CREATE, 0, 0, 0, "\\FULL.TXT", &id, NULL);
+    CHECK(ax == 0, "create with 0 free clusters still succeeds (entry only) -> %04X", ax);
+    if (ax == 0) {
+        /* f_write() reports "disk full" the DOS way: success with fewer bytes
+         * (here 0) rather than an error, so only MKDIR shows the FR_DENIED */
+        ax = op_write(id, 0, "x", 1, &written);
+        CHECK(ax == 0 && written == 0, "write with FatFs believing 0 free clusters -> 0 bytes, got %04X/%u", ax, written);
+        CHECK(op_close(id) == 0, "close FULL.TXT");
+        CHECK(run_str(AL_DELETE, "\\FULL.TXT") == 0, "delete FULL.TXT");
+    }
+    fatfs.free_clst = 0xFFFFFFFFu;           /* unknown: the next DISKSPACE rescans */
+    CHECK(run(AL_DISKSPACE, NULL, 0) == 1, "diskspace rescans");
+    op_diag(&d);
+    CHECK(d.free_clst <= d.n_fatent - 2 && d.free_clst + 8 >= saved_free && d.free_clst <= saved_free + 8,
+          "diag free clusters back to %u (was %u)", d.free_clst, saved_free);
+    CHECK(run_str(AL_MKDIR, "\\FULLDIR") == 0 && run_str(AL_RMDIR, "\\FULLDIR") == 0, "allocation works again");
+}
+
 static void test_unmount(void) {
     uint16_t ax, id = 0;
     search_t s;
@@ -1045,6 +1246,12 @@ static void test_unmount(void) {
     ax = run_str(DFS_AL_LONGNAME, "\\T1.TXT");
     CHECK(ax == 0x15, "longname after unmount -> 15h, got %04X", ax);
     CHECK(run(DFS_AL_ECHO, "still", 5) == 0 && last_len == 5, "echo after unmount");
+    {
+        diag_t d;
+        op_diag(&d);
+        CHECK(d.flags == 0, "diag after unmount: drive absent, flags %02X", d.flags);
+        CHECK(d.writes > 0, "diag counters survive the unmount");
+    }
     dfs_server_drive_mounted();
     CHECK(dfs_server_drive_present(), "present after remount");
     CHECK(strncmp(dfs_server_info_string(), "PGTEST|FAT32|", 13) == 0, "info back after remount");
@@ -1083,6 +1290,7 @@ int main(void) {
         test_lfn();
         test_longname();
         test_handles();
+        test_diag_faults();
         test_unmount();
     }
     f_unmount("");

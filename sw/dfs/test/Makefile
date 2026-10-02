@@ -27,7 +27,7 @@ endif
 LINKS := $(B)/ffconf.h $(B)/ff.c $(B)/ff.h $(B)/diskio.h $(B)/ffunicode.c
 OBJS  := $(B)/dfs_server.o $(B)/dfs_fs.o $(B)/ff.o $(B)/ffunicode.o \
          $(B)/ramdisk_diskio.o $(B)/test_server.o
-HDRS  := $(DFS)/dfs_fs.h $(DFS)/dfs_server.h $(SW)/../common/picogus.h ramdisk_diskio.h
+HDRS  := $(DFS)/dfs_fs.h $(DFS)/dfs_server.h $(SW)/../common/picogus.h $(SW)/usb_msc/msc_app.h ramdisk_diskio.h
 
 .PHONY: all test clean arm-size
 
