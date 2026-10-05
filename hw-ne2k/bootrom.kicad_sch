@@ -3780,7 +3780,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "TBD"
+		(property "DigiKey" "296-1113-1-ND"
 			(at 50.8 58.42 0)
 			(hide yes)
 			(show_name no)
@@ -4129,7 +4129,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "TBD"
+		(property "DigiKey" "296-24357-1-ND"
 			(at 50.8 110.49 0)
 			(hide yes)
 			(show_name no)
@@ -6746,7 +6746,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "TBD"
+		(property "DigiKey" "296-1118-1-ND"
 			(at 200.66 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -8526,7 +8526,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_A_Wuerth_614004134726_Horizontal"
+		(property "Footprint" "Connector_USB:USB_A_Molex_67643_Horizontal"
 			(at 228.6 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -8559,7 +8559,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Wurth Elektronik"
+		(property "Manufacturer" "Molex"
 			(at 228.6 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -8570,7 +8570,7 @@
 				)
 			)
 		)
-		(property "MPN" "614004134726"
+		(property "MPN" "0676432910"
 			(at 228.6 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -8581,7 +8581,18 @@
 				)
 			)
 		)
-		(property "DigiKey" "TBD"
+		(property "DigiKey" "WM11258-ND"
+			(at 228.6 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternatives" "Wurth 614004134726 (DK 732-2731-ND, different footprint)."
 			(at 228.6 134.62 0)
 			(hide yes)
 			(show_name no)
@@ -9105,7 +9116,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "TBD"
+		(property "DigiKey" "497-5235-1-ND"
 			(at 266.7 139.7 0)
 			(hide yes)
 			(show_name no)
