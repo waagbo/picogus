@@ -10,7 +10,9 @@ that talks to the network over WiFi). Added:
 * **Boot ROM** on the ISA memory bus: an in-system-writable SST39SF010A flash with 4 × 32 KB images
   (e.g. iPXE for PXE boot, a disk-image boot ROM, XT-IDE BIOS), configured from the Pico W
 
-> **Status: prototype design, not yet fabricated or tested.** Firmware support for the boot ROM
+> **Status: prototype design, not yet fabricated or tested.** The schematic passes ERC (no errors
+> beyond those inherited from v1.2). The board was autorouted and checked with DRC in KiCad 10:
+> **0 errors, 0 unconnected**, and it matches the schematic. Firmware support for the boot ROM
 > (enable/base/bank set-up, ROM images, flashing tool) does not exist yet; the stock `pg-ne2k` firmware
 > runs the NE2000 and leaves the ROM switched off.
 
@@ -110,10 +112,19 @@ v1.2 edge connector and bracket holes H1/H2, so a v1.2 bracket screws on. The br
   metal close to the antenna is what costs range,
 * a **USB-A cut-out** (about 14 × 7 mm) centred on the old line-out jack hole.
 
+### Silkscreen
+
+Front: IRQ numbers at J1, `ROM WE` at J2, `TX GND` at J6, `USB`, `WiFi ANTENNA` at the antenna end,
+`REAR >`. Back: the PicoGUS artwork (`hw-common/art/picogus-artwork.svg`, 70 × 25 mm) over the lower half,
+the dedication *This version is dedicated to Mila and Alisa, my two wonderful princesses, who fill my
+world with joy.* behind the Pico, and the copyright/licence text (CERN-OHL-P v2).
+
 ## Building it
 
-* Everything except U1, J1, J2, J5, J6 and the jumpers is SMD on the top side (JLCPCB assembly works;
-  `build/jlcpcb/`).
+* Everything except U1, J1, J2, J5, J6 and the jumpers is SMD on the top side. `hw-common/tools/jlcpcb.sh
+  hw-ne2k/PicoGUS-NE2K.kicad_pcb` writes gerbers, drill, assembly BOM and placement files to `build/jlcpcb/`
+  (38 SMD placements). The parts have no LCSC numbers yet, so pick them in JLCPCB's part matcher (or order
+  the parts from DigiKey and assemble by hand).
 * Solder the **Pico W flat**, then solder **TP1, TP2, TP3 from the back** through the plated holes.
 * Jumpers: one on J1 (IRQ). J2 only while writing the boot ROM.
 * Firmware: flash `pg-ne2k` (or `multifw`) with `pgusinit`, then set the WiFi SSID/password and the NE2000
