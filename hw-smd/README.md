@@ -43,7 +43,8 @@ U7 74LVC1G00, U8 PSRAM, U9 PCM510x and U10 74LVC2G06, with the same footprints.
     scale (a DreamBlaster X2 uses an AKM AK4388 DAC, 1.13 Vrms), so at unity gain MIDI was 5–6 dB quieter
     than PCM. RV1 trims it down. The daughterboard sees about 4.8 kΩ at RV1 max (RV1 ∥ R12 ∥ R14).
   * **Changed 2026-10-09** (BOM only, no board change): R10, R11, R19, R20 were 10 kΩ and C30/C31 were
-    100 pF (unity gain for both sources). 47 pF with the 20 kΩ feedback keeps the corner at ~170 kHz.
+    100 pF (about unity gain for both sources; PCM was −0.4 dB). 47 pF with the 20 kΩ feedback puts the
+    corner at ~170 kHz (10 kΩ ∥ 100 pF was ~160 kHz).
 * **Audio quality:**
   * DAC AVDD (U9 pin 8) sits behind ferrite bead FB3, with C13 (0.1 µF) and C15 (10 µF) at the pin.
     DVDD and CPVDD stay on the Pico's 3.3 V.

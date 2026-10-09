@@ -12876,7 +12876,7 @@
 		)
 		(uuid "7ae42fc8-92b0-5e62-a080-ac9e1be01e6a")
 	)
-	(text "RV1 (dual 10k log) sets the WT level: pins 3/6 = CW end (signal), 1/4 = CCW end (GND).\nU11 sums PCM and WT at unity gain (inverting, 10k/10k) - no level loss, and the WT knob\ndoes not change the PCM level. C22/C23 (bipolar) block DC from the DB, R14/R15 keep them\ndischarged when no DB is fitted. Output: 100R, DC-coupled like v1.2."
+	(text "RV1 (dual 10k log) sets the WT level: pins 3/6 = CW end (signal), 1/4 = CCW end (GND).\nU11 is an inverting summer: PCM 20k in / 20k fb (~unity, -0.2 dB), WT 10k in (x2 =\n+6 dB at RV1 max; DB outputs are ~1-1.2 Vrms vs 2.1 Vrms PCM). The WT knob does not\nchange the PCM level. C22/C23 (bipolar) block DC from the DB, R14/R15 keep them\ndischarged when no DB is fitted. Output: 100R, DC-coupled like v1.2."
 		(exclude_from_sim no)
 		(at 134.62 154.94 0)
 		(effects

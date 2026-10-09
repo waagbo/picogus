@@ -110,10 +110,10 @@ C22 = 10 µF bipolar · RV1A = 10k log (CW end from C22, CCW end to GND, wiper t
   level as on v1.2 (2.1 Vrms full scale). **The WT input has a gain of 2 (+6 dB) at RV1 max** (R19/R12 = 20k/10k):
   Waveblaster daughterboards put out only about 1–1.2 Vrms full scale (a DreamBlaster X2 uses an AKM AK4388
   DAC, 1.13 Vrms), so at unity gain MIDI ended up 5–6 dB quieter than PCM. RV1 trims it down. C30/C31
-  (47 pF) keep the feedback corner at ~170 kHz. The output is phase-inverted, which you can't hear.
+  (47 pF) put the feedback corner at ~170 kHz (10k ∥ 100 pF was ~160 kHz). The output is phase-inverted, which you can't hear.
 * **Changed 2026-10-09** (BOM only, no board change): R10, R11, R19, R20 were 10k and C30/C31 were 100 pF
-  (unity gain for both sources). On a board built that way, swap R10/R11/R19/R20 to 20k (and C30/C31 to
-  47 pF; leaving 100 pF only costs ~0.3 dB at 20 kHz) to get the extra WT gain. Raising the feedback instead
+  (about unity gain for both sources; PCM was −0.4 dB). On a board built that way, swap R10/R11/R19/R20 to
+  20k (and C30/C31 to 47 pF; leaving 100 pF costs only ~0.2 dB more at 20 kHz) to get the extra WT gain. Raising the feedback instead
   of lowering R12/R13 keeps the daughterboard's load as before: about 4.8 kΩ at RV1 max (RV1 ∥ R12 ∥ R14).
 * **RV1** (dual-gang 10 k audio taper, right angle: Bourns PTD902-2020K-A103, or the Alps RK097 the footprint was drawn for) sets the Waveblaster
   level. Its shaft goes through the ISA bracket between the MIDI and line-out jacks. The signal is on the
@@ -123,7 +123,7 @@ C22 = 10 µF bipolar · RV1A = 10k log (CW end from C22, CCW end to GND, wiper t
   The DC across them depends on the daughterboard (some outputs are AC-coupled, some carry an offset), so a
   polarised cap could end up reverse-biased; a bipolar one doesn't care. R14/R15 (100 k) give the
   capacitors a defined DC level when no daughterboard is fitted. Without a daughterboard, RV1's setting doesn't matter.
-* The PCM510x sees a ~10.5 kΩ load (its datasheet minimum is 1 kΩ). The output is DC-coupled, which is fine because the
+* The PCM510x sees a ~20.5 kΩ load (R7 + R10; its datasheet minimum is 1 kΩ). The output is DC-coupled, which is fine because the
   DAC's outputs are ground-centred; expect a few mV of offset at the jack.
 * R21/R22 (100 Ω) isolate the op-amp from cable capacitance. The NE5532 drives 600 Ω headphones
   easily, but this is still a line output.
