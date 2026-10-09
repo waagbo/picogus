@@ -7948,7 +7948,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 167.64 93.98 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7980,7 +7980,7 @@
 				)
 			)
 		)
-		(property "Description" "10k 1/4W 1% metal film"
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 167.64 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -8002,7 +8002,7 @@
 				)
 			)
 		)
-		(property "MPN" "MFR-25FBF52-10K"
+		(property "MPN" "MFR-25FBF52-20K"
 			(at 167.64 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -8013,7 +8013,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "10.0KXBK-ND"
+		(property "DigiKey" "20.0KXBK-ND"
 			(at 167.64 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -8024,7 +8024,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1519255"
+		(property "LCSC" "C1364283"
 			(at 167.64 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -8338,7 +8338,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 193.04 88.04 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8370,7 +8370,7 @@
 				)
 			)
 		)
-		(property "Description" "10k 1/4W 1% metal film"
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 187.96 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -8392,7 +8392,7 @@
 				)
 			)
 		)
-		(property "MPN" "MFR-25FBF52-10K"
+		(property "MPN" "MFR-25FBF52-20K"
 			(at 187.96 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -8403,7 +8403,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "10.0KXBK-ND"
+		(property "DigiKey" "20.0KXBK-ND"
 			(at 187.96 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -8414,7 +8414,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1519255"
+		(property "LCSC" "C1364283"
 			(at 187.96 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -8462,7 +8462,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "100pF C0G"
+		(property "Value" "47pF C0G"
 			(at 186.69 77.47 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8495,7 +8495,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF 50V C0G radial MLCC"
+		(property "Description" "47pF 50V C0G radial MLCC"
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -8517,7 +8517,7 @@
 				)
 			)
 		)
-		(property "MPN" "K101J15C0GF5TH5"
+		(property "MPN" "K470J15C0GF5TH5"
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -8528,7 +8528,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "BC1042CT-ND"
+		(property "DigiKey" "BC1038CT-ND"
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -8539,7 +8539,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C400081 (TORCH CC4-0805-CG-100V-100PF-J (5.08 mm pitch))"
+		(property "LCSC" "C3690607"
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -8550,7 +8550,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "TDK FG28C0G1H101JNT06 (DK 445-173472-1-ND)."
+		(property "Alternatives" "TDK FG28C0G1H470JNT06 (DK 445-173499-1-ND); LCSC C123159 (TORCH CC4-0805-CG-50V-47pF-J, 5.08 mm pitch)."
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -9627,7 +9627,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 167.64 129.54 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9659,7 +9659,7 @@
 				)
 			)
 		)
-		(property "Description" "10k 1/4W 1% metal film"
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 167.64 127 0)
 			(hide yes)
 			(show_name no)
@@ -9681,7 +9681,7 @@
 				)
 			)
 		)
-		(property "MPN" "MFR-25FBF52-10K"
+		(property "MPN" "MFR-25FBF52-20K"
 			(at 167.64 127 0)
 			(hide yes)
 			(show_name no)
@@ -9692,7 +9692,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "10.0KXBK-ND"
+		(property "DigiKey" "20.0KXBK-ND"
 			(at 167.64 127 0)
 			(hide yes)
 			(show_name no)
@@ -9703,7 +9703,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1519255"
+		(property "LCSC" "C1364283"
 			(at 167.64 127 0)
 			(hide yes)
 			(show_name no)
@@ -10017,7 +10017,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 193.04 123.6 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10049,7 +10049,7 @@
 				)
 			)
 		)
-		(property "Description" "10k 1/4W 1% metal film"
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 187.96 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -10071,7 +10071,7 @@
 				)
 			)
 		)
-		(property "MPN" "MFR-25FBF52-10K"
+		(property "MPN" "MFR-25FBF52-20K"
 			(at 187.96 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -10082,7 +10082,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "10.0KXBK-ND"
+		(property "DigiKey" "20.0KXBK-ND"
 			(at 187.96 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -10093,7 +10093,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1519255"
+		(property "LCSC" "C1364283"
 			(at 187.96 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -10141,7 +10141,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "100pF C0G"
+		(property "Value" "47pF C0G"
 			(at 186.69 113.03 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10174,7 +10174,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF 50V C0G radial MLCC"
+		(property "Description" "47pF 50V C0G radial MLCC"
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -10196,7 +10196,7 @@
 				)
 			)
 		)
-		(property "MPN" "K101J15C0GF5TH5"
+		(property "MPN" "K470J15C0GF5TH5"
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -10207,7 +10207,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "BC1042CT-ND"
+		(property "DigiKey" "BC1038CT-ND"
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -10218,7 +10218,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C400081 (TORCH CC4-0805-CG-100V-100PF-J (5.08 mm pitch))"
+		(property "LCSC" "C3690607"
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -10229,7 +10229,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "TDK FG28C0G1H101JNT06 (DK 445-173472-1-ND)."
+		(property "Alternatives" "TDK FG28C0G1H470JNT06 (DK 445-173499-1-ND); LCSC C123159 (TORCH CC4-0805-CG-50V-47pF-J, 5.08 mm pitch)."
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)

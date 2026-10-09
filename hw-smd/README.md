@@ -4,7 +4,8 @@ Board revision **v1.3.0 (SMD)**: the PicoGUS **v1.2** SMD card with the addition
 through-hole board in [`hw-tht/`](../hw-tht/README.md):
 
 * **Waveblaster (wavetable) daughterboard header** J9, with MIDI and /RESET drive
-* **Analogue WT volume** (RV1) and an **NE5532 op-amp mixer** that sums the WT and PCM audio at unity gain
+* **Analogue WT volume** (RV1) and an **NE5532 op-amp mixer** that sums the PCM audio (unity gain) and the WT
+  audio (up to +6 dB, set by RV1)
 * **Cleaner audio supplies:** a ferrite-bead-filtered DAC AVDD and RC-filtered ±12 V for the op-amp
 * **Same layout as the THT board:** taller card, Pico rotated along the top edge, DAC turned so its
   outputs face the mixer, and one KiCad group per circuit block
@@ -33,9 +34,16 @@ U7 74LVC1G00, U8 PSRAM, U9 PCM510x and U10 74LVC2G06, with the same footprints.
 * **U12 (74LVC2G06, new)** drives the daughterboard's /RESET (inverted ISA RESET) and MIDI (the same
   UART data as the MIDI-out jack). Its outputs are open drain with 10 k pull-ups to +3.3 V (R9/R16), so
   3.3 V daughterboards are safe. U12B takes its input from the same U5A output that drives U10B (net `~MIDI_DRV`).
-* **Mixer U11 (NE5532, SOIC-8)** is an inverting summer. PCM (after the v1.2 470 Ω / 2.2 nF filter) and
-  WT (after RV1) each go through 10 kΩ into the virtual ground, with 10 kΩ ∥ 100 pF feedback and a 100 Ω
-  output resistor. The PCM level at the jack is the same as on v1.2.
+* **Mixer U11 (NE5532, SOIC-8)** is an inverting summer. PCM (after the v1.2 470 Ω / 2.2 nF filter) goes
+  through 20 kΩ (R10/R11) and WT (after RV1) through 10 kΩ (R12/R13) into the virtual ground, with
+  20 kΩ ∥ 47 pF feedback (R19/R20, C30/C31) and a 100 Ω output resistor.
+  * PCM has (almost) unity gain (20k/20.47k, −0.2 dB), so the PCM level at the jack is the same as on v1.2
+    (2.1 Vrms full scale).
+  * WT has a gain of 2 (+6 dB) at RV1 max. Waveblaster daughterboards put out only about 1–1.2 Vrms full
+    scale (a DreamBlaster X2 uses an AKM AK4388 DAC, 1.13 Vrms), so at unity gain MIDI was 5–6 dB quieter
+    than PCM. RV1 trims it down. The daughterboard sees about 4.8 kΩ at RV1 max (RV1 ∥ R12 ∥ R14).
+  * **Changed 2026-10-09** (BOM only, no board change): R10, R11, R19, R20 were 10 kΩ and C30/C31 were
+    100 pF (unity gain for both sources). 47 pF with the 20 kΩ feedback keeps the corner at ~170 kHz.
 * **Audio quality:**
   * DAC AVDD (U9 pin 8) sits behind ferrite bead FB3, with C13 (0.1 µF) and C15 (10 µF) at the pin.
     DVDD and CPVDD stay on the Pico's 3.3 V.

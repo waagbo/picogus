@@ -92,21 +92,29 @@ female socket). The pinout is as on PicoGUS 2.0: DGND 1,3,5,7,9,11 · AGND 15–
 
 ```
                     v1.2 DAC filter
-PCM510x OUTL --- 470R ---+--- 10k (R10) ---+-------+---- 100pF (C30) ---+
-                         |                 |       +---- 10k (R19) -----+
+PCM510x OUTL --- 470R ---+--- 20k (R10) ---+-------+---- 47pF (C30) ----+
+                         |                 |       +---- 20k (R19) -----+
                        2.2nF               |       |                    |
                          |                 |       +--|- \              |
                         GND                |          |NE5532 >---------+--- 100R (R21) --> LINE OUT L (J8)
-WT L (J9.24) -- 10uF bipolar (C22) --+-- RV1A --- 10k (R12)   +--|+ /
-                             |   10k log   (from wiper)    |
-                         100k (R14)                       GND
-                             |
-                            GND                 (right channel: R11, R13, R20, C31, R22, RV1B, C23, R15)
+WT L (J9.24) --+-- C22 ---- RV1A ---- R12 -+       +--|+ /
+               |                                   |
+          100k (R14)                              GND
+               |
+              GND                    (right channel: R11, R13, R20, C31, R22, RV1B, C23, R15)
 ```
+C22 = 10 µF bipolar · RV1A = 10k log (CW end from C22, CCW end to GND, wiper to R12) · R12 = 10k · R14 = 100k
 
 * The two sources are summed by a **NE5532 inverting summer** (U11, DIP-8, powered from ISA ±12 V).
-  Both inputs have unity gain, so the PCM line out has the same level as on v1.2 (2.1 Vrms full scale),
-  and the WT source is not attenuated by the mixing. The output is phase-inverted, which you can't hear.
+  **PCM has (almost) unity gain** (R19/(R7+R10) = 20k/20.47k, −0.2 dB), so the PCM line out has the same
+  level as on v1.2 (2.1 Vrms full scale). **The WT input has a gain of 2 (+6 dB) at RV1 max** (R19/R12 = 20k/10k):
+  Waveblaster daughterboards put out only about 1–1.2 Vrms full scale (a DreamBlaster X2 uses an AKM AK4388
+  DAC, 1.13 Vrms), so at unity gain MIDI ended up 5–6 dB quieter than PCM. RV1 trims it down. C30/C31
+  (47 pF) keep the feedback corner at ~170 kHz. The output is phase-inverted, which you can't hear.
+* **Changed 2026-10-09** (BOM only, no board change): R10, R11, R19, R20 were 10k and C30/C31 were 100 pF
+  (unity gain for both sources). On a board built that way, swap R10/R11/R19/R20 to 20k (and C30/C31 to
+  47 pF; leaving 100 pF only costs ~0.3 dB at 20 kHz) to get the extra WT gain. Raising the feedback instead
+  of lowering R12/R13 keeps the daughterboard's load as before: about 4.8 kΩ at RV1 max (RV1 ∥ R12 ∥ R14).
 * **RV1** (dual-gang 10 k audio taper, right angle: Bourns PTD902-2020K-A103, or the Alps RK097 the footprint was drawn for) sets the Waveblaster
   level. Its shaft goes through the ISA bracket between the MIDI and line-out jacks. The signal is on the
   CW-end terminals (3/6) and GND is on the CCW end (1/4), so the level rises clockwise. The 10 k summing

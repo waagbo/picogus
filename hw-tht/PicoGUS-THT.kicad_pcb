@@ -4862,7 +4862,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 5.08 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4885,7 +4885,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10593,7 +10593,7 @@
 				)
 			)
 		)
-		(property "Value" "100pF C0G"
+		(property "Value" "47pF C0G"
 			(at 2.5 2.5 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -10616,7 +10616,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "47pF 50V C0G radial MLCC"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -11255,7 +11255,7 @@
 				)
 			)
 		)
-		(property "Value" "100pF C0G"
+		(property "Value" "47pF C0G"
 			(at 2.5 2.5 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -11278,7 +11278,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "47pF 50V C0G radial MLCC"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -13774,7 +13774,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 5.08 2.37 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -13797,7 +13797,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -18336,7 +18336,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 5.08 2.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -18359,7 +18359,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23979,7 +23979,7 @@
 				)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "20K"
 			(at 5.08 2.37 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -24002,7 +24002,7 @@
 				)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "20k 1/4W 1% metal film"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)

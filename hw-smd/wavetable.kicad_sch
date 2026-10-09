@@ -6446,7 +6446,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "20k"
 			(at 167.64 93.98 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6500,7 +6500,7 @@
 				)
 			)
 		)
-		(property "MPN" "RT0805BRD0710KL"
+		(property "MPN" "RT0805BRD0720KL"
 			(at 167.64 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -6511,7 +6511,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "YAG1763CT-ND"
+		(property "DigiKey" "YAG1823CT-ND"
 			(at 167.64 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -6803,7 +6803,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "20k"
 			(at 193.04 88.04 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6857,7 +6857,7 @@
 				)
 			)
 		)
-		(property "MPN" "RT0805BRD0710KL"
+		(property "MPN" "RT0805BRD0720KL"
 			(at 187.96 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -6868,7 +6868,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "YAG1763CT-ND"
+		(property "DigiKey" "YAG1823CT-ND"
 			(at 187.96 86.36 0)
 			(hide yes)
 			(show_name no)
@@ -6916,7 +6916,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "100pF C0G"
+		(property "Value" "47pF C0G"
 			(at 186.69 77.47 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6971,7 +6971,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21C101JBANNNC"
+		(property "MPN" "CL21C470JC61PNC"
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -6982,7 +6982,18 @@
 				)
 			)
 		)
-		(property "DigiKey" "1276-1014-1-ND"
+		(property "DigiKey" "1276-6521-1-ND"
+			(at 187.96 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14857"
 			(at 187.96 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -8004,7 +8015,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "20k"
 			(at 167.64 129.54 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8058,7 +8069,7 @@
 				)
 			)
 		)
-		(property "MPN" "RT0805BRD0710KL"
+		(property "MPN" "RT0805BRD0720KL"
 			(at 167.64 127 0)
 			(hide yes)
 			(show_name no)
@@ -8069,7 +8080,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "YAG1763CT-ND"
+		(property "DigiKey" "YAG1823CT-ND"
 			(at 167.64 127 0)
 			(hide yes)
 			(show_name no)
@@ -8361,7 +8372,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "20k"
 			(at 193.04 123.6 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8415,7 +8426,7 @@
 				)
 			)
 		)
-		(property "MPN" "RT0805BRD0710KL"
+		(property "MPN" "RT0805BRD0720KL"
 			(at 187.96 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -8426,7 +8437,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "YAG1763CT-ND"
+		(property "DigiKey" "YAG1823CT-ND"
 			(at 187.96 121.92 0)
 			(hide yes)
 			(show_name no)
@@ -8474,7 +8485,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "100pF C0G"
+		(property "Value" "47pF C0G"
 			(at 186.69 113.03 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8529,7 +8540,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21C101JBANNNC"
+		(property "MPN" "CL21C470JC61PNC"
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)
@@ -8540,7 +8551,18 @@
 				)
 			)
 		)
-		(property "DigiKey" "1276-1014-1-ND"
+		(property "DigiKey" "1276-6521-1-ND"
+			(at 187.96 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14857"
 			(at 187.96 116.84 0)
 			(hide yes)
 			(show_name no)
