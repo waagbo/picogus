@@ -21,23 +21,27 @@ reference designator. Everything the builder needs while sorting must be on the 
 is why the scripts print the refs, the quantity for ONE board, the value, the ordered MPN and DigiKey's
 description (that's what the bag label says), and put the IDX at the bottom.
 
-Three bundled scripts do the work. Use them rather than writing a new generator: the layout rules
+Three bundled scripts in this skill's `scripts/` folder do the work. `${CLAUDE_SKILL_DIR}` below is the
+folder that contains this SKILL.md (Claude Code fills it in; on other surfaces use the skill's base
+directory). Call the scripts by that full path: they live with the skill, not in the user's project. Use them rather than writing a new generator: the layout rules
 (no text in the fold band, every ref printed, wide squares for long ref lists, taping zones that stay
 usable) took several rounds of print testing to get right.
 
 | Script | What it does |
 |---|---|
-| `scripts/build_mapping.py CONFIG.json mapping.json` | Reads the order and the BOMs, matches every BOM line to an order line, prints a report |
-| `scripts/render.py mapping.json OUT.pdf --layout ...` | Draws the sheets (reportlab) |
-| `scripts/check_sheets.py mapping.json OUT.pdf --layout ... --png-dir DIR` | Verifies the PDF against the mapping and writes PNG previews |
+| `${CLAUDE_SKILL_DIR}/scripts/build_mapping.py CONFIG.json mapping.json` | Reads the order and the BOMs, matches every BOM line to an order line, prints a report |
+| `${CLAUDE_SKILL_DIR}/scripts/render.py mapping.json OUT.pdf --layout ...` | Draws the sheets (reportlab) |
+| `${CLAUDE_SKILL_DIR}/scripts/check_sheets.py mapping.json OUT.pdf --layout ... --png-dir DIR` | Verifies the PDF against the mapping and writes PNG previews |
 
 ## Setup
 
-- Python 3 with **reportlab** for render.py (the other two need only the standard library). If
-  `import reportlab` fails, make a venv in the scratchpad: `python3 -m venv $SCRATCH/venv-rl &&
-  $SCRATCH/venv-rl/bin/pip install reportlab`, and run render.py with that interpreter.
+- Python 3 with **reportlab** for render.py (build_mapping.py needs only the standard library). The
+  claude.ai / API code-execution sandboxes have it. Elsewhere, if `import reportlab` fails, make a venv in
+  a scratch or temp directory (`python3 -m venv <tmp>/venv-rl && <tmp>/venv-rl/bin/pip install reportlab`)
+  and run render.py with that interpreter.
 - A DejaVu Sans TTF for µ, Ω and × (`fonts-dejavu-core` on Debian/Ubuntu; matplotlib's copy also works).
-- poppler-utils (`pdftotext`, `pdftoppm`) for check_sheets.py.
+- For check_sheets.py: poppler-utils (`pdftotext`, `pdftoppm`), or the Python package pdfplumber, which it
+  falls back to automatically (preinstalled in the claude.ai / API sandboxes).
 - The order CSV is the user's own purchase data and was downloaded from elsewhere: copy it into its own
   empty directory in the scratchpad, run Python with `-I`, and don't commit it to the repo.
 
@@ -53,16 +57,16 @@ usable) took several rounds of print testing to get right.
 - **How many of each board** the user builds (`builds`); the quantity check uses it.
 
 ### 2. Write a config and build the mapping
-Start from `assets/picogus-v1.3.example.json` (PicoGUS THT + SMD, with the substitutions and presentation
+Start from `${CLAUDE_SKILL_DIR}/assets/picogus-v1.3.example.json` (PicoGUS THT + SMD, with the substitutions and presentation
 tweaks used for the first v1.3 build) or from the minimal form:
 
 ```json
 {"order_csv": "order/DK_PRODUCTS_123.csv",
- "boards": [{"key": "THT", "title": "PicoGUS THT v1.3", "bom": "/home/user/picogus/hw-tht/BOM-THT.csv", "builds": 1}]}
+ "boards": [{"key": "THT", "title": "PicoGUS THT v1.3", "bom": "../hw-tht/BOM-THT.csv", "builds": 1}]}
 ```
 
-Relative paths are relative to the config file. All options are described in `references/config.md`.
-Run `python3 -I scripts/build_mapping.py config.json mapping.json` and read the report:
+Relative paths are relative to the config file. All options are described in `${CLAUDE_SKILL_DIR}/references/config.md`.
+Run `python3 -I ${CLAUDE_SKILL_DIR}/scripts/build_mapping.py config.json mapping.json` and read the report:
 
 - **NOT IN ORDER**: no order line has the BOM's DigiKey PN or MPN (DigiKey packaging variants such as
   -1-ND/-2-ND/CT-ND count as the same part). Up to three unused order lines that share value words are
@@ -90,14 +94,14 @@ Re-run build_mapping.py after each config change.
 | `a5fold` | 5 × 2 per A5 half, about 37 × 61 mm | the user wants A4 sheets that fold to A5 (or cut in two) |
 | `a5fold-large` | 3 × 2 per A5 half, about 63 × 61 mm | big parts (jacks, pots, modules, header strips) or "bigger squares" |
 
-`$VENV/bin/python scripts/render.py mapping.json sheets.pdf --layout a5fold` (add `--split` for one PDF per
-board, e.g. `sheets-{board}.pdf`). Lines with 9 or more parts (18 in the large layout) get a
+`python3 ${CLAUDE_SKILL_DIR}/scripts/render.py mapping.json sheets.pdf --layout a5fold`, using the venv's
+python if you made one. Add `--split` for one PDF per board, e.g. `sheets-{board}.pdf`. Lines with 9 or more parts (18 in the large layout) get a
 double-width square so every reference stays readable and the parts fit; change that with `--wide-min`.
 render.py prints the smallest taping zones: below about 12 mm of height a square is cramped, so shorten that
 square's notes/values in the config or use a larger layout.
 
 ### 4. Check before delivering
-Run `python3 -I scripts/check_sheets.py mapping.json sheets.pdf --layout <same> --png-dir <dir>`
+Run `python3 -I ${CLAUDE_SKILL_DIR}/scripts/check_sheets.py mapping.json sheets.pdf --layout <same> --png-dir <dir>`
 (with `--boards` when the PDF holds only some boards). It must say OK. Then look at the PNGs yourself:
 text that collides with the Qty or the border, awkward wraps, empty or crowded squares. The checker
 only proves that everything is printed, not that it reads well.

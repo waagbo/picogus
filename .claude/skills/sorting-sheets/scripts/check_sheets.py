@@ -7,9 +7,10 @@ Pass the same --boards/--layout as render.py (all PDFs together must cover exact
 Checks: one "Qty:" per square, every reference designator printed, every expected "IDX n" printed,
 "NOT IN THIS ORDER" on every unordered square, no "…" (text cut off), all text at least 5 mm from the
 paper edge, and for the a5fold layouts nothing but the fold note within 5 mm of the fold.
-Needs poppler-utils (pdftotext, pdftoppm). Exit status 1 when a check fails.
+Uses poppler-utils (pdftotext, pdftoppm) when installed, otherwise the Python package pdfplumber.
+Exit status 1 when a check fails.
 """
-import argparse, collections, json, re, subprocess, sys
+import argparse, collections, json, re, shutil, subprocess, sys
 
 ap = argparse.ArgumentParser()
 ap.add_argument('mapping'); ap.add_argument('pdfs', nargs='+')
@@ -30,20 +31,34 @@ for b in boards:
             expected.append(s)
 
 words, fails, notes = [], [], []
-for pdf in A.pdfs:
+POPPLER = bool(shutil.which('pdftotext'))
+if not POPPLER:
     try:
+        import pdfplumber
+    except ImportError:
+        sys.exit('needs poppler-utils (pdftotext) or the Python package pdfplumber')
+for pdf in A.pdfs:
+    stem = re.sub(r'\.pdf$', '', pdf.split('/')[-1])
+    if POPPLER:                     # word boxes in points, origin top-left
         x = subprocess.run(['pdftotext', '-bbox', pdf, '-'], capture_output=True, text=True, check=True).stdout
-    except (OSError, subprocess.CalledProcessError) as e:
-        sys.exit(f'pdftotext failed on {pdf}: {e}')
-    for pn, pg in enumerate(x.split('<page ')[1:], 1):
-        W = float(re.search(r'width="([\d.]+)"', pg).group(1)); H = float(re.search(r'height="([\d.]+)"', pg).group(1))
-        for m in re.finditer(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</word>', pg):
-            x0, y0, x1, y1 = map(float, m.groups()[:4])
-            t = m.group(5).replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"')
-            words.append((pdf, pn, W, H, x0, y0, x1, y1, t))
-    if A.png_dir:
-        stem = re.sub(r'\.pdf$', '', pdf.split('/')[-1])
-        subprocess.run(['pdftoppm', '-r', str(A.dpi), '-png', pdf, f'{A.png_dir}/{stem}'], check=False)
+        for pn, pg in enumerate(x.split('<page ')[1:], 1):
+            W = float(re.search(r'width="([\d.]+)"', pg).group(1)); H = float(re.search(r'height="([\d.]+)"', pg).group(1))
+            for m in re.finditer(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)</word>', pg):
+                x0, y0, x1, y1 = map(float, m.groups()[:4])
+                t = m.group(5).replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"')
+                words.append((pdf, pn, W, H, x0, y0, x1, y1, t))
+        if A.png_dir and shutil.which('pdftoppm'):
+            subprocess.run(['pdftoppm', '-r', str(A.dpi), '-png', pdf, f'{A.png_dir}/{stem}'], check=False)
+    else:                           # same coordinates from pdfplumber
+        with pdfplumber.open(pdf) as doc:
+            for pn, page in enumerate(doc.pages, 1):
+                for w in page.extract_words(keep_blank_chars=False, use_text_flow=False):
+                    words.append((pdf, pn, float(page.width), float(page.height), w['x0'], w['top'], w['x1'], w['bottom'], w['text']))
+                if A.png_dir:
+                    try:
+                        page.to_image(resolution=A.dpi).save(f'{A.png_dir}/{stem}-{pn}.png')
+                    except Exception as e:  # rendering needs pypdfium2; the checks above do not
+                        notes.append(f'no PNG preview ({e.__class__.__name__})')
 
 toks = collections.Counter(w[8].strip(',;:.()') for w in words)
 text = ' '.join(w[8] for w in words)
@@ -73,7 +88,8 @@ for pdf, pn, W, H, x0, y0, x1, y1, t in words:
         if not (H / 2 - 3.5 * MM < y1 <= H / 2 + 0.5):    # the small fold note just above the crease is allowed
             fails.append(f'{pdf} p{pn}: "{t}" in the fold band')
 pages = len({(w[0], w[1]) for w in words})
-print(f'{len(expected)} squares on {pages} pages: {len(words)} words checked')
+print(f'{len(expected)} squares on {pages} pages: {len(words)} words checked'
+      + ('' if POPPLER else ' (pdfplumber)') + (f'; {notes[0]}' if notes else ''))
 for f in fails[:40]:
     print('FAIL', f)
 if len(fails) > 40:
