@@ -73,7 +73,8 @@ between its rows; both pad sets carry the same pin numbers, so fit **one** of:
 
 * the TSSOP-16 soldered directly (as v1.3.0, or by JLCPCB assembly), or
 * a **300-mil** TSSOP-16-to-DIP-16 adapter board in the DIP pads, soldered or in a DIP-16 socket:
-  SparkFun BOB-13994 (you add the header pins) or Chip Quik PA0034C (machined pins fitted).
+  Chip Quik PA0034C (round pins fitted) or SparkFun BOB-13994 (you add the pins; its pads are on a 0.635 mm
+  pitch, so centre the 0.65 mm TSSOP carefully).
   The common 0.5"/0.6" "SOP16/TSSOP16 to DIP16" adapters **do not fit**.
 
 The footprint's origin and rotation are the TSSOP's, so the JLCPCB placement file stays correct:
