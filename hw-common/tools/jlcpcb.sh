@@ -8,6 +8,7 @@
 #   <name>-drc.rpt         DRC report (errors only, incl. schematic parity)
 #   <name>-bom-jlc.csv     JLCPCB assembly BOM  (Comment, Designator, Footprint, LCSC Part #, MPN)
 #   <name>-cpl-jlc.csv     JLCPCB placement list (Designator, Mid X, Mid Y, Layer, Rotation), SMD parts only
+#                          (plus SMD parts on nested dual footprints, *_Nested)
 #
 # The script stops when DRC finds errors; FORCE=1 exports anyway.
 set -euo pipefail
@@ -59,19 +60,25 @@ if [ -f "$sch" ]; then
         --group-by 'Value,Footprint,LCSC,MPN' --ref-range-delimiter '' --exclude-dnp "$sch" >/dev/null
     kicad-cli pcb export pos -o "$out/$name-pos.csv" --format csv --units mm --side both \
         --smd-only --exclude-dnp "$pcb" >/dev/null
-    python3 - "$out/$name-pos.csv" "$out/$name-cpl-jlc.csv" <<'EOF'
+    # dual footprints with an SMD part nested in through-hole pads (e.g. DIP-16_W7.62mm_TSSOP-16_Nested) are
+    # typed through-hole, so --smd-only drops them; their origin and rotation are the SMD part's, add them back
+    kicad-cli pcb export pos -o "$out/$name-pos-all.csv" --format csv --units mm --side both \
+        --exclude-dnp "$pcb" >/dev/null
+    python3 - "$out/$name-pos.csv" "$out/$name-pos-all.csv" "$out/$name-cpl-jlc.csv" <<'EOF'
 import csv, sys
-src, dst = sys.argv[1:]
+src, src_all, dst = sys.argv[1:]
 rows = list(csv.DictReader(open(src)))
+smd = {r['Ref'] for r in rows}
+nested = [r for r in csv.DictReader(open(src_all)) if r['Package'].endswith('_Nested') and r['Ref'] not in smd]
 with open(dst, 'w', newline='') as f:
     w = csv.writer(f)
     w.writerow(['Designator', 'Mid X', 'Mid Y', 'Layer', 'Rotation'])
-    for r in rows:
+    for r in rows + nested:
         w.writerow([r['Ref'], r['PosX'] + 'mm', r['PosY'] + 'mm',
                     'Top' if r['Side'] == 'top' else 'Bottom', r['Rot']])
-print('   ', len(rows), 'SMD placements')
+print('   ', len(rows), 'SMD placements' + (f" + {len(nested)} nested ({', '.join(r['Ref'] for r in nested)})" if nested else ''))
 EOF
-    rm -f "$out/$name-pos.csv"
+    rm -f "$out/$name-pos.csv" "$out/$name-pos-all.csv"
 fi
 rm -rf "$out/gerbers"
 echo "== Done: $out"
