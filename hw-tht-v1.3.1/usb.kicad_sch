@@ -2,7 +2,7 @@
 	(version 20260306)
 	(generator "eeschema")
 	(generator_version "10.0")
-	(uuid "d62a64b8-b0a9-5cf6-9b8d-d0ad68fee075")
+	(uuid "fdef937e-d353-5a7b-ac13-8a1b7c17024f")
 	(paper "A4")
 	(title_block
 		(title "PicoGUS THT - USB host port")
@@ -1774,7 +1774,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "d160a204-152d-5f82-a58c-df7c8cd52695")
+		(uuid "345ed2d6-631a-5031-9c01-1d06454472ae")
 		(property "Reference" "J11"
 			(at 68.58 87.63 0)
 			(show_name no)
@@ -1886,29 +1886,29 @@
 			)
 		)
 		(pin "1"
-			(uuid "eea60881-966e-5805-8c59-1b62b622d8ac")
+			(uuid "e267e414-47bf-5a3c-a13e-1077cc292e67")
 		)
 		(pin "3"
-			(uuid "6a6b4790-0cd1-59ac-be0f-338bb4a6d9ba")
+			(uuid "9f71418d-5ae0-5994-9d67-1a7e5fa98c5a")
 		)
 		(pin "2"
-			(uuid "24fe575a-3c80-5493-92fd-754385a017ab")
+			(uuid "3a2a7d23-066b-5cd6-a602-ff4501d48e84")
 		)
 		(pin "5"
-			(uuid "c0298efe-c24e-50ef-a54d-555e79280da1")
+			(uuid "5d1b3269-a1ab-53c8-ab74-20828c17dea1")
 		)
 		(pin "6"
-			(uuid "25a33847-76ad-5f2f-9e3f-f01d6f0046f6")
+			(uuid "074e5023-00dd-54af-8e9f-0c34b4bd3a81")
 		)
 		(pin "4"
-			(uuid "2b8185c2-2d5a-537a-94d4-d2388347449e")
+			(uuid "bff4dd94-9dde-5512-92cc-f4915fc71235")
 		)
 		(pin "SH"
-			(uuid "91952238-3373-5b72-ba2d-72f91304bc84")
+			(uuid "89311fcc-3901-5c1c-b777-4770f392064c")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "J11")
 					(unit 1)
 				)
@@ -1924,7 +1924,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9a03c91f-a5d9-584b-b300-cc35a599a6f2")
+		(uuid "c9607b02-2dab-5e7b-81a9-8b22448edcaf")
 	)
 	(wire
 		(pts
@@ -1935,7 +1935,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "e90c94a6-2a8a-5813-b925-0ee374d356c9")
+		(uuid "24b1e41b-efab-5cbb-aec6-7159dbf516f0")
 	)
 	(wire
 		(pts
@@ -1946,7 +1946,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c7f60f05-f428-5ab4-ae4a-66ad11754e14")
+		(uuid "87e9d53b-de4e-5055-aac1-fe6142b6cc00")
 	)
 	(symbol
 		(lib_id "Device:Polyfuse")
@@ -1958,7 +1958,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "51c70c47-f18f-5509-9109-638f0974f4ad")
+		(uuid "6320263f-f7ea-5b6d-8ddc-1f5773f49df6")
 		(property "Reference" "F1"
 			(at 103.505 72.39 0)
 			(show_name no)
@@ -2003,7 +2003,7 @@
 				)
 			)
 		)
-		(property "Description" "Resettable fuse (PTC), 0.5 A hold / 1 A trip, 60 V, radial 7.9 mm disc, 5.1 mm lead spacing (USB VBUS)"
+		(property "Description" "Resettable fuse (PTC), 0.5 A hold / 1 A trip, 60 V, radial 7.9 mm disc, 5.1 mm lead spacing, up to 13.7 mm tall (USB VBUS)"
 			(at 101.6 73.66 0)
 			(hide yes)
 			(show_name no)
@@ -2059,14 +2059,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "2c47709e-a95e-5043-8ea8-6f19c8b26d9d")
+			(uuid "9ad7c76b-a4dd-5ad1-ba22-962ec5708369")
 		)
 		(pin "2"
-			(uuid "9bddc0c6-8b35-51f3-a0db-2eb5b3700d66")
+			(uuid "e1c082d5-86d7-583c-935c-302638c625e6")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "F1")
 					(unit 1)
 				)
@@ -2083,7 +2083,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "23da5fe8-f8da-52bd-b352-d03775cb74a2")
+		(uuid "e65b60fd-8486-56ae-956a-1fdb06b47774")
 		(property "Reference" "#PWR0200"
 			(at 101.6 69.85 0)
 			(hide yes)
@@ -2139,11 +2139,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "00ce32a5-f30b-5689-94b6-939630e1bd4f")
+			(uuid "8b1c1bd3-4dfe-503d-8e85-4db2cb112f51")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "#PWR0200")
 					(unit 1)
 				)
@@ -2159,13 +2159,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "1ddc6d19-82e5-5e4c-b92a-5bc28257e339")
+		(uuid "443a049f-ff1b-5b34-8edd-efd0a058a409")
 	)
 	(junction
 		(at 101.6 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "0a1b9e33-73af-5bc5-847a-a602189de645")
+		(uuid "61467f08-c3c1-52c9-b1ec-8da5d459f141")
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
@@ -2177,7 +2177,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "67547f77-3d10-554f-a3c5-b45d6fb5da6e")
+		(uuid "2a69b5d2-3224-514a-b630-53a55bf006e5")
 		(property "Reference" "#FLG106"
 			(at 109.22 81.28 0)
 			(hide yes)
@@ -2233,11 +2233,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "710e91bf-2f19-517f-b252-b0e915213160")
+			(uuid "c4ca417e-41e8-5527-a3bb-b42013b3640c")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "#FLG106")
 					(unit 1)
 				)
@@ -2248,7 +2248,7 @@
 		(at 109.22 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "f06bc525-5e3a-5a4d-919b-f46521ebccda")
+		(uuid "4f8a865c-e13e-5136-a841-b65801949f85")
 	)
 	(label "VBUS_USB"
 		(at 129.54 81.28 0)
@@ -2258,7 +2258,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "adde4e92-b1c9-5874-b5c4-03d0e76f72d3")
+		(uuid "1b3a1afc-85c0-50e3-84f1-55e33e737b97")
 	)
 	(wire
 		(pts
@@ -2269,7 +2269,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "faeaed1d-3e89-5459-8f7b-8f173bade23f")
+		(uuid "a701e752-eed3-510c-8d56-84e4b4ffea34")
 	)
 	(global_label "USB_DP"
 		(shape bidirectional)
@@ -2281,7 +2281,7 @@
 			)
 			(justify left)
 		)
-		(uuid "e8c5b3d3-0a51-5823-953d-204ab7da187b")
+		(uuid "20a21055-5a91-59f2-b39c-eed75250a91a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 104.14 99.06 0)
 			(hide yes)
@@ -2304,7 +2304,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "07887864-423b-53f0-904c-6348771786c2")
+		(uuid "1cd85bb8-2399-5b8f-ab1e-5b6ca7883ae4")
 	)
 	(global_label "USB_DM"
 		(shape bidirectional)
@@ -2316,7 +2316,7 @@
 			)
 			(justify left)
 		)
-		(uuid "67d3cf34-875b-5587-b2e1-dd86677da82f")
+		(uuid "dd1e8906-f608-58bd-be47-ea9e103cdc83")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 104.14 101.6 0)
 			(hide yes)
@@ -2340,7 +2340,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "7fddf854-1343-5453-8aad-38c46ee4534b")
+		(uuid "d91f14bb-bcd7-5afe-9610-8127d82a5a16")
 		(property "Reference" "R25"
 			(at 118.745 88.9 0)
 			(show_name no)
@@ -2418,7 +2418,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "56.0KXBK-ND"
+		(property "DigiKey" "MFR-25FBF52-56K-ND"
 			(at 116.84 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2429,7 +2429,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD"
+		(property "LCSC" "C127224 (CCO MF1/4W-56K 1%)"
 			(at 116.84 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2441,14 +2441,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "a4055b24-8938-5fe4-b190-7446150a3acb")
+			(uuid "6258d691-fb21-5238-9485-c5aebcd610eb")
 		)
 		(pin "2"
-			(uuid "6e70d786-3607-5270-914a-6cd627792d86")
+			(uuid "a07a67e4-8850-5169-bdf9-3cfb0c84f353")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "R25")
 					(unit 1)
 				)
@@ -2464,13 +2464,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "49805bc2-3c02-54c0-a7ec-67d9cc2321b4")
+		(uuid "08cbe28e-d467-50f0-86ad-9ebd2966b388")
 	)
 	(junction
 		(at 116.84 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "4cf0661b-228b-583f-941d-de1e1f62295a")
+		(uuid "b59aedf3-ccbd-54a8-b613-4201c011279c")
 	)
 	(wire
 		(pts
@@ -2481,7 +2481,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "bc59a4a0-e974-50d0-9ac0-3aaad017a0bf")
+		(uuid "64999a2b-2c89-5f19-bbca-69aab4287f92")
 	)
 	(wire
 		(pts
@@ -2492,7 +2492,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "6c185971-6796-5bd2-b4b4-8e492cbe8404")
+		(uuid "7f3803f3-2998-5787-9547-e9686991bb99")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -2504,7 +2504,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "fb375750-d0da-5baa-a018-aef3b53f4f67")
+		(uuid "acf8f1c7-385e-5bd9-8a8a-64c27677127e")
 		(property "Reference" "R26"
 			(at 126.365 88.9 0)
 			(show_name no)
@@ -2582,7 +2582,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "56.0KXBK-ND"
+		(property "DigiKey" "MFR-25FBF52-56K-ND"
 			(at 124.46 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2593,7 +2593,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD"
+		(property "LCSC" "C127224 (CCO MF1/4W-56K 1%)"
 			(at 124.46 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2605,14 +2605,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "3ad88b3e-dc59-5645-8540-0c3a8e9565a7")
+			(uuid "d3babdaf-93e1-56e4-bfe8-941057db5496")
 		)
 		(pin "2"
-			(uuid "0b69366b-56bb-55fe-b6d8-aafe1a3a75a8")
+			(uuid "a80182f6-2456-588e-ab98-fcae11bbda08")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "R26")
 					(unit 1)
 				)
@@ -2628,13 +2628,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9d7faa30-6b0f-5b1d-852c-339104120313")
+		(uuid "3d88db53-e61b-50cf-bee1-cf6381dbd25c")
 	)
 	(junction
 		(at 124.46 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "d58e051d-9d59-53fa-98b0-2468a5c7680f")
+		(uuid "d69ba66c-1dcd-582f-9e2e-10a7bf103cc4")
 	)
 	(wire
 		(pts
@@ -2645,7 +2645,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9108eef0-2432-5dad-ab42-201690949540")
+		(uuid "da5c4a49-c6db-5ac2-9a96-4e3de9300d30")
 	)
 	(wire
 		(pts
@@ -2656,7 +2656,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "30be74ad-0fe4-5eb6-9d15-d77ac8bb2f3c")
+		(uuid "41898ba7-0d46-51f5-a46c-4543c46d09dd")
 	)
 	(wire
 		(pts
@@ -2667,7 +2667,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "388e5f02-2b01-5dae-bbc1-4ee0392b8ce1")
+		(uuid "bfb3a70c-8520-5f65-8013-16fd3d4b9ac0")
 	)
 	(wire
 		(pts
@@ -2678,7 +2678,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "7c766cfb-f1f8-51f0-8942-d51f3235bf14")
+		(uuid "4ed71a30-2f78-5ae7-9920-43955bbde487")
 	)
 	(wire
 		(pts
@@ -2689,13 +2689,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c113b44a-3c4f-52d0-9f62-895240859500")
+		(uuid "c07bed10-169e-50ce-907c-8c764c2bff46")
 	)
 	(junction
 		(at 76.2 119.38)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "4eaaf7a2-7c52-561f-a51b-84df8edb5a32")
+		(uuid "82a2ebe3-b8ac-555c-bdef-f1ac2c4bbf97")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -2707,7 +2707,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "6d7ce9c8-445f-5132-aa1a-cd74b932bf2b")
+		(uuid "681692e1-cdf7-52f7-bd89-f6b83cf79fdf")
 		(property "Reference" "#PWR0201"
 			(at 76.2 125.73 0)
 			(hide yes)
@@ -2763,11 +2763,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "160c5f2d-81e4-52b5-9038-1bd6565e7b53")
+			(uuid "95e8da2d-c249-5ccc-a5d4-cb8f5b3ac25a")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "#PWR0201")
 					(unit 1)
 				)
@@ -2784,7 +2784,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a585ea88-49d4-51ec-be4f-0ab191ded686")
+		(uuid "65d4e5e8-c84b-5f65-8402-255844eb7575")
 		(property "Reference" "C34"
 			(at 144.145 88.9 0)
 			(show_name no)
@@ -2796,7 +2796,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47uF"
+		(property "Value" "220uF"
 			(at 144.145 91.44 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2807,7 +2807,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
+		(property "Footprint" "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm"
 			(at 142.24 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2829,7 +2829,7 @@
 				)
 			)
 		)
-		(property "Description" "47uF 35V aluminium electrolytic, 5mm dia, 2mm pitch (USB VBUS bulk)"
+		(property "Description" "220uF 16V low-impedance aluminium electrolytic, 6.3 mm dia, 2.5 mm pitch (USB VBUS bulk, >= 120uF per USB 2.0)"
 			(at 142.24 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2851,7 +2851,7 @@
 				)
 			)
 		)
-		(property "MPN" "35YXJ47M5X11"
+		(property "MPN" "16ZLH220MEFC6.3X11"
 			(at 142.24 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2862,7 +2862,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "1189-2919-ND"
+		(property "DigiKey" "1189-1726-ND"
 			(at 142.24 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2873,7 +2873,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C88761"
+		(property "LCSC" "C338177"
 			(at 142.24 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -2885,14 +2885,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "a7ff9bd9-9769-50a6-8a31-5f98dbc8b424")
+			(uuid "60a26945-16b2-5e54-99ed-8c6e4de7be82")
 		)
 		(pin "2"
-			(uuid "bc5c70c3-d1b1-5d2e-90c0-bb07d994d528")
+			(uuid "0b25949b-d33e-5835-abae-21ef17761e80")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "C34")
 					(unit 1)
 				)
@@ -2908,13 +2908,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "33b1eeb8-8f3e-53df-88b5-086a5522b4c5")
+		(uuid "fe1317c8-49b7-5ee8-8238-1676a3b9c1bb")
 	)
 	(junction
 		(at 142.24 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "2e9d87cb-d8bd-5208-b8d2-92a5b293ef45")
+		(uuid "a00c92e9-13a1-5486-89a8-8852f9da7bf5")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -2926,7 +2926,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "390bc6e4-cbde-547a-88a7-4f99f2bcc6af")
+		(uuid "994e7cf5-02a6-512c-9c49-794f963879e9")
 		(property "Reference" "#PWR0202"
 			(at 142.24 100.33 0)
 			(hide yes)
@@ -2982,11 +2982,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "c0ab117b-197a-5031-b673-e500e24108d2")
+			(uuid "1948aae4-7f5b-52cc-8dd8-765cf2db8244")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "#PWR0202")
 					(unit 1)
 				)
@@ -3003,7 +3003,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "4423d330-5012-584a-94e3-139dc1ab012f")
+		(uuid "32c51974-e631-5751-a965-3953061b439f")
 		(property "Reference" "C35"
 			(at 154.305 88.9 0)
 			(show_name no)
@@ -3104,14 +3104,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "abcb6411-eca5-53ad-8c65-9862f885a03d")
+			(uuid "0fb8f33f-257f-5645-9a68-7e434768a236")
 		)
 		(pin "2"
-			(uuid "047f4907-0177-5134-a7f7-3b381615ba88")
+			(uuid "93cab7c5-7b57-5929-ad11-4b49b41ef8ad")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "C35")
 					(unit 1)
 				)
@@ -3127,7 +3127,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a0621432-27c0-5e6a-a275-edc0e48130d0")
+		(uuid "488c2ce2-270d-5ac8-a764-b6ba4b1dfce6")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -3139,7 +3139,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "8f291044-1b32-5e59-94f6-25297f01d653")
+		(uuid "b6e076f3-2d1b-5d46-9b7f-e9604a8cfa62")
 		(property "Reference" "#PWR0203"
 			(at 152.4 100.33 0)
 			(hide yes)
@@ -3195,11 +3195,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "23ebed25-754b-5895-ba84-4638c99b29a9")
+			(uuid "f5e41213-d161-5157-9744-8f6288d8f089")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "#PWR0203")
 					(unit 1)
 				)
@@ -3216,7 +3216,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "f3cb7033-ea51-53f4-9382-36f15b4b1295")
+		(uuid "d2c891d8-94ff-5c8f-a8b4-ef1aa9a5f6bb")
 		(property "Reference" "U12"
 			(at 180.34 88.9 0)
 			(show_name no)
@@ -3317,26 +3317,26 @@
 			)
 		)
 		(pin "1"
-			(uuid "3fbd94cf-ef61-5160-b27a-48385ef954be")
+			(uuid "29755464-fa20-5548-8386-19040a0fb75a")
 		)
 		(pin "2"
-			(uuid "939430d4-3c7d-5951-8d0f-0dbcdb52c69b")
+			(uuid "1e1a72ac-666a-5c99-90f6-a3601ad38912")
 		)
 		(pin "3"
-			(uuid "5c36d2f9-9e16-5c9f-b84f-166ae31cf925")
+			(uuid "321976b6-9aa5-571b-a1c6-b11aa79126b6")
 		)
 		(pin "4"
-			(uuid "4545e2b6-a02a-5446-abde-8f6cc3bf4e85")
+			(uuid "379689a7-c27c-54bc-bf48-6bcb2492073c")
 		)
 		(pin "5"
-			(uuid "1a8ea9dd-a034-5291-ab5b-796779ebe4a8")
+			(uuid "a3a90038-1aa0-59b0-9ca2-fa04612c7ff6")
 		)
 		(pin "6"
-			(uuid "ee35f9cd-a7b1-5017-af0f-ff5b08402d97")
+			(uuid "7ededf7c-475f-5b49-bbac-99c3e9d4ab84")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "U12")
 					(unit 1)
 				)
@@ -3352,7 +3352,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "587beec1-8dfd-5b91-94ce-b4e9ef860323")
+		(uuid "b2acc065-3d26-5f13-879b-1e8483e0b647")
 	)
 	(global_label "USB_DP"
 		(shape bidirectional)
@@ -3364,7 +3364,7 @@
 			)
 			(justify right)
 		)
-		(uuid "548cad28-cc86-52a3-bed9-6bfae97738e3")
+		(uuid "eb0cbc4b-64f1-56d2-96ad-fdd6369e3a2e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 170.18 101.6 0)
 			(hide yes)
@@ -3387,7 +3387,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "d66f752b-6304-55cf-ba9d-45ab40cc0567")
+		(uuid "12ca473d-a3f7-566f-b437-6ef95cbf5fd3")
 	)
 	(global_label "USB_DP"
 		(shape bidirectional)
@@ -3399,7 +3399,7 @@
 			)
 			(justify left)
 		)
-		(uuid "d342489c-0751-58dc-acff-ba32442750e7")
+		(uuid "1760f703-9101-5d02-9442-c47029d7a632")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 185.42 101.6 0)
 			(hide yes)
@@ -3422,7 +3422,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3fdaed51-5fa4-57f3-a034-5043469d61df")
+		(uuid "2f3d5a08-d9a5-5865-b4e8-dfc0487172ac")
 	)
 	(global_label "USB_DM"
 		(shape bidirectional)
@@ -3434,7 +3434,7 @@
 			)
 			(justify right)
 		)
-		(uuid "1348b6d9-4150-5f5b-aa4e-e527e69b044f")
+		(uuid "35ababf9-43d4-511a-bd87-096230157d5e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 170.18 104.14 0)
 			(hide yes)
@@ -3457,7 +3457,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "77b0842c-8b0b-596f-8f11-c6c01abd5143")
+		(uuid "1470e4ef-f38b-5bc6-87de-abfc541a7e67")
 	)
 	(global_label "USB_DM"
 		(shape bidirectional)
@@ -3469,7 +3469,7 @@
 			)
 			(justify left)
 		)
-		(uuid "3dbe8ed4-51d1-5ff7-8251-cdd570abed97")
+		(uuid "087e531f-aa42-5bf2-bb47-a4c532c098c0")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 185.42 104.14 0)
 			(hide yes)
@@ -3492,7 +3492,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9ce0e56d-75de-5191-90b3-c66cea163871")
+		(uuid "f47cc3ca-5e5a-5dc2-9aa6-236731b168ca")
 	)
 	(label "VBUS_USB"
 		(at 177.8 87.63 90)
@@ -3502,7 +3502,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "b07682a5-e868-5cf9-a4cc-e4c90d96470b")
+		(uuid "fca96cb9-9c19-5c33-b0d3-a5860e53ca92")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -3514,7 +3514,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "acee60da-87be-5f68-b7e8-302683c77112")
+		(uuid "abbe8a0a-1725-5392-8b7b-9b26d8042964")
 		(property "Reference" "#PWR0204"
 			(at 177.8 115.57 0)
 			(hide yes)
@@ -3570,11 +3570,11 @@
 			)
 		)
 		(pin "1"
-			(uuid "5989682c-2380-5084-8422-310540a78871")
+			(uuid "abc50ee7-c975-54b2-9a72-655f4232eda3")
 		)
 		(instances
 			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/2aef9491-1bd6-5c71-9def-f52d07b96cdf"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
 					(reference "#PWR0204")
 					(unit 1)
 				)
@@ -3590,9 +3590,9 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0e1b7123-60a6-50eb-9a06-e6d176b48cfe")
+		(uuid "b5e961dd-a379-5262-831d-8c48077bd1b3")
 	)
-	(text "Data straight from the Pico's USB test points TP3 (D+) / TP2 (D-), behind the Pico's own 27R\nseries resistors (sheet 1). The Pico must be soldered FLAT on the board (castellated edge or\nthrough-hole pins, no header) so TP1-TP3 can be soldered from the back of the card.\nWith the Pico on headers or in a socket the port is unusable: use a micro-USB OTG adapter\non the Pico (with jumper J7) instead, as on v1.3.0. Never use both at the same time.\nVBUS from ISA +5V via F1 (resettable, 0.5 A hold). The Pico VBUS pin is not used for this port.\nJ11 takes a USB-A OR a USB-C receptacle. R25/R26 (Rp 56k = default USB power) tell a USB-C\ndevice that this is a 5 V source; with a USB-A socket they are not connected (fit them anyway).\nU12 (ESD array, SOT-23-6) is optional."
+	(text "Data straight from the Pico's USB test points TP3 (D+) / TP2 (D-) (U1, sheet 1), behind the 27R\nseries resistors on the Pico module. The Pico must be soldered FLAT on the board (castellated edge or\nthrough-hole pins, no header) so TP1-TP3 can be soldered from the back of the card.\nWith the Pico on headers or in a socket the TP pads do not reach the card: wire TP1-TP3 to the holes,\nor use a micro-USB OTG adapter on the Pico (with jumper J7) as on v1.3.0. Never use both at once.\nVBUS from ISA +5V via F1 (resettable, 0.5 A hold). The Pico VBUS pin is not used for this port.\nJ11 takes a USB-A OR a USB-C receptacle. R25/R26 (Rp 56k = default USB power) tell a USB-C\ndevice that this is a 5 V source; with a USB-A socket they are not connected (fit them anyway).\nUSB-C: VBUS is always on (no \"cold socket\"), so never connect J11 to another 5 V source (charger, PC).\nU12 (ESD array, SOT-23-6) is optional."
 		(exclude_from_sim no)
 		(at 63.5 134.62 0)
 		(effects
@@ -3601,7 +3601,7 @@
 			)
 			(justify left top)
 		)
-		(uuid "df330b0a-8c80-5f49-9ba7-86904fef58ba")
+		(uuid "4008d3e9-a19e-5c0f-8563-5570f817a786")
 	)
 	(sheet_instances
 		(path "/"
