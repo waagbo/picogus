@@ -2472,7 +2472,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PiGUS library:USB_A_C_Dual"
+		(property "Footprint" "PiGUS library:USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal"
 			(id 2)
 			(at 0 -17.78 0)
 			(effects

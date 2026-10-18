@@ -38,7 +38,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "PiGUS library:USB_A_C_Dual"
+			(property "Footprint" "PiGUS library:USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal"
 				(id 2)
 				(at 0 -17.78 0)
 				(effects
@@ -1797,7 +1797,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PiGUS library:USB_A_C_Dual"
+		(property "Footprint" "PiGUS library:USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1808,7 +1808,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://gct.co/files/drawings/usb4085.pdf"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1819,7 +1819,7 @@
 				)
 			)
 		)
-		(property "Description" "USB host receptacle at the bracket: fit a USB-A or a USB-C socket"
+		(property "Description" "USB host receptacle at the bracket, one footprint: fit a USB-A (Molex 67643) OR a USB-C (GCT USB4085) socket"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1841,7 +1841,7 @@
 				)
 			)
 		)
-		(property "MPN" "0676432910"
+		(property "MPN" "0676430910"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1852,7 +1852,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "WM11258-ND"
+		(property "DigiKey" "WM4993-ND"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1863,7 +1863,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD"
+		(property "LCSC" "C2798029"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1874,7 +1874,7 @@
 				)
 			)
 		)
-		(property "Alternatives" "USB-C: TBD"
+		(property "Alternatives" "USB-C: GCT USB4085-GF-A (DK 2073-USB4085-GF-ACT-ND, LCSC C7095263). USB-A white: Molex 0676433910 (DK WM14667-ND)"
 			(at 76.2 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -1981,7 +1981,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Fuse:Fuse_Bourns_MF-RG050"
+		(property "Footprint" "Fuse:Fuse_Bourns_MF-RHT050"
 			(at 101.6 73.66 0)
 			(hide yes)
 			(show_name no)
@@ -2003,7 +2003,7 @@
 				)
 			)
 		)
-		(property "Description" "Resettable fuse, 0.5 A hold, radial"
+		(property "Description" "Resettable fuse (PTC), 0.5 A hold / 1 A trip, 60 V, radial 7.9 mm disc, 5.1 mm lead spacing (USB VBUS)"
 			(at 101.6 73.66 0)
 			(hide yes)
 			(show_name no)
@@ -2047,7 +2047,7 @@
 				)
 			)
 		)
-		(property "LCSC" "TBD"
+		(property "LCSC" "C208476"
 			(at 101.6 73.66 0)
 			(hide yes)
 			(show_name no)

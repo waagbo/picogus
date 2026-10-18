@@ -1,0 +1,12 @@
+(version 1)
+# PicoGUS THT rev B, dual USB-A/USB-C footprint (GCT USB4085 land pattern: 0.40 mm holes, 0.65 mm
+# pads, 0.85 mm pitch, per the GCT drawing). Board Setup > Constraints must be lowered to
+#   min hole to hole 0.45 mm   (JLCPCB: pad hole-to-hole min 0.45 mm)
+#   min annular width 0.12 mm  (GCT pattern: 0.125 mm)
+# and these two rules keep the old 0.50 / 0.13 mm limits on everything except the USB-C pins.
+(rule "hole to hole 0.5 mm except between USB4085 pins"
+  (condition "!(A.memberOfFootprint('*:USB_A_C_Dual*') && B.memberOfFootprint('*:USB_A_C_Dual*'))")
+  (constraint hole_to_hole (min 0.5mm)))
+(rule "annular width 0.13 mm except USB4085 pins"
+  (condition "!A.memberOfFootprint('*:USB_A_C_Dual*')")
+  (constraint annular_width (min 0.13mm)))
