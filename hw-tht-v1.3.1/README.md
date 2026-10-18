@@ -30,9 +30,9 @@ New in the shared library for rev B: `RPi_Pico_SMD_TH_USB`, `DIP-16_W7.62mm_TSSO
 
 ### New placement
 
-The Raspberry Pi Pico moved down to the lower right, the bracket parts moved up (from the top: RV1 WT volume,
-J8 line out, J5 MIDI out, J11 USB-A), and the mixer sits next to them. Part positions are in the board file; see
-[Layout status](#layout-status). The bracket holes therefore differ from v1.3.0.
+The Raspberry Pi Pico moved down to the lower right, the bracket parts moved up (from the top: J8 line out,
+RV1 WT volume, J5 MIDI out, J11 USB-A), and the mixer sits next to them. Part positions are in the board file; see
+[Layout status](#layout-status). The bracket holes therefore differ from v1.3.0: see [Bracket](#bracket).
 
 ### USB host port (J11, sheet 4 "USB host port")
 
@@ -46,7 +46,9 @@ PicoGUS NE2000 card and the PicoMEM 2.
   Pico 2 W. On headers or in a socket, solder three short wires (26–30 AWG, under 3 cm) from TP1–TP3 into the holes,
   or use the micro-USB OTG route of v1.3.0. The Pico's micro-USB stays in parallel with J11: **use one or the other.**
 * **J11**: Molex 67643 (0676430910, DigiKey WM4993-ND / LCSC C2798029), stock footprint
-  `Connector_USB:USB_A_Molex_67643_Horizontal`. Bracket cut-out 14.0 × 7.0 mm, centre 4.1 mm above the board.
+  `Connector_USB:USB_A_Molex_67643_Horizontal`. Its pin row is 12.99 mm behind the flange front, so the flange
+  (14.4 × 7.16 mm) ends 0.1 mm behind the bracket and only the shell (13.1 × 5.72 mm) goes through the cut-out
+  (see [Bracket](#bracket)).
 * **VBUS**: ISA +5 V through **F1** (Bourns MF-R050, 0.5 A hold) with C34 (220 µF low-impedance; USB 2.0 asks for
   ≥ 120 µF) and C35 (0.1 µF), always on, like the PicoMEM 2's USB-A port. The Pico's VBUS pin (J7) is not involved.
 * **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−.
@@ -76,6 +78,27 @@ daughterboard standoff holes (the far one landed in U4 in the new placement). Th
 2x13 header only, so the M3 standoff and screws are gone from the BOM. A full-size daughterboard overhangs the
 card's far end; support it by hand when plugging/unplugging cables.
 
+### Bracket
+
+The bracket parts are not where v1.3.0 (and v1.2) had them, so a v1.2/v1.3.0 bracket does not fit. Hole
+positions on a Keystone 9202 style bracket (registered on the card's two tab holes H1/H2; distances measured down
+from the bracket's top surface, height = centre above the card's component side):
+
+| Part | Hole | Down from the bracket top | Height |
+|---|---|---|---|
+| J8 line out | Ø6.3–6.5 mm | 15.0 mm | 7.0 mm |
+| RV1 WT volume (M7 bushing) | Ø7.2–7.5 mm | 23.9 mm | 6.5 mm |
+| J5 MIDI out | Ø6.3–6.5 mm | 41.4 mm | 7.0 mm |
+| J11 USB-A | 13.6 × 6.2 mm rectangle, corners R ≤ 0.5 | 54.0 mm (centre; the cut-out runs from 47.2 to 60.8 mm) | 1.0–7.2 mm (centre 4.1) |
+
+* All four are inside the PC/AT slot opening (it starts 10.95 mm below the bracket top). J8 is on top because its
+  Ø6 nose fits there; RV1's M7 nut needs the room further down.
+* No hole for the Pico's micro-USB: its plug can't enter the slot opening. Flash the Pico before soldering it,
+  or with `pgusinit`.
+* The webs between the holes are about 2.0 mm (J8–RV1), 10.6 mm (RV1–J5) and 2.5 mm (J5–J11).
+* J8 and RV1 are 8.9 mm apart (v1.3.0: 9.7 mm between J5 and RV1): with a Ø8 mm plug in J8, use a knob of
+  Ø9.5 mm or less on RV1.
+
 ### Other
 
 * Title blocks, silkscreen and back silkscreen say v1.3.1.
@@ -84,9 +107,19 @@ card's far end; support it by hand when plugging/unplugging cables.
 
 ## Layout status
 
-The board holds the rev B placement "take 2" (unrouted; C31 moved above U11). DRC with schematic parity reports,
-apart from the unrouted nets and v1.3.0's own warnings, two courtyard overlaps to fix: **R17 / U5** and **J6 / J7**.
-A placement review and the routing are in progress.
+The board holds the rev B placement "take 2" (still unrouted) with the fixes from its review:
+
+* **RV1 / J8 swapped**: at the top, RV1's M7 bushing was 0.4 mm above the PC's slot opening (it could not pass a
+  bracket in a case). J8 is now on top, RV1 below it.
+* **J11 1.36 mm further in** (x 208.64): at x 210 its flange stood 1.26 mm into the bracket plate. C34, F1 and R4
+  moved 0.45–0.7 mm left to make room.
+* **C32** (47 µF, 11 mm tall) out from under the daughterboard, to (180.4, 39.4) next to C31.
+* R17 / U5 and J6 / J7 courtyard overlaps fixed; R19 / R20 turned so their inverting-input ends sit at U11;
+  C8 next to U8's VCC pin; R2 horizontal above U3/U4 (frees the corridor between them); C1/C2 out of the
+  daughterboard corner.
+
+DRC with schematic parity shows no courtyard or clearance error, only the unrouted nets and v1.3.0's own warnings.
+Routing is in progress.
 
 ## Socket build
 
@@ -98,13 +131,14 @@ build the card with every IC socketed. The same parts are the optional socket li
 | U2 (DIP-20) | On Shore SA203000 (ED3020-ND) | 4.6 mm | ≤ 9.8 mm, **under the daughterboard** |
 | U5, U6, U7, U10 (DIP-14 ×4) | Adam Tech ICM-314-1-GT-HT (2057-ICM-314-1-GT-HT-ND) | 4.6 mm | ≤ 9.8 mm, **under the daughterboard** |
 | U11 (DIP-8) | On Shore SA083000 (ED3038-ND) | 4.6 mm | ≤ 9.8 mm, outside |
-| U3, U4 (DIP-16 ×2) | On Shore SA163000 (ED3016-ND) + Chip Quik PA0034C adapters ×2 (315-PA0034C-ND) | 4.6 mm | ~7.9 mm, outside |
+| U3, U4 (DIP-16 ×2) | On Shore SA163000 (ED3016-ND) + Chip Quik PA0034C adapters ×2 (315-PA0034C-ND) | 4.6 mm | ~7.9 mm, **under the daughterboard** |
 | U1 Pico | Adafruit 5585 short sockets (1528-5585-ND) + 5584 short plug headers (1528-5584-ND) | 5.0 mm | Pico board at ~7.5 mm |
 
 * All are machined (round-pin) sockets with 0.5 mm tails that fit the existing 0.8 mm DIP holes. LCSC
   equivalents (CONNFLY DS1001-01, XKB) are in the CSV.
 * **Daughterboard clearance**: a Waveblaster daughterboard sits ~11 mm above the card. U2, U5, U6, U7 and U10 are
-  under it, and a socketed DIP reaches ~9.8 mm (about 1.2 mm worst-case margin, 2 mm typical). That is fine for a
+  under it (and U3/U4: ~7.9 mm on PA0034C adapters in sockets, but a socketed BOB-13994 on round pins reaches
+  ~10.4 mm, so solder that one directly), and a socketed DIP reaches ~9.8 mm (about 1.2 mm worst-case margin, 2 mm typical). That is fine for a
   daughterboard with a flat underside; if yours has parts underneath, solder those five ICs directly or use the
   low-profile Mill-Max 115-43-3xx-41-003000 sockets (2.41 mm), which need 1.0 mm holes (a footprint change; the
   nested U3/U4 footprint already has them). The TE stamped sockets of the v1.3.0 BOM are 5.1 mm high (not ~4 mm as
