@@ -594,6 +594,10 @@
       {
         "netclass": "pwr",
         "pattern": "*AVDD"
+      },
+      {
+        "netclass": "pwr",
+        "pattern": "*VBUS_USB"
       }
     ]
   },

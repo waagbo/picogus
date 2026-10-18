@@ -1,8 +1,8 @@
 # PicoGUS THT (through-hole) v1.3.1 (rev B, work in progress) – based on PicoGUS v1.2
 
 Board revision **v1.3.1 (rev B)**: the [v1.3.0 THT board](../hw-tht/README.md) with a **new placement**, a
-**DIP-16 option for U3/U4** and the Waveblaster header **without the daughterboard standoff holes**. The circuit is
-v1.3.0's unchanged.
+**USB-A host port** at the bracket, a **DIP-16 option for U3/U4** and the Waveblaster header **without the
+daughterboard standoff holes**. The rest of the circuit is v1.3.0's.
 
 > **Status: placement in progress, board UNROUTED.**
 > The schematic passes ERC; the board passes DRC with schematic parity apart from the unrouted nets and the
@@ -16,21 +16,42 @@ Files:
 | `PicoGUS-THT.kicad_pro/.kicad_sch/.kicad_pcb` | KiCad **10** project (the root sheet is the v1.2 logic). The board is **unrouted** |
 | `audio.kicad_sch` | PCM510x DAC sheet (as v1.3.0) |
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.0, with the +6 dB WT gain) |
+| `usb.kicad_sch` | New: USB host port (J11 USB-A, F1, C34/C35, U12) |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
 | `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, socket/adapter lines 2026-10-18) |
-| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U3/U4 adapters |
+| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U3/U4 adapters, U12 |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every IC socketed, with heights (see [Socket build](#socket-build)) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
-New in the shared library for rev B: `DIP-16_W7.62mm_TSSOP-16_Nested` and `Wavetable_NoMountingHoles`.
+New in the shared library for rev B: `RPi_Pico_SMD_TH_USB`, `DIP-16_W7.62mm_TSSOP-16_Nested` and
+`Wavetable_NoMountingHoles` (plus the unused `USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`).
 
 ## What changed compared to v1.3.0
 
 ### New placement
 
-The Raspberry Pi Pico moved down to the lower right, the bracket parts (J5 MIDI out, RV1 WT volume, J8 line out)
-moved up, and the mixer sits next to them. Part positions are in the board file; see [Layout status](#layout-status).
-The bracket holes for J5, RV1 and J8 therefore differ from v1.3.0.
+The Raspberry Pi Pico moved down to the lower right, the bracket parts moved up (from the top: RV1 WT volume,
+J8 line out, J5 MIDI out, J11 USB-A), and the mixer sits next to them. Part positions are in the board file; see
+[Layout status](#layout-status). The bracket holes therefore differ from v1.3.0.
+
+### USB host port (J11, sheet 4 "USB host port")
+
+A USB-A host port at the bracket for a mouse, joystick, keyboard, flash drive (CD-ROM images) or a hub, as on the
+PicoGUS NE2000 card and the PicoMEM 2.
+
+* **Data**: straight from the Pico's own USB D+/D− test points **TP3 / TP2** (behind the Pico's 27 Ω series
+  resistors). U1 uses `RPi_Pico_SMD_TH_USB`: the v1.3.0 Pico footprint plus three plated holes under TP1 (GND),
+  TP2 (D−) and TP3 (D+). The Pico must be **soldered flat** (castellated edge or through-hole pins, no header) so
+  the three pads can be soldered from the back of the card. The positions are the same on Pico, Pico 2, Pico W and
+  Pico 2 W. On headers or in a socket, solder three short wires (26–30 AWG, under 3 cm) from TP1–TP3 into the holes,
+  or use the micro-USB OTG route of v1.3.0. The Pico's micro-USB stays in parallel with J11: **use one or the other.**
+* **J11**: Molex 67643 (0676430910, DigiKey WM4993-ND / LCSC C2798029), stock footprint
+  `Connector_USB:USB_A_Molex_67643_Horizontal`. Bracket cut-out 14.0 × 7.0 mm, centre 4.1 mm above the board.
+* **VBUS**: ISA +5 V through **F1** (Bourns MF-R050, 0.5 A hold) with C34 (220 µF low-impedance; USB 2.0 asks for
+  ≥ 120 µF) and C35 (0.1 µF), always on, like the PicoMEM 2's USB-A port. The Pico's VBUS pin (J7) is not involved.
+* **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−.
+* USB-C was considered and left out: the PicoMEM 2 also uses USB-A for its host port and USB-C only for
+  programming (5.1k Rd, never sourcing VBUS). A dual USB-A/USB-C footprint is in the shared library, unused.
 
 ### U3/U4: TSSOP-16 or a 300-mil DIP-16 adapter
 
@@ -58,16 +79,14 @@ card's far end; support it by hand when plugging/unplugging cables.
 ### Other
 
 * Title blocks, silkscreen and back silkscreen say v1.3.1.
-* No reference designator changed. The design rules are v1.3.0's.
-* A USB host port at the bracket was drafted for rev B and dropped again. The footprints made for it stay in the
-  shared library (`RPi_Pico_SMD_TH_USB`, `USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`) but are not used.
-  USB storage/mouse/joystick work as on v1.3.0: through a micro-USB OTG adapter on the Pico (jumper J7 for VBUS).
+* No v1.3.0 reference designator changed. The design rules are v1.3.0's.
+* New references: J11, F1, C34, C35, U12 (USB port). VBUS_USB is in the pwr net class.
 
 ## Layout status
 
-The board holds the rev B placement (unrouted). DRC with schematic parity reports, apart from the unrouted nets and
-v1.3.0's own warnings, two courtyard overlaps to fix: **C31 / U11** and **R17 / U5**. Before routing, re-check the
-bracket hole positions of J5, RV1 and J8 against a real bracket, and refill the zones after routing.
+The board holds the rev B placement "take 2" (unrouted; C31 moved above U11). DRC with schematic parity reports,
+apart from the unrouted nets and v1.3.0's own warnings, two courtyard overlaps to fix: **R17 / U5** and **J6 / J7**.
+A placement review and the routing are in progress.
 
 ## Socket build
 
@@ -94,8 +113,8 @@ build the card with every IC socketed. The same parts are the optional socket li
   fitted (DigiKey had 28 on 2026-10-18). Cheaper: SparkFun BOB-13994 (one pack = two adapters) with round 0.5 mm
   machined pins (LCSC C9742 / SparkFun PRT-00117, not at DigiKey). Never push square header pins into a machined
   socket: they ruin its contacts. Soldered straight into the board, the BOB-13994 takes plain square pins.
-* **Pico**: the Adafruit short sockets keep it at ~7.5 mm. With the standard 8.5 mm Sullins sockets it sits at
-  ~11–12 mm; check that against the daughterboard outline in the new placement.
+* **A socketed Pico has no USB host port** (J11) unless three short wires connect its TP1–TP3 to the holes under
+  it. The Adafruit short sockets keep the Pico at ~7.5 mm; the standard 8.5 mm Sullins sockets at ~11–12 mm.
 * J10 (GY-PCM5102 module) stays soldered flat, as on v1.3.0.
 
 
@@ -317,7 +336,7 @@ The script stops if DRC (including the schematic-parity check) finds errors. `FO
 * `PicoGUS-THT-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
   and the Excellon drill files (PTH and NPTH separate, mm).
 * `PicoGUS-THT-bom-jlc.csv` and `PicoGUS-THT-cpl-jlc.csv`: the BOM and placement files for JLCPCB assembly (SMD parts only).
-  Only U3/U4 and U8/U9 are SMD on this board; the LCSC column comes from the schematic fields.
+  Only U3/U4, U8/U9 and the optional U12 are SMD on this board; the LCSC column comes from the schematic fields.
   U3/U4 are on the nested through-hole footprint; the script adds them to the CPL file anyway (rev B).
 * `PicoGUS-THT-drc.rpt`: the DRC report.
 
