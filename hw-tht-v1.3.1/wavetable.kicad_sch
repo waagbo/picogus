@@ -4418,7 +4418,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:Wavetable"
+		(property "Footprint" "PiGUS library:Wavetable_NoMountingHoles"
 			(at 60.96 90.17 0)
 			(hide yes)
 			(show_name no)
