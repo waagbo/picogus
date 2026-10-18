@@ -9,18 +9,22 @@
 		(date "2026-10-18")
 		(rev "v1.3.1")
 		(comment 1 "USB host port (mouse, joystick, storage) on the Pico USB test points TP2/TP3")
-		(comment 2 "J11: one footprint for a USB-A or a USB-C receptacle; fit one of them")
+		(comment 2 "J11: USB-A receptacle (Molex 67643) at the bracket")
 	)
 	(lib_symbols
-		(symbol "PiGUS library:USB_A_C_Dual"
+		(symbol "Connector:USB_A"
 			(pin_names
 				(offset 1.016)
 			)
+			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "J"
-				(id 0)
-				(at -7.62 13.97 0)
+				(at -5.08 11.43 0)
+				(show_name no)
+				(do_not_autoplace no)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -28,9 +32,10 @@
 					(justify left)
 				)
 			)
-			(property "Value" "USB_A_C_Dual"
-				(id 1)
-				(at -7.62 11.43 0)
+			(property "Value" "USB_A"
+				(at -5.08 8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -38,40 +43,65 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "PiGUS library:USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal"
-				(id 2)
-				(at 0 -17.78 0)
+			(property "Footprint" ""
+				(at 3.81 -1.27 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					hide
 				)
 			)
 			(property "Datasheet" ""
-				(id 3)
-				(at 0 0 0)
+				(at 3.81 -1.27 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					hide
 				)
 			)
-			(property "ki_description" "USB 2.0 host receptacle, one footprint for a USB-A or a USB-C socket (fit one). CC1/CC2 are only connected on USB-C"
-				(id 4)
+			(property "Description" "USB Type A connector"
 				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					hide
 				)
 			)
-			(symbol "USB_A_C_Dual_0_1"
+			(property "ki_keywords" "connector USB"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "USB*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "USB_A_0_1"
 				(rectangle
-					(start -7.62 10.16)
-					(end 7.62 -12.7)
+					(start -5.08 -7.62)
+					(end 5.08 7.62)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -80,34 +110,167 @@
 						(type background)
 					)
 				)
-				(text "USB-A"
-					(at -3.175 5.08 0)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
+				(circle
+					(center -3.81 2.159)
+					(radius 0.635)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
 					)
 				)
-				(text "or"
-					(at -3.175 2.54 0)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
+				(polyline
+					(pts
+						(xy -3.175 2.159)
+						(xy -2.54 2.159)
+						(xy -1.27 3.429)
+						(xy -0.635 3.429)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
-				(text "USB-C"
-					(at -3.175 0 0)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
+				(polyline
+					(pts
+						(xy -2.54 2.159)
+						(xy -1.905 2.159)
+						(xy -1.27 0.889)
+						(xy 0 0.889)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.524 4.826)
+					(end -4.318 5.334)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -1.27 4.572)
+					(end -4.572 5.842)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -0.635 3.429)
+					(radius 0.381)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -0.127 -7.62)
+					(end 0.127 -6.858)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 0.254 1.27)
+					(end -0.508 0.508)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.635 2.794)
+						(xy 0.635 1.524)
+						(xy 1.905 2.159)
+						(xy 0.635 2.794)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 5.08 4.953)
+					(end 4.318 5.207)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 5.08 -0.127)
+					(end 4.318 0.127)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 5.08 -2.667)
+					(end 4.318 -2.413)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 			)
-			(symbol "USB_A_C_Dual_1_1"
-				(pin passive line
-					(at 10.16 7.62 180)
+			(symbol "USB_A_1_1"
+				(polyline
+					(pts
+						(xy -1.905 2.159)
+						(xy 0.635 2.159)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin power_in line
+					(at 7.62 5.08 180)
 					(length 2.54)
 					(name "VBUS"
 						(effects
@@ -125,25 +288,7 @@
 					)
 				)
 				(pin bidirectional line
-					(at 10.16 2.54 180)
-					(length 2.54)
-					(name "D+"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 10.16 0 180)
+					(at 7.62 -2.54 180)
 					(length 2.54)
 					(name "D-"
 						(effects
@@ -160,17 +305,17 @@
 						)
 					)
 				)
-				(pin passive line
-					(at 10.16 -5.08 180)
+				(pin bidirectional line
+					(at 7.62 0 180)
 					(length 2.54)
-					(name "CC1"
+					(name "D+"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "5"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -178,26 +323,8 @@
 						)
 					)
 				)
-				(pin passive line
-					(at 10.16 -7.62 180)
-					(length 2.54)
-					(name "CC2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -15.24 90)
+				(pin power_in line
+					(at 0 -10.16 90)
 					(length 2.54)
 					(name "GND"
 						(effects
@@ -215,7 +342,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -15.24 90)
+					(at -2.54 -10.16 90)
 					(length 2.54)
 					(name "Shield"
 						(effects
@@ -233,6 +360,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "Device:Polyfuse"
 			(pin_numbers
@@ -660,146 +788,6 @@
 					)
 					(fill
 						(type none)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "Device:R"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "R"
-				(at 2.032 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "R"
-				(at 0 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at -1.778 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Resistor"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "R res resistor"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "R_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "R_0_1"
-				(rectangle
-					(start -1.016 -2.54)
-					(end 1.016 2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "R_1_1"
-				(pin passive line
-					(at 0 3.81 270)
-					(length 1.27)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -3.81 90)
-					(length 1.27)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
 					)
 				)
 			)
@@ -1765,8 +1753,8 @@
 		)
 	)
 	(symbol
-		(lib_id "PiGUS library:USB_A_C_Dual")
-		(at 76.2 101.6 0)
+		(lib_id "Connector:USB_A")
+		(at 78.74 99.06 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -1776,7 +1764,7 @@
 		(dnp no)
 		(uuid "345ed2d6-631a-5031-9c01-1d06454472ae")
 		(property "Reference" "J11"
-			(at 68.58 87.63 0)
+			(at 71.12 87.63 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -1786,8 +1774,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "USB-A or USB-C"
-			(at 68.58 90.17 0)
+		(property "Value" "USB-A"
+			(at 71.12 90.17 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -1797,8 +1785,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PiGUS library:USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal"
-			(at 76.2 101.6 0)
+		(property "Footprint" "Connector_USB:USB_A_Molex_67643_Horizontal"
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1808,8 +1796,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://gct.co/files/drawings/usb4085.pdf"
-			(at 76.2 101.6 0)
+		(property "Datasheet" "https://www.molex.com/pdm_docs/sd/676433910_sd.pdf"
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1819,8 +1807,8 @@
 				)
 			)
 		)
-		(property "Description" "USB host receptacle at the bracket, one footprint: fit a USB-A (Molex 67643) OR a USB-C (GCT USB4085) socket"
-			(at 76.2 101.6 0)
+		(property "Description" "USB host receptacle at the bracket: USB-A, Molex 67643 right angle"
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1831,7 +1819,7 @@
 			)
 		)
 		(property "Manufacturer" "Molex"
-			(at 76.2 101.6 0)
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1842,7 +1830,7 @@
 			)
 		)
 		(property "MPN" "0676430910"
-			(at 76.2 101.6 0)
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1853,7 +1841,7 @@
 			)
 		)
 		(property "DigiKey" "WM4993-ND"
-			(at 76.2 101.6 0)
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1864,7 +1852,7 @@
 			)
 		)
 		(property "LCSC" "C2798029"
-			(at 76.2 101.6 0)
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1874,8 +1862,8 @@
 				)
 			)
 		)
-		(property "Alternatives" "USB-C: GCT USB4085-GF-A (DK 2073-USB4085-GF-ACT-ND, LCSC C7095263). USB-A white: Molex 0676433910 (DK WM14667-ND)"
-			(at 76.2 101.6 0)
+		(property "Alternatives" "Molex 0676433910 (white, DK WM14667-ND); 0676432910 (DK WM11258-ND), same land pattern"
+			(at 78.74 99.06 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1888,23 +1876,17 @@
 		(pin "1"
 			(uuid "e267e414-47bf-5a3c-a13e-1077cc292e67")
 		)
-		(pin "3"
-			(uuid "9f71418d-5ae0-5994-9d67-1a7e5fa98c5a")
-		)
 		(pin "2"
-			(uuid "3a2a7d23-066b-5cd6-a602-ff4501d48e84")
+			(uuid "4abd4ef4-e2c4-5379-a86e-fe927af43c71")
 		)
-		(pin "5"
-			(uuid "5d1b3269-a1ab-53c8-ab74-20828c17dea1")
-		)
-		(pin "6"
-			(uuid "074e5023-00dd-54af-8e9f-0c34b4bd3a81")
+		(pin "3"
+			(uuid "151b0cca-7294-59db-a99b-5293bc4bf4f6")
 		)
 		(pin "4"
-			(uuid "bff4dd94-9dde-5512-92cc-f4915fc71235")
+			(uuid "5def9ab7-4e62-53e2-8fba-21282da2c2b5")
 		)
 		(pin "SH"
-			(uuid "89311fcc-3901-5c1c-b777-4770f392064c")
+			(uuid "1d818bf8-dbfd-5d62-9caa-712ac68dfaac")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -1924,7 +1906,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c9607b02-2dab-5e7b-81a9-8b22448edcaf")
+		(uuid "dda49f06-5524-5cba-a3ac-11da38f9f790")
 	)
 	(wire
 		(pts
@@ -1935,7 +1917,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "24b1e41b-efab-5cbb-aec6-7159dbf516f0")
+		(uuid "bcb64618-3cd0-599a-996d-75cacb0141c6")
 	)
 	(wire
 		(pts
@@ -1946,7 +1928,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "87e9d53b-de4e-5055-aac1-fe6142b6cc00")
+		(uuid "c9607b02-2dab-5e7b-81a9-8b22448edcaf")
 	)
 	(symbol
 		(lib_id "Device:Polyfuse")
@@ -1958,7 +1940,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "6320263f-f7ea-5b6d-8ddc-1f5773f49df6")
+		(uuid "c419c6ec-6a4a-50f0-b12f-1bef88b8f740")
 		(property "Reference" "F1"
 			(at 103.505 72.39 0)
 			(show_name no)
@@ -2059,10 +2041,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "9ad7c76b-a4dd-5ad1-ba22-962ec5708369")
+			(uuid "947342b3-3181-55c7-a004-8c0533dc21b4")
 		)
 		(pin "2"
-			(uuid "e1c082d5-86d7-583c-935c-302638c625e6")
+			(uuid "2560164a-1770-5db3-9489-2bfba7e787b1")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -2083,7 +2065,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "e65b60fd-8486-56ae-956a-1fdb06b47774")
+		(uuid "7992a374-2d67-5909-ac41-66cefaf0f583")
 		(property "Reference" "#PWR0200"
 			(at 101.6 69.85 0)
 			(hide yes)
@@ -2139,7 +2121,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "8b1c1bd3-4dfe-503d-8e85-4db2cb112f51")
+			(uuid "c5c96af1-5da7-51f2-8e8c-684fb1fd70a7")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -2159,13 +2141,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "443a049f-ff1b-5b34-8edd-efd0a058a409")
+		(uuid "3cf7ff68-6b13-59d2-a3c7-f8a64142eb98")
 	)
 	(junction
 		(at 101.6 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "61467f08-c3c1-52c9-b1ec-8da5d459f141")
+		(uuid "2ff20204-bf81-53db-89c5-ed0dd5d5abad")
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
@@ -2177,7 +2159,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "2a69b5d2-3224-514a-b630-53a55bf006e5")
+		(uuid "d0629720-8991-5a2e-a16c-68a7de7e0b24")
 		(property "Reference" "#FLG106"
 			(at 109.22 81.28 0)
 			(hide yes)
@@ -2233,7 +2215,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "c4ca417e-41e8-5527-a3bb-b42013b3640c")
+			(uuid "683f1ed8-68bb-5ac8-bde2-2477eed51e9e")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -2248,7 +2230,7 @@
 		(at 109.22 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "4f8a865c-e13e-5136-a841-b65801949f85")
+		(uuid "327f60e2-c815-5b3d-bf0d-ebc307265d30")
 	)
 	(label "VBUS_USB"
 		(at 129.54 81.28 0)
@@ -2258,7 +2240,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1b3a1afc-85c0-50e3-84f1-55e33e737b97")
+		(uuid "5b6e267b-5d4a-5443-99af-6fe901c42d6b")
 	)
 	(wire
 		(pts
@@ -2269,7 +2251,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "a701e752-eed3-510c-8d56-84e4b4ffea34")
+		(uuid "194098e4-c992-538d-864c-564177e626f0")
 	)
 	(global_label "USB_DP"
 		(shape bidirectional)
@@ -2281,7 +2263,7 @@
 			)
 			(justify left)
 		)
-		(uuid "20a21055-5a91-59f2-b39c-eed75250a91a")
+		(uuid "5462b7bc-b6e7-5319-8162-390ffb97bfc5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 104.14 99.06 0)
 			(hide yes)
@@ -2304,7 +2286,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "1cd85bb8-2399-5b8f-ab1e-5b6ca7883ae4")
+		(uuid "a701e752-eed3-510c-8d56-84e4b4ffea34")
 	)
 	(global_label "USB_DM"
 		(shape bidirectional)
@@ -2316,7 +2298,7 @@
 			)
 			(justify left)
 		)
-		(uuid "dd1e8906-f608-58bd-be47-ea9e103cdc83")
+		(uuid "20a21055-5a91-59f2-b39c-eed75250a91a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 104.14 101.6 0)
 			(hide yes)
@@ -2330,376 +2312,48 @@
 			)
 		)
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 116.84 90.17 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "d91f14bb-bcd7-5afe-9610-8127d82a5a16")
-		(property "Reference" "R25"
-			(at 118.745 88.9 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "56K"
-			(at 118.745 91.44 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "56k 1/4W 1% metal film (USB-C Rp, default USB power)"
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Yageo"
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "MFR-25FBF52-56K"
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "MFR-25FBF52-56K-ND"
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C127224 (CCO MF1/4W-56K 1%)"
-			(at 116.84 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "6258d691-fb21-5238-9485-c5aebcd610eb")
-		)
-		(pin "2"
-			(uuid "a07a67e4-8850-5169-bdf9-3cfb0c84f353")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
-					(reference "R25")
-					(unit 1)
-				)
-			)
-		)
-	)
 	(wire
 		(pts
-			(xy 116.84 86.36)
-			(xy 116.84 81.28)
+			(xy 76.2 109.22)
+			(xy 76.2 111.76)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "08cbe28e-d467-50f0-86ad-9ebd2966b388")
+		(uuid "1cd85bb8-2399-5b8f-ab1e-5b6ca7883ae4")
+	)
+	(wire
+		(pts
+			(xy 76.2 111.76)
+			(xy 78.74 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b1563953-18cc-5297-9006-b0a73be671cc")
+	)
+	(wire
+		(pts
+			(xy 78.74 109.22)
+			(xy 78.74 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c7a642f0-e8bb-537c-b7dd-6aeb18033b7c")
 	)
 	(junction
-		(at 116.84 81.28)
+		(at 78.74 111.76)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "b59aedf3-ccbd-54a8-b613-4201c011279c")
-	)
-	(wire
-		(pts
-			(xy 86.36 106.68)
-			(xy 116.84 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "64999a2b-2c89-5f19-bbca-69aab4287f92")
-	)
-	(wire
-		(pts
-			(xy 116.84 106.68)
-			(xy 116.84 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7f3803f3-2998-5787-9547-e9686991bb99")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 124.46 90.17 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "acf8f1c7-385e-5bd9-8a8a-64c27677127e")
-		(property "Reference" "R26"
-			(at 126.365 88.9 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "56K"
-			(at 126.365 91.44 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "56k 1/4W 1% metal film (USB-C Rp, default USB power)"
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Yageo"
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "MFR-25FBF52-56K"
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "MFR-25FBF52-56K-ND"
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C127224 (CCO MF1/4W-56K 1%)"
-			(at 124.46 90.17 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "d3babdaf-93e1-56e4-bfe8-941057db5496")
-		)
-		(pin "2"
-			(uuid "a80182f6-2456-588e-ab98-fcae11bbda08")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/6a46ae49-e7e4-5a48-8b33-ff41e9c8fc77"
-					(reference "R26")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 124.46 86.36)
-			(xy 124.46 81.28)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3d88db53-e61b-50cf-bee1-cf6381dbd25c")
-	)
-	(junction
-		(at 124.46 81.28)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "d69ba66c-1dcd-582f-9e2e-10a7bf103cc4")
-	)
-	(wire
-		(pts
-			(xy 86.36 109.22)
-			(xy 124.46 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "da5c4a49-c6db-5ac2-9a96-4e3de9300d30")
-	)
-	(wire
-		(pts
-			(xy 124.46 109.22)
-			(xy 124.46 93.98)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "41898ba7-0d46-51f5-a46c-4543c46d09dd")
-	)
-	(wire
-		(pts
-			(xy 71.12 116.84)
-			(xy 71.12 119.38)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bfb3a70c-8520-5f65-8013-16fd3d4b9ac0")
-	)
-	(wire
-		(pts
-			(xy 71.12 119.38)
-			(xy 76.2 119.38)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4ed71a30-2f78-5ae7-9920-43955bbde487")
-	)
-	(wire
-		(pts
-			(xy 76.2 116.84)
-			(xy 76.2 119.38)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c07bed10-169e-50ce-907c-8c764c2bff46")
-	)
-	(junction
-		(at 76.2 119.38)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "82a2ebe3-b8ac-555c-bdef-f1ac2c4bbf97")
+		(uuid "732d35e7-5c43-5aa9-b175-a62e0dc8cb95")
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 76.2 119.38 0)
+		(at 78.74 111.76 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2707,9 +2361,9 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "681692e1-cdf7-52f7-bd89-f6b83cf79fdf")
+		(uuid "6be7f21a-175c-5314-800a-ff73d732affa")
 		(property "Reference" "#PWR0201"
-			(at 76.2 125.73 0)
+			(at 78.74 118.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2720,7 +2374,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 76.2 123.19 0)
+			(at 78.74 115.57 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2730,7 +2384,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 76.2 119.38 0)
+			(at 78.74 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2741,7 +2395,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 119.38 0)
+			(at 78.74 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2752,7 +2406,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 76.2 119.38 0)
+			(at 78.74 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2763,7 +2417,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "95e8da2d-c249-5ccc-a5d4-cb8f5b3ac25a")
+			(uuid "ebde6cc6-4e38-514a-9350-bb9a9f622477")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -2784,7 +2438,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "65d4e5e8-c84b-5f65-8402-255844eb7575")
+		(uuid "bcf57fa1-c78e-5111-902b-e398efb1c13d")
 		(property "Reference" "C34"
 			(at 144.145 88.9 0)
 			(show_name no)
@@ -2885,10 +2539,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "60a26945-16b2-5e54-99ed-8c6e4de7be82")
+			(uuid "756a7850-a533-564c-9436-1aa2e5796cc1")
 		)
 		(pin "2"
-			(uuid "0b25949b-d33e-5835-abae-21ef17761e80")
+			(uuid "e5baed04-5156-5f77-b5f9-dec0a8c679f0")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -2908,13 +2562,13 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "fe1317c8-49b7-5ee8-8238-1676a3b9c1bb")
+		(uuid "48e3f468-2a57-52ba-b06b-03cf100b88e5")
 	)
 	(junction
 		(at 142.24 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "a00c92e9-13a1-5486-89a8-8852f9da7bf5")
+		(uuid "5b8959ef-956e-59f4-a531-7dead2c968b3")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -2926,7 +2580,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "994e7cf5-02a6-512c-9c49-794f963879e9")
+		(uuid "8d9f4a90-c940-570f-8948-2d9c06535b77")
 		(property "Reference" "#PWR0202"
 			(at 142.24 100.33 0)
 			(hide yes)
@@ -2982,7 +2636,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "1948aae4-7f5b-52cc-8dd8-765cf2db8244")
+			(uuid "d6cfd85e-0668-568c-b602-aac3134c7ea1")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -3003,7 +2657,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "32c51974-e631-5751-a965-3953061b439f")
+		(uuid "46091fe4-882e-5945-802f-fa3b0c49f4d7")
 		(property "Reference" "C35"
 			(at 154.305 88.9 0)
 			(show_name no)
@@ -3104,10 +2758,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "0fb8f33f-257f-5645-9a68-7e434768a236")
+			(uuid "1492a71c-6911-5e33-8ac9-51996e586513")
 		)
 		(pin "2"
-			(uuid "93cab7c5-7b57-5929-ad11-4b49b41ef8ad")
+			(uuid "ab686b59-4df8-583e-bd89-b5431dc1e9ac")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -3127,7 +2781,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "488c2ce2-270d-5ac8-a764-b6ba4b1dfce6")
+		(uuid "bfb3a70c-8520-5f65-8013-16fd3d4b9ac0")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -3139,7 +2793,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "b6e076f3-2d1b-5d46-9b7f-e9604a8cfa62")
+		(uuid "fd009c4d-20e5-5264-9178-7edfa8e101c6")
 		(property "Reference" "#PWR0203"
 			(at 152.4 100.33 0)
 			(hide yes)
@@ -3195,7 +2849,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "f5e41213-d161-5157-9744-8f6288d8f089")
+			(uuid "8cc99461-fd44-508c-8291-a44414c801d3")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -3216,7 +2870,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "d2c891d8-94ff-5c8f-a8b4-ef1aa9a5f6bb")
+		(uuid "4fd0a9e7-1cbe-57cf-8dc5-17bb9b2275ef")
 		(property "Reference" "U12"
 			(at 180.34 88.9 0)
 			(show_name no)
@@ -3317,22 +2971,22 @@
 			)
 		)
 		(pin "1"
-			(uuid "29755464-fa20-5548-8386-19040a0fb75a")
+			(uuid "564e5b04-0ef3-5426-ae6d-e9ee4e9476f7")
 		)
 		(pin "2"
-			(uuid "1e1a72ac-666a-5c99-90f6-a3601ad38912")
+			(uuid "d9cca5fc-fc66-51fc-b00d-edec3f2e5411")
 		)
 		(pin "3"
-			(uuid "321976b6-9aa5-571b-a1c6-b11aa79126b6")
+			(uuid "86e992bb-9727-5a39-a64c-a36c77a51ab7")
 		)
 		(pin "4"
-			(uuid "379689a7-c27c-54bc-bf48-6bcb2492073c")
+			(uuid "3d4e07ff-c2e2-5c7b-abd6-7ec87695444b")
 		)
 		(pin "5"
-			(uuid "a3a90038-1aa0-59b0-9ca2-fa04612c7ff6")
+			(uuid "67eec983-c180-5e74-901f-025fd608015e")
 		)
 		(pin "6"
-			(uuid "7ededf7c-475f-5b49-bbac-99c3e9d4ab84")
+			(uuid "ac7c7bb3-4286-5b53-a77e-a78a8a107475")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -3352,7 +3006,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b2acc065-3d26-5f13-879b-1e8483e0b647")
+		(uuid "1f038ca0-d4d3-5188-8093-24cbb10c200c")
 	)
 	(global_label "USB_DP"
 		(shape bidirectional)
@@ -3364,7 +3018,7 @@
 			)
 			(justify right)
 		)
-		(uuid "eb0cbc4b-64f1-56d2-96ad-fdd6369e3a2e")
+		(uuid "9c6fb541-07e1-52db-b5c8-bb0531b65936")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 170.18 101.6 0)
 			(hide yes)
@@ -3387,7 +3041,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "12ca473d-a3f7-566f-b437-6ef95cbf5fd3")
+		(uuid "a60e07ab-954b-57fb-999c-d2be53875310")
 	)
 	(global_label "USB_DP"
 		(shape bidirectional)
@@ -3399,7 +3053,7 @@
 			)
 			(justify left)
 		)
-		(uuid "1760f703-9101-5d02-9442-c47029d7a632")
+		(uuid "7dc9ca3c-28eb-5cf2-bf5b-396ed9e0b94d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 185.42 101.6 0)
 			(hide yes)
@@ -3422,7 +3076,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "2f3d5a08-d9a5-5865-b4e8-dfc0487172ac")
+		(uuid "c258c3b3-9fdd-59c8-ba5c-a853df5262c7")
 	)
 	(global_label "USB_DM"
 		(shape bidirectional)
@@ -3434,7 +3088,7 @@
 			)
 			(justify right)
 		)
-		(uuid "35ababf9-43d4-511a-bd87-096230157d5e")
+		(uuid "850fde50-65d1-5818-9586-3874564dde8a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 170.18 104.14 0)
 			(hide yes)
@@ -3457,7 +3111,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "1470e4ef-f38b-5bc6-87de-abfc541a7e67")
+		(uuid "488c2ce2-270d-5ac8-a764-b6ba4b1dfce6")
 	)
 	(global_label "USB_DM"
 		(shape bidirectional)
@@ -3469,7 +3123,7 @@
 			)
 			(justify left)
 		)
-		(uuid "087e531f-aa42-5bf2-bb47-a4c532c098c0")
+		(uuid "b929dd69-343c-55df-9ec9-2cd90f389ee6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 185.42 104.14 0)
 			(hide yes)
@@ -3492,7 +3146,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "f47cc3ca-5e5a-5dc2-9aa6-236731b168ca")
+		(uuid "2181c3f5-7f2f-51e8-9a76-d7ec362e5669")
 	)
 	(label "VBUS_USB"
 		(at 177.8 87.63 90)
@@ -3502,7 +3156,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "fca96cb9-9c19-5c33-b0d3-a5860e53ca92")
+		(uuid "1cf2a275-ed33-5927-87a5-76ead5f0868c")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -3514,7 +3168,7 @@
 		(on_board yes)
 		(in_pos_files no)
 		(dnp no)
-		(uuid "abbe8a0a-1725-5392-8b7b-9b26d8042964")
+		(uuid "05065204-2deb-5c84-aa71-e978ed3ea476")
 		(property "Reference" "#PWR0204"
 			(at 177.8 115.57 0)
 			(hide yes)
@@ -3570,7 +3224,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "abc50ee7-c975-54b2-9a72-655f4232eda3")
+			(uuid "75b2eee4-5099-5f4a-ab56-d959107e89cc")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -3590,9 +3244,9 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "b5e961dd-a379-5262-831d-8c48077bd1b3")
+		(uuid "7ddafaff-31cb-5e4b-a818-14fa59ea96ed")
 	)
-	(text "Data straight from the Pico's USB test points TP3 (D+) / TP2 (D-) (U1, sheet 1), behind the 27R\nseries resistors on the Pico module. The Pico must be soldered FLAT on the board (castellated edge or\nthrough-hole pins, no header) so TP1-TP3 can be soldered from the back of the card.\nWith the Pico on headers or in a socket the TP pads do not reach the card: wire TP1-TP3 to the holes,\nor use a micro-USB OTG adapter on the Pico (with jumper J7) as on v1.3.0. Never use both at once.\nVBUS from ISA +5V via F1 (resettable, 0.5 A hold). The Pico VBUS pin is not used for this port.\nJ11 takes a USB-A OR a USB-C receptacle. R25/R26 (Rp 56k = default USB power) tell a USB-C\ndevice that this is a 5 V source; with a USB-A socket they are not connected (fit them anyway).\nUSB-C: VBUS is always on (no \"cold socket\"), so never connect J11 to another 5 V source (charger, PC).\nU12 (ESD array, SOT-23-6) is optional."
+	(text "Data straight from the Pico's USB test points TP3 (D+) / TP2 (D-) (U1, sheet 1), behind the 27R\nseries resistors on the Pico module. The Pico must be soldered FLAT on the board (castellated edge or\nthrough-hole pins, no header) so TP1-TP3 can be soldered from the back of the card.\nWith the Pico on headers or in a socket the TP pads do not reach the card: wire TP1-TP3 to the holes,\nor use a micro-USB OTG adapter on the Pico (with jumper J7) as on v1.3.0. Never use both at once.\nVBUS from ISA +5V via F1 (resettable, 0.5 A hold), C34 bulk. The Pico VBUS pin is not used for this port.\nU12 (ESD array, SOT-23-6) is optional."
 		(exclude_from_sim no)
 		(at 63.5 134.62 0)
 		(effects
@@ -3601,7 +3255,7 @@
 			)
 			(justify left top)
 		)
-		(uuid "4008d3e9-a19e-5c0f-8563-5570f817a786")
+		(uuid "cee73a33-f64d-58ec-a6fd-493d16870eec")
 	)
 	(sheet_instances
 		(path "/"

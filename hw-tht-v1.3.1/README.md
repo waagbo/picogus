@@ -16,18 +16,17 @@ Files:
 | File | What |
 |---|---|
 | `PicoGUS-THT.kicad_pro/.kicad_sch/.kicad_pcb` | KiCad **10** project (the root sheet is the v1.2 logic). The board is **unrouted** |
-| `PicoGUS-THT.kicad_dru` | Custom DRC rules: keep 0.50 mm hole-to-hole and 0.13 mm annular ring on everything except the USB-C pins |
 | `audio.kicad_sch` | PCM510x DAC sheet (as v1.3.0) |
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.0, with the +6 dB WT gain) |
-| `usb.kicad_sch` | New: USB host port (J11, F1, C34/C35, R25/R26, U12) |
+| `usb.kicad_sch` | New: USB host port (J11 USB-A, F1, C34/C35, U12) |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
 | `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, rev B lines 2026-10-18) |
-| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U3/U4 adapters, the USB-C receptacle, U12 |
+| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U3/U4 adapters, U12 |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every IC socketed, with heights (see [Socket build](#socket-build)) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
-New in the shared library for rev B: `RPi_Pico_SMD_TH_USB`, `DIP-16_W7.62mm_TSSOP-16_Nested` and
-`USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`.
+New in the shared library for rev B: `RPi_Pico_SMD_TH_USB` and `DIP-16_W7.62mm_TSSOP-16_Nested` (plus the unused
+`USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`, see below).
 
 ## What changed compared to v1.3.0
 
@@ -44,24 +43,14 @@ A USB host port for a mouse, joystick, keyboard or flash drive, as on the PicoGU
   of v1.3.0 (an OTG adapter on the Pico's micro-USB, jumper J7 for VBUS), or solder three short wires (26–30
   AWG, under 3 cm, twisted together) from the Pico's TP1/TP2/TP3 into the holes. The Pico's micro-USB stays in
   parallel with the port: **never use the micro-USB and J11 at the same time.**
-* **One footprint, USB-A or USB-C** (`PiGUS library:USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`): fit one of the two sockets.
-  * USB-A: Molex 67643 (0676430910 black, DigiKey WM4993-ND / LCSC C2798029; or 0676433910 white,
-    WM14667-ND). The NE2000 card's 0676432910 has the same land pattern but is out of stock at DigiKey.
-  * USB-C: GCT USB4085-GF-A (USB 2.0, all pins through-hole; DigiKey 2073-USB4085-GF-ACT-ND / LCSC C7095263).
-    Its signal tails are only 1.6 mm long (flush with the back of the board): solder it from the back with a
-    fine tip and let the solder wick up the holes. The USB-C signal pads have no top-side solder-mask opening,
-    so a fitted USB-A shell can't short them.
-  * Both front faces are on one line, 1.5 mm beyond the board edge (the Molex flange then sits just behind the
-    bracket plate). This is estimated from a bracket STEP model: **test-fit a real bracket** before ordering.
-  * The GCT pattern needs two project-rule changes, already made in this folder: Board Setup min hole-to-hole
-    0.45 mm (was 0.50) and min annular width 0.12 mm (was 0.13), and `PicoGUS-THT.kicad_dru` puts 0.50/0.13 mm
-    back on every other footprint. JLCPCB's limits are 0.45 mm pad hole-to-hole and 0.18 mm PTH annular ring,
-    so the 0.125 mm ring of the USB4085 pins may get a DFM note.
+* **J11: USB-A**, Molex 67643 (0676430910 black, DigiKey WM4993-ND / LCSC C2798029; or 0676433910 white,
+  WM14667-ND), stock KiCad footprint `Connector_USB:USB_A_Molex_67643_Horizontal`. The NE2000 card's 0676432910
+  has the same land pattern but is out of stock at DigiKey. A USB-C option is on hold until FreddyV (PicoMEM)
+  answers how the PicoMEM 2 handles its USB-C port: a USB-C *source* should only switch VBUS on after it sees a
+  device, which a plain always-on VBUS doesn't do. A dual USB-A/USB-C footprint (Molex 67643 or GCT USB4085, both
+  through-hole) is ready in the shared library (`USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`) but not used.
 * **VBUS**: ISA +5 V through **F1** (resettable fuse, 0.5 A hold) with C34 (220 µF low-impedance, USB 2.0 asks for ≥ 120 µF) + C35 (0.1 µF). The Pico's VBUS
   pin (J7) is not involved.
-* **USB-C**: R25/R26 (56 kΩ Rp on CC1/CC2) tell a USB-C device that this is a 5 V source (default USB power).
-  With a USB-A socket the CC pads are unused; fit R25/R26 anyway or leave them out. VBUS is always on, which a
-  USB-C source strictly should not do (see [caveat 12](#caveats)): **USB-A is the safer choice**.
 * **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−.
 * **Bracket**: J11 needs a cut-out in the ISA bracket; see [Placement to do](#placement-to-do).
 
@@ -84,32 +73,31 @@ footprints only). Each nested footprint needs 16 short links and 4 vias under th
 ### Other
 
 * Title blocks, silkscreen and back silkscreen say v1.3.1.
-* New references: J11, F1, C34, C35, R25, R26, U12. No v1.3.0 reference changed.
+* New references: J11, F1, C34, C35, U12. No v1.3.0 reference changed. The design rules are v1.3.0's.
 
 ## Placement to do
 
 The board is the v1.3.0 placement with three changes. **U1** has the new footprint at the old place.
 **U3/U4** sit on their v1.3.0 TSSOP centres, turned 90° so the two DIP outlines don't overlap; they still
 overlap C3, C5, C29, C33, R2 and R24, which is what DRC reports (besides the unrouted nets).
-**J11, F1, C34, C35, R25, R26, U12** are parked below the ISA edge, with a note on the User.Comments layer.
+**J11, F1, C34, C35, U12** are parked below the ISA edge, with a note on the User.Comments layer.
 
-* **J11** needs 17.2 mm of bracket edge and 14.3 mm of depth. It is parked rotated 90° with its origin on the
-  bracket edge line (x = 220.13 mm), so it only has to move up. Today the bracket edge holds the Pico's USB end
+* **J11** needs about 15 mm of bracket edge (14.4 mm across the Molex flanges) and 14 mm of depth. It is parked
+  rotated 90° with its flange 1.5 mm beyond the bracket edge line (x = 220.13 mm; pin row at x = 208.64 mm), so it
+  only has to move up. The 1.5 mm puts the flange just behind the bracket plate according to the bracket STEP model
+  in `hw-common/parts`: **test-fit a real bracket** (the NE2000 card uses 0.9 mm). Today the bracket edge holds the Pico's USB end
   (y ≈ 41–64), H1 (64–71), J5 (76–85), RV1 (86–96), J8 (105–114) and H2 (120–127): the only stretch long
   enough is where the Pico is, so moving the Pico down frees the place for J11. (Firmware updates go over ISA
   with `pgusinit`, so the Pico's micro-USB doesn't need to reach the bracket.)
-* **F1, C34, C35** next to J11 (C34 is the bulk cap for plugging devices in); **R25/R26** and **U12** close to
-  J11 too.
-* **D+/D−**: keep TP2/TP3 → J11 short and together (12 Mbit/s full speed, so length matching is not critical).
-  At J11 the USB-A and USB-C pin orders differ and the A6/B6 and A7/B7 links run diagonally: route D+ and D− on
-  different layers around the connector. One 0.25 mm track fits between the USB-C rows, none between two pins
-  of one row.
+* **F1, C34, C35** next to J11 (C34 is the bulk cap for plugging devices in; F1 and C34 are 13.7 / 12.5 mm tall,
+  so keep them outside the daughterboard area), **U12** close to J11.
+* **D+/D−**: keep TP2/TP3 → J11 short and together (12 Mbit/s full speed, so length matching is not critical),
+  through U12's pins 1–6 and 3–4 so the port also works without U12.
 * **U3/U4** need 20.9 × 9.8 mm each (the plain TSSOP needed about 7 × 5 mm). When routing, each needs 16 short
   links from the TSSOP pads to the DIP pads and 4 vias under the TSSOP body; the feasibility study did this
   with 0 DRC errors on the board's own rules.
-* **Bracket cut-out**, centred on J11's centre line: USB-A 14.0 × 7.0 mm, centre 4.1 mm above the board top
-  (spans 0.6–7.6 mm); USB-C 9.5 × 3.6 mm with R1.8 ends, centre 1.9 mm above the board top. The USB-A cut-out
-  also passes a USB-C plug, so one bracket can take either connector.
+* **Bracket cut-out**, centred on J11's centre line: 14.0 × 7.0 mm, centre 4.1 mm above the board top
+  (spans 0.6–7.6 mm). It would also pass a USB-C plug, if a USB-C option is added later.
 * Under the Pico, the footprint keeps the copper keep-outs for the Pico's exposed test pads TP4–TP6
   (Dwgs layer) and marks the Pico 2's TP7.
 * When the board is routed: refill the zones, run DRC with schematic parity, and add `hw-tht-v1.3.1/PicoGUS-THT`
@@ -344,8 +332,8 @@ against findchips distributor data, and LCSC numbers against the LCSC product AP
   | NOK incl. 25 % MVA | ~592 kr | ~444 kr |
   | USD | ~$50 | ~$37 |
 
-  The optional sockets and Pico headers add ~39 kr (~$4) (v1.3.0 figures; rev B adds about 35 kr for the USB
-  port: J11 17 kr, F1 4 kr, R25/R26 2 kr, C34/C35 ~10 kr; the machined socket set is ~80 kr plus ~21 kr for the Pico sockets). NOK figures are DigiKey's USD prices converted
+  The optional sockets and Pico headers add ~39 kr (~$4) (v1.3.0 figures; rev B adds about 30 kr for the USB
+  port: J11 17 kr, F1 4 kr, C34/C35 ~8 kr; the machined socket set is ~80 kr plus ~21 kr for the Pico sockets). NOK figures are DigiKey's USD prices converted
   at 9.53 NOK/USD, so digikey.no can differ by a few percent. The Pico (44 kr), U3/U4 (40 kr)
   and the 18 × 0.1 µF (59 kr) are the big items.
 * **Ceramic capacitors must have 5.0 mm (or 5.08 mm) lead pitch.** 2.5 mm parts don't fit (e.g. TDK FG1x, Vishay K…L2).
@@ -413,10 +401,5 @@ placement preview before paying for assembly.
     warnings. That is expected; don't "update symbols from library" blindly.
 11. Waveblaster pin 8 (MIDI out from the daughterboard) and the daughterboard audio inputs (pins 12/16)
     are not used. PicoGUS has no MIDI in.
-12. **Rev B: USB-C VBUS is always on.** A USB-C source is supposed to switch VBUS on only after it sees a
-    device's Rd on CC ("cold socket"). J11 has +5 V on VBUS all the time, through F1. With a device (mouse, stick,
-    keyboard) that is harmless, but never connect the USB-C port to another source (a charger, a PC, a phone)
-    with a C-to-C cable: the two 5 V supplies would be tied together, and F1 does not stop back-feeding into the
-    ISA +5 V. The USB-A option has no such problem. A CC-detecting load switch would fix it if wanted.
-13. **Rev B: the Pico must be soldered flat** for the USB port (see above), and the micro-USB on the Pico is in
+12. **Rev B: the Pico must be soldered flat** for the USB port (see above), and the micro-USB on the Pico is in
     parallel with J11: use one or the other.
