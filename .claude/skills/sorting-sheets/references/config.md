@@ -77,7 +77,7 @@ order lines are not merged (their IDX would be lost).
 "companions": [{"main": "U1", "companion": "(pins)", "qty_text": "1 + 1 pin strip"}]
 ```
 Prints the companion's order data next to the main part in one double-width square (both items are too
-long for a normal square: a Pico and its 1x20 pin strips). The large layout prints them as two normal
+long for a normal square: a Pico and its 1x20 pin strips). The default large-square a5fold layout prints them as two normal
 squares again.
 
 ## Output (mapping.json)

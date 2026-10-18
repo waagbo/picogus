@@ -90,15 +90,21 @@ Re-run build_mapping.py after each config change.
 ### 3. Choose a layout and render
 | Layout | Squares | Use when |
 |---|---|---|
-| `a4` | 4 × 5 per A4 page, about 47 × 53 mm | default; flat sheets, binder |
-| `a5fold` | 5 × 2 per A5 half, about 37 × 61 mm | the user wants A4 sheets that fold to A5 (or cut in two) |
-| `a5fold-large` | 3 × 2 per A5 half, about 63 × 61 mm | big parts (jacks, pots, modules, header strips) or "bigger squares" |
+| `a5fold` (default) | 3 × 2 per A5 half, about 63 × 61 mm | always, unless the user asks for something else |
+| `a5fold-compact` | 5 × 2 per A5 half, about 37 × 61 mm | the user wants fewer pages / smaller squares |
+| `a4` | 4 × 5 per flat A4 page, about 47 × 53 mm | the user wants flat A4 sheets |
 
-`python3 ${CLAUDE_SKILL_DIR}/scripts/render.py mapping.json sheets.pdf --layout a5fold`, using the venv's
-python if you made one. Add `--split` for one PDF per board, e.g. `sheets-{board}.pdf`. Lines with 9 or more parts (18 in the large layout) get a
-double-width square so every reference stays readable and the parts fit; change that with `--wide-min`.
+The default is the format the builder settled on after printing the others: A4 sheets that fold (or are cut)
+to A5, with squares about 50 % larger than the compact version, because jacks, pots, DIP ICs, the Pico
+and 1x20 header strips did not fit the smaller squares. In this layout a part and its companion (U1 and
+its pin strip) get a square each. Use it whenever the request just says "sorting sheets" or "A5"; switch
+only when the user asks for compact/smaller squares or flat A4.
+
+`python3 ${CLAUDE_SKILL_DIR}/scripts/render.py mapping.json sheets.pdf` (default layout a5fold), using the venv's
+python if you made one. Add `--split` for one PDF per board, e.g. `sheets-{board}.pdf`. Lines with 18 or more parts (9 in the compact and A4
+layouts) get a double-width square so every reference stays readable and the parts fit; change that with `--wide-min`.
 render.py prints the smallest taping zones: below about 12 mm of height a square is cramped, so shorten that
-square's notes/values in the config or use a larger layout.
+square's notes/values in the config (or go back to the default a5fold layout if a compact one was used).
 
 ### 4. Check before delivering
 Run `python3 -I ${CLAUDE_SKILL_DIR}/scripts/check_sheets.py mapping.json sheets.pdf --layout <same> --png-dir <dir>`

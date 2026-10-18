@@ -1,14 +1,16 @@
 """Render printable component sorting sheets (PDF) from build_mapping.py's mapping.json.
 
-usage: python3 render.py MAPPING.json OUT.pdf [--layout a4|a5fold|a5fold-large] [--boards A,B] [--split]
+usage: python3 render.py MAPPING.json OUT.pdf [--layout a5fold|a5fold-compact|a4] [--boards A,B] [--split]
                          [--wide-min N]
 
-a4            one A4 portrait page = 4 x 5 squares (about 47 x 53 mm)
-a5fold        A4 portrait that folds across the middle to A5: each half is a complete A5 page with its own
-              header and 5 x 2 squares (about 37 x 61 mm); nothing is printed in a band along the fold
-a5fold-large  as a5fold with 3 x 2 squares per half (about 63 x 61 mm), for bigger parts
+a5fold          (default) A4 portrait that folds across the middle to A5: each half is a complete A5 page
+                with its own header and 3 x 2 large squares (about 63 x 61 mm); nothing is printed in a band
+                along the fold. A part and its companion (U1 + header pins) get a square each.
+a5fold-compact  as a5fold with 5 x 2 smaller squares per half (about 37 x 61 mm): fewer pages
+a4              flat A4 portrait page with 4 x 5 squares (about 47 x 53 mm)
+(a5fold-large is accepted as the old name of a5fold)
 --split       one PDF per board: OUT may contain {board} (default: OUT with -<board> before .pdf)
---wide-min N  lines with at least N parts get a double-width square (default 9, a5fold-large 18)
+--wide-min N  lines with at least N parts get a double-width square (default 18 for a5fold, 9 otherwise)
 
 Needs reportlab and a DejaVu Sans TTF (for µ, Ω, ×).
 """
@@ -21,13 +23,13 @@ from reportlab.pdfgen import canvas
 
 ap = argparse.ArgumentParser()
 ap.add_argument('mapping'); ap.add_argument('out')
-ap.add_argument('--layout', default='a4', choices=['a4', 'a5fold', 'a5fold-large'])
+ap.add_argument('--layout', default='a5fold', choices=['a5fold', 'a5fold-compact', 'a4', 'a5fold-large'])
 ap.add_argument('--boards', default='')
 ap.add_argument('--split', action='store_true')
 ap.add_argument('--wide-min', type=int, default=0)
 A = ap.parse_args()
-LAYOUT = A.layout
-LARGE = LAYOUT == 'a5fold-large'
+LAYOUT = 'a5fold' if A.layout == 'a5fold-large' else A.layout
+LARGE = LAYOUT == 'a5fold'                  # the large-square A5 layout
 COLS_A5 = 3 if LARGE else 5
 WIDE_MIN = A.wide_min or (18 if LARGE else 9)
 D = json.load(open(A.mapping, encoding='utf-8'))

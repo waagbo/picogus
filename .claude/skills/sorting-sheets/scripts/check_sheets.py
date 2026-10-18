@@ -14,9 +14,10 @@ import argparse, collections, json, re, shutil, subprocess, sys
 
 ap = argparse.ArgumentParser()
 ap.add_argument('mapping'); ap.add_argument('pdfs', nargs='+')
-ap.add_argument('--boards', default=''); ap.add_argument('--layout', default='a4')
+ap.add_argument('--boards', default=''); ap.add_argument('--layout', default='a5fold')
 ap.add_argument('--png-dir', default=''); ap.add_argument('--dpi', type=int, default=90)
 A = ap.parse_args()
+A.layout = 'a5fold' if A.layout == 'a5fold-large' else A.layout
 D = json.load(open(A.mapping, encoding='utf-8'))
 boards = A.boards.split(',') if A.boards else [b['key'] for b in D.get('meta', {}).get('boards', [])] or list(D['squares'])
 MM = 72 / 25.4
@@ -25,7 +26,7 @@ expected = []
 for b in boards:
     for s in D['squares'][b]:
         comp = s.get('companion')
-        if comp and A.layout == 'a5fold-large':      # the large layout prints the companion as its own square
+        if comp and A.layout == 'a5fold':            # the large-square layout prints the companion as its own square
             expected += [dict(s, companion=None), comp]
         else:
             expected.append(s)
