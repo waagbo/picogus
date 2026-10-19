@@ -9,7 +9,7 @@
 		(date "2026-10-18")
 		(rev "v1.3.1")
 		(comment 1 "Through-hole variant of PicoGUS v1.2 with Waveblaster header; rev B: USB host port")
-		(comment 2 "SMD only: U8, U9, U12 (optional ESD); U3/U4 TSSOP-16 or on a 300-mil DIP-16 adapter (nested footprint)")
+		(comment 2 "Through-hole parts only; U3/U4, U8, U9 and U12 (optional ESD) exist in SMD only")
 	)
 	(lib_symbols
 		(symbol "74FST3257DR2G_1"
@@ -20471,7 +20471,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-16_W7.62mm_TSSOP-16_Nested"
+		(property "Footprint" "Package_SO:TSSOP-16_4.4x5mm_P0.65mm"
 			(at 90.805 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -20495,7 +20495,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "FET mux w/ 5V->3V3 level shift. TSSOP-16 soldered directly, or on a 300-mil TSSOP-16 to DIP-16 adapter in the DIP pads"
+		(property "Description" "FET mux w/ 5V->3V3 level shift. SMD only"
 			(at 90.805 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -20538,16 +20538,6 @@
 			)
 		)
 		(property "LCSC" "C544573"
-			(at 69.215 123.19 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "300-mil adapter in the DIP pads: Chip Quik PA0034C (DK 315-PA0034C-ND, round pins fitted) or SparkFun BOB-13994 (0.635 mm pads: align the 0.65 mm TSSOP carefully), optionally in a DIP-16 socket"
 			(at 69.215 123.19 0)
 			(hide yes)
 			(effects
@@ -20768,7 +20758,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-16_W7.62mm_TSSOP-16_Nested"
+		(property "Footprint" "Package_SO:TSSOP-16_4.4x5mm_P0.65mm"
 			(at 46.99 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -20792,7 +20782,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "FET mux w/ 5V->3V3 level shift. TSSOP-16 soldered directly, or on a 300-mil TSSOP-16 to DIP-16 adapter in the DIP pads"
+		(property "Description" "FET mux w/ 5V->3V3 level shift. SMD only"
 			(at 46.99 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -20835,16 +20825,6 @@
 			)
 		)
 		(property "LCSC" "C544573"
-			(at 25.4 123.19 0)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternatives" "300-mil adapter in the DIP pads: Chip Quik PA0034C (DK 315-PA0034C-ND, round pins fitted) or SparkFun BOB-13994 (0.635 mm pads: align the 0.65 mm TSSOP carefully), optionally in a DIP-16 socket"
 			(at 25.4 123.19 0)
 			(hide yes)
 			(effects

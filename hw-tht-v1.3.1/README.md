@@ -1,8 +1,7 @@
 # PicoGUS THT (through-hole) v1.3.1 (rev B, work in progress) – based on PicoGUS v1.2
 
 Board revision **v1.3.1 (rev B)**: the [v1.3.0 THT board](../hw-tht/README.md) with a **new placement**, a
-**USB-A host port** at the bracket, a **DIP-16 option for U3/U4** and the Waveblaster header **without the
-daughterboard standoff holes**. The rest of the circuit is v1.3.0's.
+**USB-A host port** at the bracket and the Waveblaster header **without the daughterboard standoff holes**. The rest of the circuit is v1.3.0's.
 
 > **Status: routed, DRC clean, reviewed; not built or tested yet.**
 > The schematic passes ERC; the board passes DRC with schematic parity (0 errors, 0 unconnected). See
@@ -17,13 +16,13 @@ Files:
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.0, with the +6 dB WT gain) |
 | `usb.kicad_sch` | New: USB host port (J11 USB-A, F1, C34/C35, U12) |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
-| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, socket/adapter lines 2026-10-18) |
-| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U3/U4 adapters, U12 |
+| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, socket lines 2026-10-18) |
+| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U12 |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every IC socketed, with heights (see [Socket build](#socket-build)) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards.
-New in the shared library for rev B: `RPi_Pico_SMD_TH_USB`, `DIP-16_W7.62mm_TSSOP-16_Nested` and
-`Wavetable_NoMountingHoles` (plus the unused `USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal`).
+New in the shared library for rev B: `RPi_Pico_SMD_TH_USB` and `Wavetable_NoMountingHoles` (plus the unused
+`USB_A_C_Dual_Molex_67643_GCT_USB4085_Horizontal` and `DIP-16_W7.62mm_TSSOP-16_Nested`).
 
 ## What changed compared to v1.3.0
 
@@ -54,22 +53,11 @@ PicoGUS NE2000 card and the PicoMEM 2.
 * USB-C was considered and left out: the PicoMEM 2 also uses USB-A for its host port and USB-C only for
   programming (5.1k Rd, never sourcing VBUS). A dual USB-A/USB-C footprint is in the shared library, unused.
 
-### U3/U4: TSSOP-16 or a 300-mil DIP-16 adapter
+### U3/U4: TSSOP-16, as on v1.3.0
 
-U3/U4 (SN74CB3T3257) only exist as TSSOP-16 (and smaller). Their new footprint
-`PiGUS library:DIP-16_W7.62mm_TSSOP-16_Nested` is a 0.3" DIP-16 (1.0 mm drills) with the TSSOP-16 pads
-between its rows; both pad sets carry the same pin numbers, so fit **one** of:
-
-* the TSSOP-16 soldered directly (as v1.3.0, or by JLCPCB assembly), or
-* a **300-mil** TSSOP-16-to-DIP-16 adapter board in the DIP pads, soldered or in a DIP-16 socket:
-  Chip Quik PA0034C (round pins fitted) or SparkFun BOB-13994 (you add the pins; its pads are on a 0.635 mm
-  pitch, so centre the 0.65 mm TSSOP carefully).
-  The common 0.5"/0.6" "SOP16/TSSOP16 to DIP16" adapters **do not fit**.
-
-The footprint's origin and rotation are the TSSOP's, so the JLCPCB placement file stays correct:
-`hw-common/tools/jlcpcb.sh` now also exports parts on `*_Nested` footprints (it used to export SMD-typed
-footprints only). On the board each TSSOP pad is linked to its DIP pad with short tracks and a few vias inside the
-footprint (13-16 vias each), so both build options are connected.
+An earlier rev B draft gave U3/U4 (SN74CB3T3257, TSSOP-16 only) a nested DIP-16 + TSSOP-16 footprint for
+300-mil adapter boards. It was dropped: its DIP pads and the TSSOP-to-DIP links took most of the routing room
+and ground around the bus switches. U3/U4 are back on v1.3.0's `Package_SO:TSSOP-16_4.4x5mm_P0.65mm`, SMD only.
 
 ### Waveblaster header without standoff holes
 
@@ -155,22 +143,15 @@ build the card with every IC socketed. The same parts are the optional socket li
 | U2 (DIP-20) | On Shore SA203000 (ED3020-ND) | 4.6 mm | ≤ 9.8 mm, **under the daughterboard** |
 | U5, U6, U7, U10 (DIP-14 ×4) | Adam Tech ICM-314-1-GT-HT (2057-ICM-314-1-GT-HT-ND) | 4.6 mm | ≤ 9.8 mm, **under the daughterboard** |
 | U11 (DIP-8) | On Shore SA083000 (ED3038-ND) | 4.6 mm | ≤ 9.8 mm, outside |
-| U3, U4 (DIP-16 ×2) | On Shore SA163000 (ED3016-ND) + Chip Quik PA0034C adapters ×2 (315-PA0034C-ND) | 4.6 mm | ~7.9 mm, **under the daughterboard** |
 | U1 Pico | Adafruit 5585 short sockets (1528-5585-ND) + 5584 short plug headers (1528-5584-ND) | 5.0 mm | Pico board at ~7.5 mm |
 
 * All are machined (round-pin) sockets with 0.5 mm tails that fit the existing 0.8 mm DIP holes. LCSC
   equivalents (CONNFLY DS1001-01, XKB) are in the CSV.
 * **Daughterboard clearance**: a Waveblaster daughterboard sits ~11 mm above the card. U2, U5, U6, U7 and U10 are
-  under it (and U3/U4: ~7.9 mm on PA0034C adapters in sockets, but a socketed BOB-13994 on round pins reaches
-  ~10.4 mm, so solder that one directly), and a socketed DIP reaches ~9.8 mm (about 1.2 mm worst-case margin, 2 mm typical). That is fine for a
+  under it, and a socketed DIP reaches ~9.8 mm (about 1.2 mm worst-case margin, 2 mm typical). That is fine for a
   daughterboard with a flat underside; if yours has parts underneath, solder those five ICs directly or use the
-  low-profile Mill-Max 115-43-3xx-41-003000 sockets (2.41 mm), which need 1.0 mm holes (a footprint change; the
-  nested U3/U4 footprint already has them). The TE stamped sockets of the v1.3.0 BOM are 5.1 mm high (not ~4 mm as
+  low-profile Mill-Max 115-43-3xx-41-003000 sockets (2.41 mm), which need 1.0 mm holes (a footprint change). The TE stamped sockets of the v1.3.0 BOM are 5.1 mm high (not ~4 mm as
   the v1.3.0 README says).
-* **U3/U4 in sockets**: the TSSOP chips go on 300-mil adapters with **round** pins. The Chip Quik PA0034C has them
-  fitted (DigiKey had 28 on 2026-10-18). Cheaper: SparkFun BOB-13994 (one pack = two adapters) with round 0.5 mm
-  machined pins (LCSC C9742 / SparkFun PRT-00117, not at DigiKey). Never push square header pins into a machined
-  socket: they ruin its contacts. Soldered straight into the board, the BOB-13994 takes plain square pins.
 * **A socketed Pico has no USB host port** (J11) unless three short wires connect its TP1–TP3 to the holes under
   it. The Adafruit short sockets keep the Pico at ~7.5 mm; the standard 8.5 mm Sullins sockets at ~11–12 mm.
 * J10 (GY-PCM5102 module) stays soldered flat, as on v1.3.0.
@@ -399,7 +380,6 @@ The script stops if DRC (including the schematic-parity check) finds errors. `FO
   and the Excellon drill files (PTH and NPTH separate, mm).
 * `PicoGUS-THT-bom-jlc.csv` and `PicoGUS-THT-cpl-jlc.csv`: the BOM and placement files for JLCPCB assembly (SMD parts only).
   Only U3/U4, U8/U9 and the optional U12 are SMD on this board; the LCSC column comes from the schematic fields.
-  U3/U4 are on the nested through-hole footprint; the script adds them to the CPL file anyway (rev B).
 * `PicoGUS-THT-drc.rpt`: the DRC report.
 
 The **Hardware (JLCPCB files)** GitHub Action runs the same script for `hw-tht` (v1.3.0) and `hw-smd`. Rev B is
