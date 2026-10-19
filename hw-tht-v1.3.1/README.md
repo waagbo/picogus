@@ -68,7 +68,8 @@ between its rows; both pad sets carry the same pin numbers, so fit **one** of:
 
 The footprint's origin and rotation are the TSSOP's, so the JLCPCB placement file stays correct:
 `hw-common/tools/jlcpcb.sh` now also exports parts on `*_Nested` footprints (it used to export SMD-typed
-footprints only). Each nested footprint needs 16 short links and 4 vias under the TSSOP body when routed.
+footprints only). On the board each TSSOP pad is linked to its DIP pad with short tracks and a few vias inside the
+footprint (13-16 vias each), so both build options are connected.
 
 ### Waveblaster header without standoff holes
 
@@ -117,9 +118,9 @@ The board holds the rev B placement "take 2" (still unrouted) with the fixes fro
   C8 next to U8's VCC pin; R2 horizontal above U3/U4 (frees the corridor between them); C1/C2 out of the
   daughterboard corner.
 
-Routing: Freerouting (100 passes) after hand pre-routes, which are locked in the board:
+Routing: Freerouting (100 passes; it also made the U3/U4 TSSOP-to-DIP links) after hand pre-routes, which are
+locked in the board:
 
-* the U3/U4 TSSOP-to-DIP links are routed by the autorouter inside each nested footprint;
 * IRQ2 along the finger corridor (J1 is at the far left, its finger B4 at the far right), D5 from U4 to its finger;
 * USB D+/D− from J11 to the Pico's TP3/TP2 on B.Cu, through the gaps between the Pico's micro-USB shell holes
   (≥ 0.3 mm from the holes, lengths matched within 0.7 mm);
