@@ -3,7 +3,7 @@
 Board revision **v1.3.1 (rev B)**: the [v1.3.0 THT board](../hw-tht/README.md) with a **new placement**, a
 **USB-A host port** at the bracket and the Waveblaster header **without the daughterboard standoff holes**. The rest of the circuit is v1.3.0's.
 
-> **Status: routed, DRC clean, reviewed; not built or tested yet.**
+> **Status: routed, DRC clean; not built or tested yet.**
 > The schematic passes ERC; the board passes DRC with schematic parity (0 errors, 0 unconnected). See
 > [Layout status](#layout-status). This folder is not built by the JLCPCB GitHub Action yet.
 
@@ -106,30 +106,44 @@ The board holds the rev B placement "take 2" with the fixes from its review:
   C8 next to U8's VCC pin; R2 horizontal above U3/U4 (frees the corridor between them); C1/C2 out of the
   daughterboard corner.
 
-Routing: Freerouting (100 passes; it also made the U3/U4 TSSOP-to-DIP links) after hand pre-routes, which are
-locked in the board:
+After U3/U4 went back to TSSOP-16:
 
-* IRQ2 along the finger corridor (J1 is at the far left, its finger B4 at the far right), D5 from U4 to its finger;
+* **U3/U4 at 90°** (pin 1 bottom left; positions unchanged). Of the 16 rotation combinations this one has the
+  shortest, least crossed bus ratsnest, and it routed best: with the same autorouter set-up the ISA data/address
+  and Pico AD buses took 1 284 mm and 56 vias, against 1 525 mm and 85 vias at the old -90°/-90°. The finished
+  board (with the decoupling links and audio clearance below) has 1 401 mm and 61 vias; the board with the nested
+  footprint had 1 954 mm and 108.
+* **C3/C5 at the pin-16 end** of their chip: +3V3 from the cap to pin 16 is a 2.3–2.8 mm track, and GND runs from
+  pin 8 under the chip body back to the cap (about 7 mm, no via). v1.3.0: about 2.7 mm and 8 mm with a via.
+* **U10 (with C21, R18) up to y 66.6**, U7 and U6 spread evenly between U10 and U5 (y 80.9 and 95.2, with C6/C9):
+  about 4.5 mm between the DIPs for routing instead of 0.4 mm between U7 and U6.
+
+Routing: Freerouting (100 passes) after hand pre-routes, which are locked in the board:
+
+* IRQ2 along the finger corridor (J1 is at the far left, its finger B4 at the far right);
 * USB D+/D− from J11 to the Pico's TP3/TP2 on B.Cu, through the gaps between the Pico's micro-USB shell holes
   (≥ 0.3 mm from the holes, lengths matched within 0.7 mm);
-* the U9 (PCM510x) GND, VNEG and XSMT stubs, as on v1.3.0.
+* the U9 (PCM510x) GND, VNEG and XSMT stubs, as on v1.3.0;
+* the U3/U4 decoupling links above, and the −12V trunk from finger B7 up to the analog section.
 
-Signal tracks are 0.2 mm and signal vias 0.6/0.3 mm (v1.3.0: 0.25 mm and 0.7/0.35 mm); power and GND classes are
-unchanged. GND is poured on both layers with stitching vias. Rule areas keep copper tracks out of the front
-exposed-copper logo and vias out from under the flat Pico's test pads.
+Design rules are v1.3.0's again: signal tracks 0.25 mm, vias 0.7/0.35 mm (the nested footprint had needed
+0.2 mm and 0.6/0.3 mm). Power tracks (+5V, +3V3, ±12V, VBUS, AVDD) were widened after routing wherever they
+fit, up to 0.8 mm; about half of the ±12V length is still 0.25 mm in the tight spots, as on v1.3.0 (they
+carry tens of mA). The audio nets (DAC outputs to the mixer, WT_L/WT_R, the volume-pot wipers and the op-amp
+inputs) are in an `audio` net class with **0.6 mm clearance**, so no other track runs closer than 0.6 mm
+alongside them; none comes within 0.5 mm. WT_L was finished by hand at that clearance. GND is poured on both
+layers with stitching vias. Rule areas keep copper tracks out of the front exposed-copper logo and vias out from
+under the flat Pico's test pads.
 
-After a review of the routed board:
+From the routed-board review (kept on the re-routed board):
 
-* No copper inside the gold-finger area: a D2 via the autorouter put between the fingers moved above them, and
-  **J3's finger mask opening on this board starts 0.63 mm lower (y 129.6)** so the vias right above the
-  fingers are tented. This is a board-only edit of the shared `BUS_PC_chamfer` footprint: don't run
-  "Update footprint from library" on J3.
+* No copper inside the gold-finger area and no vias right above the fingers. **J3's finger mask opening on this
+  board starts 0.63 mm lower (y 129.6)** (a board-only edit of the shared `BUS_PC_chamfer` footprint: don't run
+  "Update footprint from library" on J3).
 * J11's shield pad next to Pico pin 4 (SPI_SCK) has a 2.8 mm pad on the front (3.0 mm on the back) for a 0.38 mm
   gap. **Solder J11 before the Pico and check that gap for a bridge.** H2's mask opening is 0.3 mm smaller (it
   sits 0.38 mm from Pico pin 39).
-* C1/C2 0.5 mm right (C1 now 0.4 mm clear of the daughterboard corner even at maximum can size); −12V moved off
-  a Pico test pad; ~SPI_CS nudged away from VBUS_USB; the MIDI drive re-routed away from AUDIO_R with GND vias
-  between them.
+* C1/C2 0.5 mm right (C1 now 0.4 mm clear of the daughterboard corner even at maximum can size).
 * Silkscreen: all text at least 0.8 mm / 0.15 mm stroke; labels and references off pads; "LINE OUT" (was
   "AUDIO OUT") and "WT VOL" next to J8/RV1; "USB" by J11.
 
@@ -316,7 +330,8 @@ cut out 0.3 mm around every pad and hole (silkscreen never lands on copper).
   [Bracket](#bracket)), but it is taller, like PicoGUS 2.0, to fit the
   Waveblaster header along the top edge. 1.6 mm FR4 (the v1.2 project file said 0.57 mm).
 * Design rules are relaxed for THT/DIY: 0.2 mm clearance, 0.25 mm signal / 0.4 mm power tracks
-  (+5 V, +3.3 V, VSYS), 0.7/0.35 mm vias (rev B: 0.2 mm signal tracks, 0.6/0.3 mm signal vias). GND is routed
+  (+5 V, +3.3 V, VSYS), 0.7/0.35 mm vias (rev B: the same, plus a 0.6 mm-clearance `audio` class and power
+  tracks widened to up to 0.8 mm where they fit). GND is routed
   and poured on both layers, with stitching vias.
 * **J2 (the 2x31 ISA debug/probe header of v1.2, never fitted) is removed.** On a through-hole board
   its pads formed a wall right above the gold fingers that every ISA signal had to cross.
