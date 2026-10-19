@@ -4,7 +4,7 @@ Board revision **v1.3.1 (rev B)**: the [v1.3.0 THT board](../hw-tht/README.md) w
 **USB-A host port** at the bracket, a **DIP-16 option for U3/U4** and the Waveblaster header **without the
 daughterboard standoff holes**. The rest of the circuit is v1.3.0's.
 
-> **Status: routed, DRC clean, under review. Not a board to order yet.**
+> **Status: routed, DRC clean, reviewed; not built or tested yet.**
 > The schematic passes ERC; the board passes DRC with schematic parity (0 errors, 0 unconnected). See
 > [Layout status](#layout-status). This folder is not built by the JLCPCB GitHub Action yet.
 
@@ -107,7 +107,7 @@ from the bracket's top surface, height = centre above the card's component side)
 
 ## Layout status
 
-The board holds the rev B placement "take 2" (still unrouted) with the fixes from its review:
+The board holds the rev B placement "take 2" with the fixes from its review:
 
 * **RV1 / J8 swapped**: at the top, RV1's M7 bushing was 0.4 mm above the PC's slot opening (it could not pass a
   bracket in a case). J8 is now on top, RV1 below it.
@@ -129,6 +129,21 @@ locked in the board:
 Signal tracks are 0.2 mm and signal vias 0.6/0.3 mm (v1.3.0: 0.25 mm and 0.7/0.35 mm); power and GND classes are
 unchanged. GND is poured on both layers with stitching vias. Rule areas keep copper tracks out of the front
 exposed-copper logo and vias out from under the flat Pico's test pads.
+
+After a review of the routed board:
+
+* No copper inside the gold-finger area: a D2 via the autorouter put between the fingers moved above them, and
+  **J3's finger mask opening on this board starts 0.63 mm lower (y 129.6)** so the vias right above the
+  fingers are tented. This is a board-only edit of the shared `BUS_PC_chamfer` footprint: don't run
+  "Update footprint from library" on J3.
+* J11's shield pad next to Pico pin 4 (SPI_SCK) has a 2.8 mm pad on the front (3.0 mm on the back) for a 0.38 mm
+  gap. **Solder J11 before the Pico and check that gap for a bridge.** H2's mask opening is 0.3 mm smaller (it
+  sits 0.38 mm from Pico pin 39).
+* C1/C2 0.5 mm right (C1 now 0.4 mm clear of the daughterboard corner even at maximum can size); −12V moved off
+  a Pico test pad; ~SPI_CS nudged away from VBUS_USB; the MIDI drive re-routed away from AUDIO_R with GND vias
+  between them.
+* Silkscreen: all text at least 0.8 mm / 0.15 mm stroke; labels and references off pads; "LINE OUT" (was
+  "AUDIO OUT") and "WT VOL" next to J8/RV1; "USB" by J11.
 
 ## Socket build
 
@@ -306,18 +321,22 @@ the two, **never both** (two DAC outputs would drive the same line).
 ### Back silkscreen
 
 The back carries the PicoGUS artwork (hw-common/art/picogus-artwork.svg: three game heroes over the
-PicoGUS logo), 76 × 27 mm, just above the ISA fingers, with the dedication higher up on the back, above the DAC area: *This version is
-dedicated to Mila and Alisa, my two wonderful princesses, who fill my world with joy.* Both are mirrored
+PicoGUS logo), 76 × 27 mm (rev B: in the upper half of the card, behind the mixer and DAC), with the dedication
+(rev B: along the card's far edge, read from the back): *This version is
+dedicated to Mila and Alisa, my two wonderful princesses, who fill my world with joy.* The licence block sits
+between the Pico's pin rows (rev B). All are mirrored
 on B.SilkS so they read correctly from the back. The back is full of through-hole pads, so the artwork is
 cut out 0.3 mm around every pad and hole (silkscreen never lands on copper).
 
 ### Other changes
 
-* The board is **103.7 × 99.9 mm**. It has the same length, ISA edge connector and bracket holes as v1.2
-  (the MIDI and line-out jacks are in the same places), but it is taller, like PicoGUS 2.0, to fit the
+* The board is **103.7 × 99.9 mm**. It has the same length, ISA edge connector and bracket tab holes (H1/H2) as
+  v1.2 (on v1.3.0 the MIDI and line-out jacks are also in the v1.2 places; rev B moves them, see
+  [Bracket](#bracket)), but it is taller, like PicoGUS 2.0, to fit the
   Waveblaster header along the top edge. 1.6 mm FR4 (the v1.2 project file said 0.57 mm).
 * Design rules are relaxed for THT/DIY: 0.2 mm clearance, 0.25 mm signal / 0.4 mm power tracks
-  (+5 V, +3.3 V, VSYS), 0.7/0.35 mm vias. GND is routed and poured on both layers, with stitching vias.
+  (+5 V, +3.3 V, VSYS), 0.7/0.35 mm vias (rev B: 0.2 mm signal tracks, 0.6/0.3 mm signal vias). GND is routed
+  and poured on both layers, with stitching vias.
 * **J2 (the 2x31 ISA debug/probe header of v1.2, never fitted) is removed.** On a through-hole board
   its pads formed a wall right above the gold fingers that every ISA signal had to cross.
 * The `+3.3V` power symbols are renamed `+3V3`. KiCad 8+ names power nets after the symbol value, so the
@@ -384,10 +403,11 @@ The script stops if DRC (including the schematic-parity check) finds errors. `FO
 * `PicoGUS-THT-drc.rpt`: the DRC report.
 
 The **Hardware (JLCPCB files)** GitHub Action runs the same script for `hw-tht` (v1.3.0) and `hw-smd`. Rev B is
-not in it yet: until the board is routed, its DRC fails on the unrouted nets (`FORCE=1` exports anyway).
+not in it yet; run the script locally (rev B passes its DRC gate: 0 errors, 0 unconnected).
 
-Order options: 2 layers, **1.6 mm**, and **Gold fingers: Yes** with the **45° finger chamfer** (the ISA
-edge connector). ENIG is a good choice for the rest of the board. Check the rotations in JLCPCB's
+Order options: 2 layers, **1.6 mm**, **Surface finish: ENIG** and **Gold fingers: Yes** with the **45° finger
+chamfer** (the ISA edge connector). ENIG is required: JLCPCB only gold-plates the fingers on ENIG boards; with HASL
+the fingers are tinned, and tin wears and oxidises in an ISA slot. Check the rotations in JLCPCB's
 placement preview before paying for assembly.
 
 ## Caveats
@@ -406,8 +426,9 @@ placement preview before paying for assembly.
    has little margin.
 5. **Daughterboard clearance.** The Waveblaster daughterboard sits ~11 mm above the card, and a
    full-size (Creative-spec) board covers most of the card's left half. Only low parts are placed
-   under it (DIP ICs, axial resistors, radial MLCCs, the J1 jumper block as on PicoGUS 2.0). Electrolytics,
-   the pot and the Pico are outside that area. IC sockets add 4.6–5.1 mm and may touch a daughterboard
+   under it (DIP ICs, axial resistors, radial MLCCs, the J1 jumper block as on PicoGUS 2.0). Electrolytics
+   and the pot are outside that area (rev B: also U3/U4 are under it, and the Pico's far end is 1.3 mm under
+   it, so with a daughterboard fitted solder the Pico flat or use the short Adafruit sockets). IC sockets add 4.6–5.1 mm and may touch a daughterboard
    that has parts on its underside, so solder the DIPs directly or check the clearance (see [Socket build](#socket-build)).
 6. **RV1.** The BOM uses the Bourns PTD902-2020K-A103 (DigiKey 426, 24 kr). It has the same 2.5 mm
    pin grid and M7 bushing as the Alps RK097 the footprint was drawn for; test-fit one in the bracket
@@ -415,8 +436,9 @@ placement preview before paying for assembly.
    (C470545). The Alps parts (RK09712200HA: DigiKey 210 / LCSC 175, 45 kr; the switched RK0971221Z0X
    also fits) have low stock, and Alps North America has published a discontinuation notice that
    covers parts of the range.
-7. **ISA bracket.** Drill one more hole (about 7 mm, for RV1's bushing) between the MIDI and
-   line-out jack holes. Those two holes are where they are on v1.2.
+7. **ISA bracket.** v1.3.0: drill one more hole (about 7 mm, for RV1's bushing) between the MIDI and
+   line-out jack holes, which are where they are on v1.2. **Rev B: no v1.2/v1.3.0 bracket fits; cut the four
+   openings in the [Bracket](#bracket) table.**
 8. **Mixed LCSC stand-ins.** LCSC's 3.5 mm jacks are XKB PJ-325C5 equivalents. Their unused
    TN pin sits ~0.4 mm further out, so clip it if it doesn't fit. Don't use C2910528
    (different pinout; it is in the v1.2 JLCPCB project). The Pico is not sold in the LCSC shop
