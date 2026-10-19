@@ -44,9 +44,10 @@ PicoGUS NE2000 card and the PicoMEM 2.
   Pico 2 W. On headers or in a socket, solder three short wires (26–30 AWG, under 3 cm) from TP1–TP3 into the holes,
   or use the micro-USB OTG route of v1.3.0. The Pico's micro-USB stays in parallel with J11: **use one or the other.**
 * **J11**: Molex 67643 (0676430910, DigiKey WM4993-ND / LCSC C2798029), stock footprint
-  `Connector_USB:USB_A_Molex_67643_Horizontal`. Its pin row is 12.99 mm behind the flange front, so the flange
-  (14.4 × 7.16 mm) ends 0.1 mm behind the bracket and only the shell (13.1 × 5.72 mm) goes through the cut-out
-  (see [Bracket](#bracket)).
+  `Connector_USB:USB_A_Molex_67643_Horizontal`. Its front lip (14.4 × 7.16 mm, the frontmost part, 12.99 mm in
+  front of the pin row) sits 0.1 mm behind the inside of the bracket plate. It is larger than the 13.6 × 6.2 mm
+  cut-out, so it is the panel stop: nothing of J11 enters the cut-out, only the USB plug comes in through it. The
+  receptacle face is 0.9 mm behind the outside of the bracket (PicoGUS 2.0: 1.3 mm), see [Bracket](#bracket).
 * **VBUS**: ISA +5 V through **F1** (Bourns MF-R050, 0.5 A hold) with C34 (220 µF low-impedance; USB 2.0 asks for
   ≥ 120 µF) and C35 (0.1 µF), always on, like the PicoMEM 2's USB-A port. The Pico's VBUS pin (J7) is not involved.
 * **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−.
@@ -84,6 +85,11 @@ from the bracket's top surface, height = centre above the card's component side)
 * No hole for the Pico's micro-USB: its plug can't enter the slot opening. Flash the Pico before soldering it,
   or with `pgusinit`.
 * The webs between the holes are about 2.0 mm (J8–RV1), 10.6 mm (RV1–J5) and 2.5 mm (J5–J11).
+* J11's x position was checked against the PicoGUS 2.0, whose USB-A port is proven in production. Its bracket is a
+  Keystone 9202 derivative with 1.0 mm longer tabs (its tab holes sit 0.94 mm closer to the edge connector), so
+  both brackets' plates end up within 0.06 mm of each other in a case. The 2.0's USB-A face is 1.31 mm behind the
+  outside of its plate; J11's is 0.89 mm behind a Keystone 9202's, so J11 (x 208.64) is right. Moving it out would
+  put its front lip into the plate. A PicoGUS 2.0 bracket does not fit this card: its cut-outs are elsewhere.
 * J8 and RV1 are 8.9 mm apart (v1.3.0: 9.7 mm between J5 and RV1): with a Ø8 mm plug in J8, use a knob of
   Ø9.5 mm or less on RV1.
 
@@ -122,28 +128,44 @@ Routing: Freerouting (100 passes) after hand pre-routes, which are locked in the
 
 * IRQ2 along the finger corridor (J1 is at the far left, its finger B4 at the far right);
 * USB D+/D− from J11 to the Pico's TP3/TP2 on B.Cu, through the gaps between the Pico's micro-USB shell holes
-  (≥ 0.3 mm from the holes, lengths matched within 0.7 mm);
+  (≥ 0.3 mm from the holes, 30.0 / 29.7 mm long);
 * the U9 (PCM510x) GND, VNEG and XSMT stubs, as on v1.3.0;
-* the U3/U4 decoupling links above, and the −12V trunk from finger B7 up to the analog section.
+* the U3/U4 decoupling links above, and the −12V trunk from finger B7 up to the analog section (it crosses the
+  Pico's pin rows on B.Cu).
 
 Design rules are v1.3.0's again: signal tracks 0.25 mm, vias 0.7/0.35 mm (the nested footprint had needed
 0.2 mm and 0.6/0.3 mm). Power tracks (+5V, +3V3, ±12V, VBUS, AVDD) were widened after routing wherever they
 fit, up to 0.8 mm; about half of the ±12V length is still 0.25 mm in the tight spots, as on v1.3.0 (they
-carry tens of mA). The audio nets (DAC outputs to the mixer, WT_L/WT_R, the volume-pot wipers and the op-amp
+carry tens of mA; −12V from the finger to J9 is 0.21 Ω, v1.3.0 0.29 Ω), and where ±12V crosses the Pico's pin
+rows it is necked to 0.2 mm for 2.2 mm, centred between the pads (≥ 0.32 mm). The audio nets (DAC outputs to the mixer, WT_L/WT_R, the volume-pot wipers and the op-amp
 inputs) are in an `audio` net class with **0.6 mm clearance**, so no other track runs closer than 0.6 mm
-alongside them; none comes within 0.5 mm. WT_L was finished by hand at that clearance. GND is poured on both
-layers with stitching vias. Rule areas keep copper tracks out of the front exposed-copper logo and vias out from
-under the flat Pico's test pads.
+alongside them; none comes within 0.5 mm. WT_L was finished by a grid router at that clearance and then
+straightened (no vias). GND is poured on both layers with stitching vias. Rule areas keep copper tracks out of the
+front exposed-copper logo, and vias and the front GND pour out from under the flat Pico's test pads (TP4–TP6,
+Pico 2 TP7) and its TP1–TP3 USB area.
 
 From the routed-board review (kept on the re-routed board):
 
 * No copper inside the gold-finger area and no vias right above the fingers. **J3's finger mask opening on this
-  board starts 0.63 mm lower (y 129.6)** (a board-only edit of the shared `BUS_PC_chamfer` footprint: don't run
-  "Update footprint from library" on J3).
-* J11's shield pad next to Pico pin 4 (SPI_SCK) has a 2.8 mm pad on the front (3.0 mm on the back) for a 0.38 mm
+  board starts 0.63 mm lower (y 129.6)**.
+* **Don't run "Update footprint from library"** on J3 (the mask edit above), J11 (the shield padstack below) or
+  RV1 (the library footprint has a stray Edge.Cuts line that breaks the outline). DRC lists these three as
+  `lib_footprint_mismatch` warnings; that is expected. The two micro-USB shell slots under the Pico are also drawn
+  on Edge.Cuts (locked board items): move them with U1 if U1 ever moves.
+* J11's shield pad next to Pico pin 4 (SPI_SCK) has a 2.6 mm pad on the front (3.0 mm on the back) for a 0.48 mm
   gap. **Solder J11 before the Pico and check that gap for a bridge.** H2's mask opening is 0.3 mm smaller (it
   sits 0.38 mm from Pico pin 39).
 * C1/C2 0.5 mm right (C1 now 0.4 mm clear of the daughterboard corner even at maximum can size).
+
+From the review of the re-routed board:
+
+* ±12V never runs on F.Cu next to the Pico's castellations (a bridge there would put −12 V on a GPIO); the B.Cu
+  crossings of the pin rows are necked as above, and ±12V keeps ≥ 0.38 mm from C11.1 (RUN) and FB3.1.
+* No front GND pour under the flat Pico's exposed test pads or around TP1–TP3 (the back pour stays).
+* The Pico's two 1.3 × 2.0 mm micro-USB shell relief slots are drawn on Edge.Cuts as well as in the NPTH drill
+  file: JLCPCB wants non-plated slots on the outline layer.
+* U9 (PCM510x) CPGND (pin 3) and AGND (pin 9) have GND vias into the back pour.
+* TP2 = D− and TP3 = D+ were checked against Raspberry Pi's Pico R3 schematic and KiCad's own Pico footprint.
 * Silkscreen: all text at least 0.8 mm / 0.15 mm stroke; labels and references off pads; "LINE OUT" (was
   "AUDIO OUT") and "WT VOL" next to J8/RV1; "USB" by J11.
 
@@ -328,7 +350,8 @@ cut out 0.3 mm around every pad and hole (silkscreen never lands on copper).
 * The board is **103.7 × 99.9 mm**. It has the same length, ISA edge connector and bracket tab holes (H1/H2) as
   v1.2 (on v1.3.0 the MIDI and line-out jacks are also in the v1.2 places; rev B moves them, see
   [Bracket](#bracket)), but it is taller, like PicoGUS 2.0, to fit the
-  Waveblaster header along the top edge. 1.6 mm FR4 (the v1.2 project file said 0.57 mm).
+  Waveblaster header along the top edge. 1.6 mm FR4 (the v1.2 and v1.3.0 board files' stackup says 0.57 mm; rev B's
+  says 1.6 mm, so its 3D and STEP exports have the right thickness).
 * Design rules are relaxed for THT/DIY: 0.2 mm clearance, 0.25 mm signal / 0.4 mm power tracks
   (+5 V, +3.3 V, VSYS), 0.7/0.35 mm vias (rev B: the same, plus a 0.6 mm-clearance `audio` class and power
   tracks widened to up to 0.8 mm where they fit). GND is routed
@@ -403,7 +426,9 @@ not in it yet; run the script locally (rev B passes its DRC gate: 0 errors, 0 un
 Order options: 2 layers, **1.6 mm**, **Surface finish: ENIG** and **Gold fingers: Yes** with the **45° finger
 chamfer** (the ISA edge connector). ENIG is required: JLCPCB only gold-plates the fingers on ENIG boards; with HASL
 the fingers are tinned, and tin wears and oxidises in an ISA slot. Check the rotations in JLCPCB's
-placement preview before paying for assembly.
+placement preview before paying for assembly. **Order number: "Specify a location"**: the back has a
+`JLCJLCJLCJLC` placeholder next to the Pico (or pay for "Remove order number"); otherwise JLCPCB may print the
+number across the back artwork.
 
 ## Caveats
 
