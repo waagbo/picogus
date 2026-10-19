@@ -426,9 +426,9 @@ not in it yet; run the script locally (rev B passes its DRC gate: 0 errors, 0 un
 Order options: 2 layers, **1.6 mm**, **Surface finish: ENIG** and **Gold fingers: Yes** with the **45° finger
 chamfer** (the ISA edge connector). ENIG is required: JLCPCB only gold-plates the fingers on ENIG boards; with HASL
 the fingers are tinned, and tin wears and oxidises in an ISA slot. Check the rotations in JLCPCB's
-placement preview before paying for assembly. **Order number: "Specify a location"**: the back has a
-`JLCJLCJLCJLC` placeholder next to the Pico (or pay for "Remove order number"); otherwise JLCPCB may print the
-number across the back artwork.
+placement preview before paying for assembly. JLCPCB no longer prints an order number by default. A
+`JLCJLCJLCJLC` placeholder sits on B.Fab next to the Pico (not plotted): if an order ever needs "Specify a
+location", move it to B.Silkscreen first, or JLCPCB prints the placeholder text itself.
 
 ## Caveats
 
