@@ -4,16 +4,15 @@ Board revision **v1.3.1 (rev B)**: the [v1.3.0 THT board](../hw-tht/README.md) w
 **USB-A host port** at the bracket, a **DIP-16 option for U3/U4** and the Waveblaster header **without the
 daughterboard standoff holes**. The rest of the circuit is v1.3.0's.
 
-> **Status: placement in progress, board UNROUTED.**
-> The schematic passes ERC; the board passes DRC with schematic parity apart from the unrouted nets and the
-> placement items under [Layout status](#layout-status). Not a board to order yet.
-> This folder is not built by the JLCPCB GitHub Action yet (its DRC fails until the board is routed).
+> **Status: routed, DRC clean, under review. Not a board to order yet.**
+> The schematic passes ERC; the board passes DRC with schematic parity (0 errors, 0 unconnected). See
+> [Layout status](#layout-status). This folder is not built by the JLCPCB GitHub Action yet.
 
 Files:
 
 | File | What |
 |---|---|
-| `PicoGUS-THT.kicad_pro/.kicad_sch/.kicad_pcb` | KiCad **10** project (the root sheet is the v1.2 logic). The board is **unrouted** |
+| `PicoGUS-THT.kicad_pro/.kicad_sch/.kicad_pcb` | KiCad **10** project (the root sheet is the v1.2 logic). The board is routed |
 | `audio.kicad_sch` | PCM510x DAC sheet (as v1.3.0) |
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.0, with the +6 dB WT gain) |
 | `usb.kicad_sch` | New: USB host port (J11 USB-A, F1, C34/C35, U12) |
@@ -118,8 +117,17 @@ The board holds the rev B placement "take 2" (still unrouted) with the fixes fro
   C8 next to U8's VCC pin; R2 horizontal above U3/U4 (frees the corridor between them); C1/C2 out of the
   daughterboard corner.
 
-DRC with schematic parity shows no courtyard or clearance error, only the unrouted nets and v1.3.0's own warnings.
-Routing is in progress.
+Routing: Freerouting (100 passes) after hand pre-routes, which are locked in the board:
+
+* the U3/U4 TSSOP-to-DIP links are routed by the autorouter inside each nested footprint;
+* IRQ2 along the finger corridor (J1 is at the far left, its finger B4 at the far right), D5 from U4 to its finger;
+* USB D+/D− from J11 to the Pico's TP3/TP2 on B.Cu, through the gaps between the Pico's micro-USB shell holes
+  (≥ 0.3 mm from the holes, lengths matched within 0.7 mm);
+* the U9 (PCM510x) GND, VNEG and XSMT stubs, as on v1.3.0.
+
+Signal tracks are 0.2 mm and signal vias 0.6/0.3 mm (v1.3.0: 0.25 mm and 0.7/0.35 mm); power and GND classes are
+unchanged. GND is poured on both layers with stitching vias. Rule areas keep copper tracks out of the front
+exposed-copper logo and vias out from under the flat Pico's test pads.
 
 ## Socket build
 
