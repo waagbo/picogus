@@ -9,7 +9,7 @@
 		(date "2026-10-18")
 		(rev "v1.3.1")
 		(comment 1 "Through-hole variant of PicoGUS v1.2 with Waveblaster header; rev B: USB host port")
-		(comment 2 "Through-hole parts only; U3/U4, U8, U9 and U12 (optional ESD) exist in SMD only")
+		(comment 2 "Through-hole parts only; U3/U4, U8, U9, C36 (U9 CPVDD cap) and U12 (optional ESD) are SMD")
 	)
 	(lib_symbols
 		(symbol "74FST3257DR2G_1"

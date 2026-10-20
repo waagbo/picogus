@@ -4864,7 +4864,7 @@
 				)
 			)
 		)
-		(property "Description" "OPTIONAL GY-PCM5102 DAC module on female headers, INSTEAD OF the DAC area: U9, C12-C20, FB3, R7, R8. Fit one or the other, never both."
+		(property "Description" "OPTIONAL GY-PCM5102 DAC module on female headers, INSTEAD OF the DAC area: U9, C12-C20, C36, FB3, R7, R8. Fit one or the other, never both."
 			(at 132.08 55.88 0)
 			(hide yes)
 			(show_name no)
@@ -5456,7 +5456,7 @@
 		)
 		(uuid "ec0ec59b-a849-5524-936f-21adaed59b9f")
 	)
-	(text "OPTION: GY-PCM5102 module (J10) INSTEAD OF the on-board DAC.\nFit EITHER U9 + C12-C20 + FB3 + R7/R8 OR the module - never both (two DAC outputs would fight).\nThe module has its own 470R/2.2nF output filter. Module solder jumpers: H1=L H2=L H3=H H4=L."
+	(text "OPTION: GY-PCM5102 module (J10) INSTEAD OF the on-board DAC.\nFit EITHER U9 + C12-C20 + C36 + FB3 + R7/R8 OR the module - never both (two DAC outputs would fight).\nThe module has its own 470R/2.2nF output filter. Module solder jumpers: H1=L H2=L H3=H H4=L."
 		(exclude_from_sim no)
 		(at 111.76 38.1 0)
 		(effects
@@ -5466,5 +5466,295 @@
 			(justify left top)
 		)
 		(uuid "f0343371-65e2-514a-86ee-778638f39211")
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 30.48 76.2 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "03769d8f-f537-582b-85ff-4d725e169744")
+		(property "Reference" "C36"
+			(at 32.385 75.565 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.1uF"
+			(at 32.385 77.47 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "0.1uF 50V X7R 0603 MLCC: U9 CPVDD (pin 1) decoupling, placed right at pins 1/3"
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "DigiKey" "311-1344-1-ND"
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 30.48 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6da5960b-3987-5aac-a16d-d5c15ac4a8ad")
+		)
+		(pin "2"
+			(uuid "29778a62-6780-55fb-a7ab-72538ea2963c")
+		)
+		(instances
+			(project "PicoGUS-THT"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/9d2ec422-e50e-4bcf-9c81-7933040dc4f5"
+					(reference "C36")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 30.48 73.66 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "f54c4205-b0af-5a3e-9991-b68ce78bcd4d")
+		(property "Reference" "#PWR0205"
+			(at 30.48 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 30.48 69.85 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 30.48 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 30.48 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 30.48 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fc230a78-18c4-5d64-84bf-e6b8dce4b37f")
+		)
+		(instances
+			(project "PicoGUS-THT"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/9d2ec422-e50e-4bcf-9c81-7933040dc4f5"
+					(reference "#PWR0205")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 30.48 78.74 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "635fe9c4-dda1-58ec-884f-437b34f26009")
+		(property "Reference" "#PWR0206"
+			(at 30.48 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 30.48 82.55 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 30.48 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 30.48 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 30.48 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "dd286017-4145-58a3-91cf-500b3a0aa701")
+		)
+		(instances
+			(project "PicoGUS-THT"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b/9d2ec422-e50e-4bcf-9c81-7933040dc4f5"
+					(reference "#PWR0206")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "C36: CPVDD (U9 pin 1) decoupling,\nright at pins 1 (CPVDD) and 3 (CPGND)"
+		(exclude_from_sim no)
+		(at 20.32 85.09 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "0bce24aa-1e23-538a-998b-fb6981761360")
 	)
 )

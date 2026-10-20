@@ -16,7 +16,7 @@ Files:
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.0, with the +6 dB WT gain) |
 | `usb.kicad_sch` | New: USB host port (J11 USB-A, F1, C34/C35, U12) |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
-| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, socket lines 2026-10-18) |
+| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, socket lines 2026-10-18, C36 2026-10-19) |
 | `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference. Optional: sockets, U12 |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every IC socketed, with heights (see [Socket build](#socket-build)) |
 
@@ -50,7 +50,12 @@ PicoGUS NE2000 card and the PicoMEM 2.
   receptacle face is 0.9 mm behind the outside of the bracket (PicoGUS 2.0: 1.3 mm), see [Bracket](#bracket).
 * **VBUS**: ISA +5 V through **F1** (Bourns MF-R050, 0.5 A hold) with C34 (220 µF low-impedance; USB 2.0 asks for
   ≥ 120 µF) and C35 (0.1 µF), always on, like the PicoMEM 2's USB-A port. The Pico's VBUS pin (J7) is not involved.
-* **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−.
+* **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−. It sits right behind J11's pins and is wired
+  flow-through: D+ and D− run 4.5 mm from J11 into U12 pins 6/4, straight under the body to pins 1/3, and on to
+  the Pico, so there are no stubs and the port works without U12. GND (pin 2) has a via right at the pin and a
+  1 mm track to C34's GND pad, which ties to J11 pin 4 with a 1 mm track. VBUS (pin 5) goes through a via to J11
+  pin 1. C35 (0.1 µF) sits just below U12. Pin 1 is marked by a silk dot west of the chip (the footprint's own
+  pin-1 triangle lands on a via). **If you fit U12, solder it before C34, C35 and J11**, which box it in.
 * USB-C was considered and left out: the PicoMEM 2 also uses USB-A for its host port and USB-C only for
   programming (5.1k Rd, never sourcing VBUS). A dual USB-A/USB-C footprint is in the shared library, unused.
 
@@ -97,7 +102,7 @@ from the bracket's top surface, height = centre above the card's component side)
 
 * Title blocks, silkscreen and back silkscreen say v1.3.1.
 * No v1.3.0 reference designator changed. The design rules are v1.3.0's.
-* New references: J11, F1, C34, C35, U12 (USB port). VBUS_USB is in the pwr net class.
+* New references: J11, F1, C34, C35, U12 (USB port); C36 (U9 CPVDD decoupling). VBUS_USB is in the pwr net class.
 
 ## Layout status
 
@@ -127,8 +132,10 @@ After U3/U4 went back to TSSOP-16:
 Routing: Freerouting (100 passes) after hand pre-routes, which are locked in the board:
 
 * IRQ2 along the finger corridor (J1 is at the far left, its finger B4 at the far right);
-* USB D+/D− from J11 to the Pico's TP3/TP2 on B.Cu, through the gaps between the Pico's micro-USB shell holes
-  (≥ 0.3 mm from the holes, 30.0 / 29.7 mm long);
+* USB D+/D− from J11 through U12 (J11 → pin 6/4 → under the body → pin 1/3), then on B.Cu down the west side of
+  U12, between J11's lower shield pad and the Pico's pin row, and through the gaps between the Pico's micro-USB
+  shell holes to TP3/TP2 (≥ 0.3 mm from the holes and from J11's shield, 42.2 / 42.5 mm long, no stubs). The
+  B.Cu under J11 is all GND pour, tying J11's shield pads to its GND pin;
 * the U9 (PCM510x) GND, VNEG and XSMT stubs, as on v1.3.0;
 * the U3/U4 decoupling links above, and the −12V trunk from finger B7 up to the analog section (it crosses the
   Pico's pin rows on B.Cu).
@@ -153,7 +160,8 @@ From the routed-board review (kept on the re-routed board):
   `lib_footprint_mismatch` warnings; that is expected. The two micro-USB shell slots under the Pico are also drawn
   on Edge.Cuts (locked board items): move them with U1 if U1 ever moves.
 * J11's shield pad next to Pico pin 4 (SPI_SCK) has a 2.6 mm pad on the front (3.0 mm on the back) for a 0.48 mm
-  gap. **Solder J11 before the Pico and check that gap for a bridge.** H2's mask opening is 0.3 mm smaller (it
+  gap. **Solder J11 before the Pico and check that gap for a bridge.** The USB D+ track also passes 0.31 mm
+  from the back of that shield pad (under the mask). H2's mask opening is 0.3 mm smaller (it
   sits 0.38 mm from Pico pin 39).
 * C1/C2 0.5 mm right (C1 now 0.4 mm clear of the daughterboard corner even at maximum can size).
 
@@ -164,10 +172,43 @@ From the review of the re-routed board:
 * No front GND pour under the flat Pico's exposed test pads or around TP1–TP3 (the back pour stays).
 * The Pico's two 1.3 × 2.0 mm micro-USB shell relief slots are drawn on Edge.Cuts as well as in the NPTH drill
   file: JLCPCB wants non-plated slots on the outline layer.
-* U9 (PCM510x) CPGND (pin 3) and AGND (pin 9) have GND vias into the back pour.
+* U9 (PCM510x) CPGND (pin 3, through C36's GND pad since the revision review) and AGND (pin 9) have GND vias
+  into the back pour.
 * TP2 = D− and TP3 = D+ were checked against Raspberry Pi's Pico R3 schematic and KiCad's own Pico footprint.
 * Silkscreen: all text at least 0.8 mm / 0.15 mm stroke; labels and references off pads; "LINE OUT" (was
   "AUDIO OUT") and "WT VOL" next to J8/RV1; "USB" by J11.
+
+From the rev B revision review (U9 charge-pump decoupling, U12 at J11, ISA GND finger B10):
+
+* **U9 CPVDD decoupling:** C36 (0.1 µF X7R 0603) sits under U9 pins 1–3, pad 1 on CPVDD (pin 1), pad 2 on
+  CPGND (pin 3), with 0.6 mm stubs. The charge-pump supply loop pin 1 → C36 → pin 3 is about 6.6 mm around
+  (2.7 mm²); before, pin 1's nearest +3V3 cap was C4, 23.6 mm of track away, with the return through the pour
+  (TI's layout guide and PicoGUS 2.0, C15 at its DAC pin 1, put this cap right at the pin). The CPGND via into
+  the back pour moved to (150.55, 72.80), just below C36, and two GND stitching vias (131.6, 77.4) and
+  (139.0, 76.4) keep the front pour strip west of it tied to the back. To make room, C16 moved 0.5 mm left and
+  R7 0.4 mm down: CAPM now runs straight down from pin 4 and then at 45° between C36 and R7, and the
+  flying-cap loop (pin 2 → C16 → pin 4) grows from 16.5 to 20.6 mm². CPVDD stays on +3V3, as on v1.2/v1.3.0:
+  tying it to AVDD as on PicoGUS 2.0 would need the charge-pump routing redone, and TI's 10 µF bulk cap at
+  CPVDD is not fitted locally (the nearest bulk is C1). The MIDI TX track (U10 → R3) still runs under U9's
+  body on the front: there is no short alternative path, and it is not part of the decoupling loop.
+* **U12 at J11** (see the USB host port section): it used to hang on 13 / 26 mm stubs off the D+/D− pair, with
+  21.6 mm of track from its GND pin to J11. Now the pair runs through it, and U12's GND reaches J11.4 through
+  12.9 mm of track (DC copper model 2.6 mOhm, was 2.7); J11's two shield pads are joined to each other and to
+  J11.4 by the back pour (0.3 mOhm, was 1.9). C35 moved below U12 (horizontal) and C34 0.2 mm up; ~RIOR,
+  ~SPI_CS and SPI_RX were re-routed locally (at most +2.1 mm). Side effects, all small at 12 Mbit/s: the pair
+  is 12.5 mm longer (matched to 0.28 mm), it has less GND under it on the front, the lower J11 shield pad's path
+  to the ISA GND fingers is a little longer, and C35's GND return to J11 is longer (C35 only bypasses VBUS; the
+  USBLC6's own clamp does the ESD work). U12's courtyard is 0.05 mm from J11's.
+* **ISA GND finger B10:** joined to the GND pour by a wide back-side strap (1.5–3 mm) along the only free
+  corridor: 1.9 mm wide under the IRQ2 via, then 3 mm wide diagonally between the AEN and D4 tracks into the
+  U3/U4 GND pour. The old 0.5 mm track stays underneath where the strap covers it (its piece next to the
+  unconnected fingers B11/B12 is gone: GND keeps 0.24 mm from them). Nothing new in the gold-finger area; the
+  IRQ2 corridor is unchanged. DC copper model, 1 A: the B10 link itself falls from about 12.6 to 3.5 mOhm, so
+  every B10 path is about 10 mOhm lower (to B1 about 12, because the U12 change also lowers B1's own path into the pour).
+  B10 to U4 GND about 18 → 8 mOhm (v1.3.0: 18), to U3 GND
+  21 → 11 (v1.3.0: 9), to B1 / B31 41 / 35 → 29 / 25 (v1.3.0: 18 / 16).
+  The rest of the gap to v1.3.0 is the U3/U4 pour's own connection to the Pico-side pour: D4 and the +3V3 feed
+  to C1 separate them on the back, so closing it means re-routing those (a follow-up, not a local change).
 
 ## Socket build
 
@@ -212,12 +253,15 @@ build the card with every IC socketed. The same parts are the optional socket li
 | U10 | 74LVC2G06 SOT-23-6 (open drain, 3V3) | **74AHCT126 DIP-14 at +5 V**, used as a "pseudo open-drain" |
 | FB1/FB2 | 0805 beads | axial ferrite beads (bead on leads), 12.7 mm hole pitch |
 
-Only the parts that exist in SMD packages alone stay SMD. All of them have a pitch of 0.65 mm or more and can be hand-soldered:
+Only the parts that exist in SMD packages alone stay SMD (rev B: plus C36, below). All of them have a pitch of 0.65 mm or more and can be hand-soldered:
 
 * **U3, U4** SN74CB3T3257: FET bus-switch mux with 5 V→3.3 V clamping. It only comes in
   TSSOP-16/TVSOP. No DIP part does this job without redesigning the ISA bus interface (and the PIO timing).
 * **U8** APS6404L PSRAM: SOIC-8.
 * **U9** PCM5100A/PCM5101A/PCM5102A DAC: TSSOP-20.
+* **C36** (rev B) 0.1 µF X7R 0603 (Yageo CC0603KRX7R9BB104, LCSC C14663, a JLCPCB basic part): the DAC's
+  charge-pump (CPVDD) decoupling cap. It only works right at U9's pins, where no through-hole cap fits.
+  Solder it after U9.
 
 The 3.3 V logic needs 5 V-tolerant inputs, so it is 74**AHC** in DIP (TI still makes these and DigiKey
 stocks them). **LCSC has almost none of these DIPs in stock** (0–74 pcs on 2026-09-28): order the logic
@@ -304,8 +348,10 @@ C22 = 10 µF bipolar · RV1A = 10k log (CW end from C22, CCW end to GND, wiper t
   The daughterboard still gets the plain ±12 V (decoupled at J9); it has its own regulators and filtering.
 * **DAC analogue supply.** On v1.2 the PCM510x AVDD (pin 8) shares the Pico's switch-mode 3.3 V with all
   the logic. Here AVDD has its own rail behind ferrite bead FB3 (the same part as FB1/FB2), with C13
-  (0.1 µF) and C15 (10 µF) at the pin. DVDD/CPVDD stay on the plain 3.3 V. The bead drops only millivolts
-  at the DAC's ~10 mA.
+  (0.1 µF) and C15 (10 µF) at the pin. DVDD and CPVDD stay on the plain 3.3 V, as on v1.2/v1.3.0. Rev B: the
+  charge-pump supply CPVDD (pin 1) has its own 0.1 µF, C36 (0603), directly under pins 1–3; its current loop
+  pin 1 → C36 → pin 3 (CPGND) is about 6.6 mm around (before: about 24 mm of track to C4 and back through the
+  pour). The bead drops only millivolts at the DAC's ~10 mA.
 * **Capacitor types in the signal path:** C19/C20 (DAC output filter) and C30/C31 (op-amp feedback) are
   **C0G/NP0**, which has no voltage or temperature coefficient and so adds no distortion. X7R is used only for
   supply decoupling.
@@ -317,8 +363,8 @@ the two, **never both** (two DAC outputs would drive the same line).
 
 | Build | Fit | Leave out |
 |---|---|---|
-| On-board DAC (default) | U9, C12–C20, FB3, R7, R8 | J10 (the module) |
-| GY-PCM5102 module | the module, soldered almost flat in J10 | **U9, C12–C20, FB3, R7, R8** |
+| On-board DAC (default) | U9, C12–C20, C36, FB3, R7, R8 | J10 (the module) |
+| GY-PCM5102 module | the module, soldered almost flat in J10 | **U9, C12–C20, C36, FB3, R7, R8** |
 
 * The module lies **over the DAC area**: the parts to leave out for it are exactly the ones inside the
   module's **dashed J10 outline** on the silkscreen, headed "DAC -OR- GY-PCM5102". That includes the
@@ -417,7 +463,7 @@ The script stops if DRC (including the schematic-parity check) finds errors. `FO
 * `PicoGUS-THT-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
   and the Excellon drill files (PTH and NPTH separate, mm).
 * `PicoGUS-THT-bom-jlc.csv` and `PicoGUS-THT-cpl-jlc.csv`: the BOM and placement files for JLCPCB assembly (SMD parts only).
-  Only U3/U4, U8/U9 and the optional U12 are SMD on this board; the LCSC column comes from the schematic fields.
+  Only U3/U4, U8/U9, C36 and the optional U12 are SMD on this board; the LCSC column comes from the schematic fields.
 * `PicoGUS-THT-drc.rpt`: the DRC report.
 
 The **Hardware (JLCPCB files)** GitHub Action runs the same script for `hw-tht` (v1.3.0) and `hw-smd`. Rev B is
