@@ -178,6 +178,18 @@ From the review of the re-routed board:
 * Silkscreen: all text at least 0.8 mm / 0.15 mm stroke; labels and references off pads; "LINE OUT" (was
   "AUDIO OUT") and "WT VOL" next to J8/RV1; "USB" by J11.
 
+Final layout touches:
+
+* **DAC area 1 mm toward the rear**, so the "DAC -OR- GY-PCM5102" heading no longer crowds U2: the GY-PCM5102
+  outline (J10) moved together with U9 and its parts (C12–C20, C36, FB3, R7, R8), their tracks and vias, and both
+  DAC texts. The heading now has 1.1 mm of bare board above U2's pins (was 0.13 mm). Tracks crossing the edge of
+  the area bend at 45° or slide along their own lines; the audio, I2S and MIDI TX spacings and the C36 loop are
+  unchanged, and the ±12 V pair along the top of the module keeps its widths. +12 V makes a small 45° hop over
+  C24's GND pad (C24 sits next to WT_L and stays put), so that pad joins ground through the back pour only. The
+  module's edge comes within 0.2 mm (plan view) of C24's courtyard and clears C24's body by 1.3 mm. A GND
+  stitching via at (178.4, 85.3) ties in the front ground strip under the heading.
+* R2 sits on the R5/R6 line (y 99.0) and C4 in line with C19 (x 147.84).
+
 From the rev B revision review (U9 charge-pump decoupling, U12 at J11, ISA GND finger B10):
 
 * **U9 CPVDD decoupling:** C36 (0.1 µF X7R 0603) sits under U9 pins 1–3, pad 1 on CPVDD (pin 1), pad 2 on
