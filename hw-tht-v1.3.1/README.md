@@ -398,7 +398,7 @@ the two, **never both** (two DAC outputs would drive the same line).
 The back carries the PicoGUS artwork (hw-common/art/picogus-artwork.svg: three game heroes over the
 PicoGUS logo), 76 × 27 mm (rev B: centred on the card width, its lower edge 3 mm above the Pico's pin holes).
 The version and licence block sits between the Pico's pin rows (rev B) and ends with the thanks and the
-dedication: *Thanks to polpo and all the PicoGUS contributors. The 1.3 version is dedicated to my wonderful
+dedication: *Thanks to polpo and all the PicoGUS contributors. This revision is dedicated to my wonderful
 family, Mila and Alisa.* "< REAR" points at the bracket, its arrow tip in line with the bracket tab holes
 H1/H2. All are mirrored
 on B.SilkS so they read correctly from the back. The back is full of through-hole pads, so the artwork is
