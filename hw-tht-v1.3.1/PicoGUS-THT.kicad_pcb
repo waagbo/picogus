@@ -38355,7 +38355,7 @@
 			)
 		)
 	)
-	(gr_text "PicoGUS v1.3.1\n© 2023-2026 Ian Scott (polpo), Vidar Waagbø (waagbo)\n\nLicensed under CERN-OHL-P v2\nhttps://github.com/waagbo/picogus\n\nThanks to polpo and all the PicoGUS contributors.\nThis revision is dedicated to my wonderful family, Mila and Alisa."
+	(gr_text "PicoGUS v1.3.1\n© 2023-2026 Ian Scott (polpo), Vidar Waagbø (waagbo)\n\nLicensed under CERN-OHL-P v2\nhttps://github.com/polpo/picogus\n\nThanks to polpo and all the PicoGUS contributors.\nThis revision is dedicated to my wonderful family, Mila and Alisa."
 		(at 193.4 108.9 0)
 		(layer "B.SilkS")
 		(uuid "b5b18cdb-3ffc-4dd5-ac61-54416a7ddfed")
