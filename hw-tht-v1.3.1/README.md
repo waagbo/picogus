@@ -395,9 +395,12 @@ the two, **never both** (two DAC outputs would drive the same line).
 
 ### Back silkscreen
 
-The back carries the PicoGUS artwork (hw-common/art/picogus-artwork.svg: three game heroes over the
-PicoGUS logo), 76 × 27 mm (rev B: centred on the card width, its lower edge 3 mm above the Pico's pin holes).
-The version and licence block sits between the Pico's pin rows (rev B) and ends with the thanks and the
+The back carries the princess artwork (hw-common/art/mila-alisa.svg: a big and a small princess, both
+crowned, with sparkles and a castle, over the PicoGUS logo), 72.5 × 37 mm, its lower edge 3 mm above the
+Pico's pin holes. It sits 6 mm off the card's centre, toward the bracket: centred, the J10 header and the
+resistor pads would go through the princesses' faces.
+The version and licence block sits between the Pico's pin rows (rev B), one text per line, each line nudged
+(at most 0.9 mm) so that no via hole lands in a letter. It ends with the thanks and the
 dedication: *Thanks to polpo and all the PicoGUS contributors. This revision is dedicated to my wonderful
 family, Mila and Alisa.* "< REAR" points at the bracket, its arrow tip in line with the bracket tab holes
 H1/H2. All are mirrored
