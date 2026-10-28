@@ -160,6 +160,16 @@ Positions are footprint origins (pin 1 for the DIPs), in mm.
 ### Silkscreen and back artwork
 
 * Front `v1.3.2`, back `PicoGUS v1.3.2`.
+* **Label font: Jost, embedded in the board file.** The 21 board labels (`WAVEBLASTER`, `MIXER`, `DAC`, `v1.3.2`,
+  `LINE OUT`, `WT VOL`, `MIDI OUT`, `UART`, `USB PWR`, `IRQ`/`DMA` and their numbers, `< REAR`) use Jost Medium and
+  Bold ([indestructible-type/Jost](https://github.com/indestructible-type/Jost), SIL Open Font License 1.1; the
+  copyright and licence are in the font files' metadata), embedded with the board's embedded-fonts option. KiCad
+  therefore shows and plots them the same on every machine, with or without the font installed. They were in
+  Futura, inherited from v1.2, which was not embedded: each machine plotted its own substitute (DejaVu Sans or Inter
+  in the cloud sessions that made the earlier gerbers). Futura cannot be embedded: Futura PT is marked
+  "Preview & Print" only, so KiCad refuses it, and its licence forbids sharing the files. Jost is a free
+  Futura-style face and looks almost the same at this size. Embedding adds about 120 KB to the board file. The
+  v1.3.1 and v1.3.0 boards still use un-embedded Futura.
 * **Princess artwork re-placed for the routed board**: 52.8 × 27.0 mm (v1.3.1: 71.6 × 37.0 mm), on the back above the
   logic and DAC area, its lower edge about 3 mm above the Pico module's edge and 4.1 mm above its pin holes (front
   coordinates x 125.9–178.7, y 68.4–95.4). It is cut 0.3 mm around every pad, hole and via. Faces, eyes and mouths are
