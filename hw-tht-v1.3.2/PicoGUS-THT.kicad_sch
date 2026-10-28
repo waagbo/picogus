@@ -6,10 +6,10 @@
 	(paper "A4")
 	(title_block
 		(title "PicoGUS THT")
-		(date "2026-10-23")
+		(date "2026-10-28")
 		(rev "v1.3.2")
 		(comment 1 "Through-hole variant of PicoGUS v1.2 with Waveblaster header and USB host port")
-		(comment 2 "U3/U4/U9 on 300-mil DIP adapters; SMD: U8, C8/C10 0805 (back), U12 opt.")
+		(comment 2 "U3/U4/U9 on 300-mil DIP adapters; SMD: U8, U12 opt.")
 	)
 	(lib_symbols
 		(symbol "74FST3257DR2G_1"
@@ -18201,7 +18201,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 63.8302 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -18223,7 +18223,7 @@
 				)
 			)
 		)
-		(property "Description" "1uF 50V X7R 0805 MLCC: U8/+3V3 bulk, on the BACK under U8"
+		(property "Description" "1uF 50V X7R radial MLCC, 5.0 mm pitch: U8/+3V3 bulk, above U8"
 			(at 62.865 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -18234,7 +18234,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "Murata"
 			(at 62.865 186.69 0)
 			(hide yes)
 			(effects
@@ -18244,7 +18244,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL21B105KBFNNNE"
+		(property "MPN" "RDER71H105K2M1H03A"
 			(at 62.865 186.69 0)
 			(hide yes)
 			(effects
@@ -18254,7 +18254,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey" "478-KGM21AR71H105KUCT-ND"
+		(property "DigiKey" "490-9146-1-ND"
 			(at 62.865 186.69 0)
 			(hide yes)
 			(effects
@@ -18264,7 +18264,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C28323"
+		(property "LCSC" "C1620132"
 			(at 62.865 186.69 0)
 			(hide yes)
 			(effects
@@ -18272,17 +18272,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "Alternatives" "DigiKey line is KYOCERA AVX 08055C105KAT2A (same 1uF 50V X7R 0805): Samsung CL21B105KBFNNNE (DigiKey 1276-1029-1-ND) had no DigiKey stock on 2026-10-23. LCSC C28323 is a JLCPCB basic part."
-			(at 62.865 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -18566,7 +18555,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
 			(at 53.6702 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -18588,7 +18577,7 @@
 				)
 			)
 		)
-		(property "Description" "0.1uF 50V X7R 0805 MLCC: U8 decoupling, on the BACK under U8"
+		(property "Description" "0.1uF 50V X7R radial MLCC, 5.0 mm pitch: U8 decoupling, above U8"
 			(at 52.705 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -18599,7 +18588,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Yageo"
+		(property "Manufacturer" "Murata"
 			(at 52.705 186.69 0)
 			(hide yes)
 			(effects
@@ -18609,7 +18598,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CC0805KRX7R9BB104"
+		(property "MPN" "RDER71H104K0M1H03A"
 			(at 52.705 186.69 0)
 			(hide yes)
 			(effects
@@ -18619,7 +18608,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey" "311-1140-1-ND"
+		(property "DigiKey" "490-9144-1-ND"
 			(at 52.705 186.69 0)
 			(hide yes)
 			(effects
@@ -18629,7 +18618,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C49678"
+		(property "LCSC" "C527620"
 			(at 52.705 186.69 0)
 			(hide yes)
 			(effects
@@ -19611,7 +19600,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:RPi_Pico_SMD_TH_USB"
+		(property "Footprint" "PiGUS library:RPi_Pico_SMD_TH_USB_NoSWD"
 			(at 109.22 61.595 90)
 			(hide yes)
 			(show_name no)
