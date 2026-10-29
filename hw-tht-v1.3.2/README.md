@@ -41,6 +41,7 @@ Files:
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every IC (and adapter) socketed, with heights (see [Socket build](#socket-build)) |
 | `adapters/TSSOP16-DIP16-300mil/`, `adapters/TSSOP20-DIP20-300mil/` | The two adapter PCBs: KiCad 10 projects with ready JLCPCB files (see [Adapter boards](#adapter-boards)) |
 | `adapters/adapter-pins-digikey-upload.csv` (+ `-10x`) | DigiKey upload: the round machined pin strips for the own adapter PCBs (one card: 4 × 1x8, 2 × 1x10) |
+| `docs/renders/` | 3D renders of the card from the front and the back, in red, purple, black and blue solder mask (ENIG, white silkscreen; the adapter boards on their DIP sockets in the same colour). Placement only: they are redone once the board is routed |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards. **New in the
 shared library for v1.3.2:** `DIP-16_W7.62mm_TSSOP-16_Adapter`, `DIP-20_W7.62mm_TSSOP-20_Adapter` and
