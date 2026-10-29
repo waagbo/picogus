@@ -337,6 +337,12 @@ function(build_gus TARGET_NAME MULTIFW)
         SCALE_22K_TO_44K=1
         # FORCE_28CH_27CH=1
     )
+    if(PICO_BOARD STREQUAL "picogus21")
+        # PicoGUS v2.1 THT: GUS sample RAM in the Core2350B2's PSRAM on the RP2350B's
+        # QMI (CS1 = GPIO47) instead of an APS6404L on PIO SPI (GPIO0-3)
+        target_compile_definitions(${TARGET_NAME} PRIVATE PSRAM_QMI=1)
+        target_sources(${TARGET_NAME} PRIVATE system/psram_qmi.c)
+    endif()
     pico_generate_pio_header(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/isa/isa_dma.pio)
     target_link_libraries(${TARGET_NAME} rp2040-psram hardware_interp)
 endfunction()

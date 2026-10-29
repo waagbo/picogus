@@ -25,6 +25,9 @@
 #if !PICO_RP2040
 #include "hardware/structs/qmi.h"
 #endif
+#if PSRAM_QMI
+#include "system/psram_qmi.h"
+#endif
 
 // Core voltage while overclocked
 #ifndef PICOGUS_VREG_VOLTAGE
@@ -112,4 +115,10 @@ static inline void overclock_370mhz(void) {
                     0,
                     CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLKSRC_PLL_USB,
                     USB_CLK_HZ);
+
+#if PSRAM_QMI
+    // QMI PSRAM (v2.1): timing for the new clk_sys, and the write format that
+    // the SDK's flash functions reset (this also runs after settings saves)
+    psram_qmi_reconfigure();
+#endif
 }

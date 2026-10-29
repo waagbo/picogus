@@ -34,10 +34,12 @@
 #error "PicoGUS supports RP2040 and RP2350 (Arm) only"
 #endif
 
-#if PICO_RP2350 && !PICO_RP2350A
+#if PICO_RP2350 && !PICO_RP2350A && !PICOGUS_BOARD_V21
 // Board detection reads GPIO29 through the ADC, and on the 48 GPIO RP2350B
-// (e.g. Pimoroni Pico Plus 2) the ADC inputs are GPIO40-47 instead
-#error "PicoGUS supports RP2350A (30 GPIO) boards such as the Raspberry Pi Pico 2; RP2350B boards need board detection ported"
+// (e.g. Pimoroni Pico Plus 2) the ADC inputs are GPIO40-47 instead. The one
+// RP2350B board PicoGUS knows, v2.1 THT (boards/picogus21.h), sets its board
+// type at compile time.
+#error "PicoGUS supports RP2350A (30 GPIO) boards such as the Raspberry Pi Pico 2, and the RP2350B PicoGUS v2.1 (PICO_BOARD=picogus21)"
 #endif
 
 #if PICO_RP2040

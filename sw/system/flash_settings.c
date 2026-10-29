@@ -25,6 +25,9 @@
 #include "hardware/sync.h"
 #include "hardware/clocks.h"
 #include "pico/stdlib.h"
+#if PSRAM_QMI
+#include "pico/multicore.h"
+#endif
 
 static const Settings defaultSettings = {
     .magic = SETTINGS_MAGIC,
@@ -204,6 +207,15 @@ void saveSettings(const Settings* settings)
     DBG_PRINTF("doing settings save: ");
     // No need for flash_safe_execute or stop second core, since it will not touch flash
     // If the 2nd core will ever touch flash, reconsider this approach!
+#if PSRAM_QMI
+    // ...except for the QMI PSRAM (PicoGUS v2.1): core 1 (GUS audio, ISA DMA) reads and
+    // writes it through the QMI, which is not usable while the flash is written, so hold
+    // core 1 until the flash and the PSRAM setup are back
+    const bool hold_core1 = multicore_lockout_victim_is_initialized(1);
+    if (hold_core1) {
+        multicore_lockout_start_blocking();
+    }
+#endif
     // Clock down the RP2040 so the flash at its default 1/2 clock divider is within spec (<=133MHz)
     set_sys_clock_khz(240000, true);
 
@@ -214,6 +226,11 @@ void saveSettings(const Settings* settings)
     flash_range_program(SETTINGS_SECTOR, data, FLASH_PAGE_SIZE);
     restore_interrupts(ints);
     overclock_370mhz();
+#if PSRAM_QMI
+    if (hold_core1) {
+        multicore_lockout_end_blocking();
+    }
+#endif
     DBG_PRINTF("settings saved");
 }
 

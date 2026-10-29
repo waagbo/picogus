@@ -4,7 +4,9 @@
 # Every chip/variant pair gets its own CMake build directory, and the UF2s are
 # collected into one output directory. RP2040 files keep their historical names
 # (picogus.uf2, pg-ne2k.uf2, ...); RP2350 files get an "-rp2350" suffix
-# (picogus-rp2350.uf2, pg-ne2k-rp2350.uf2, ...).
+# (picogus-rp2350.uf2, pg-ne2k-rp2350.uf2, ...). The "picogus21" target is the
+# RP2350B PicoGUS v2.1 THT board (PICO_BOARD=picogus21), with a "-v21" suffix
+# (picogus-v21.uf2, ...).
 #
 # Needs PICO_SDK_PATH and PICO_EXTRAS_PATH like a normal SDK build. Uses
 # CMake's default generator unless CMAKE_GENERATOR is set (e.g. to Ninja);
@@ -47,6 +49,8 @@ DEFAULT_VARIANTS=(multifw ne2k)
 # The ISA analyzer uses RP2350-only hardware (QMI PSRAM); SB + NE2000 is an
 # RP2350 experiment (sw/docs/sb-ne2000-rp2350.md)
 declare -A CHIP_ONLY=([analyzer]=rp2350 [sb-ne2k]=rp2350)
+# Variants that need a Pico W (CYW43), so not for the v2.1 board
+declare -A NEEDS_PICOW=([ne2k]=1 [sb-ne2k]=1)
 
 usage() {
     cat <<EOF
@@ -55,7 +59,7 @@ Usage: $(basename "$0") [options] [variant...]
 Builds the given firmware variants (default: ${DEFAULT_VARIANTS[*]}) for each chip.
 
 Options:
-  -p, --platform CHIP   rp2040, rp2350 or all (default: all)
+  -p, --platform CHIP   rp2040, rp2350, picogus21 (RP2350B PicoGUS v2.1) or all (default: all)
   -o, --out DIR         where to collect UF2 files (default: ${REPO_DIR}/binaries)
   -b, --build-dir DIR   parent of the per-build directories (default: ${REPO_DIR}/build)
   -j, --jobs N          parallel build jobs (default: number of CPUs)
@@ -69,7 +73,7 @@ Variants: all ${ALL_VARIANTS[*]}
 EOF
 }
 
-PLATFORMS=(rp2040 rp2350)
+PLATFORMS=(rp2040 rp2350 picogus21)
 OUT_DIR="${REPO_DIR}/binaries"
 BUILD_ROOT="${REPO_DIR}/build"
 JOBS="$(nproc 2>/dev/null || echo 4)"
@@ -82,9 +86,9 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -p|--platform)
             case "$2" in
-                all) PLATFORMS=(rp2040 rp2350) ;;
-                rp2040|rp2350) PLATFORMS=("$2") ;;
-                *) echo "Unknown platform '$2' (expected rp2040, rp2350 or all)" >&2; exit 2 ;;
+                all) PLATFORMS=(rp2040 rp2350 picogus21) ;;
+                rp2040|rp2350|picogus21) PLATFORMS=("$2") ;;
+                *) echo "Unknown platform '$2' (expected rp2040, rp2350, picogus21 or all)" >&2; exit 2 ;;
             esac
             shift 2 ;;
         -o|--out) OUT_DIR="$2"; shift 2 ;;
@@ -125,13 +129,19 @@ build_one() {
     local build_dir="${BUILD_ROOT}/${chip}/${variant}"
     local out_name="${OUTPUTS[$variant]}"
     local dest_name="${out_name}.uf2"
+    local platform="${chip}" board_args=()
     [[ "${chip}" == rp2350 ]] && dest_name="${out_name}-rp2350.uf2"
+    if [[ "${chip}" == picogus21 ]]; then
+        platform=rp2350
+        board_args=(-DPICO_BOARD=picogus21)
+        dest_name="${out_name}-v21.uf2"
+    fi
 
     echo "==== ${chip} ${variant} (PROJECT_TYPE=${PROJECT_TYPES[$variant]}) -> ${dest_name}"
     [[ ${CLEAN} -eq 1 ]] && rm -rf "${build_dir}"
     cmake -S "${SW_DIR}" -B "${build_dir}" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DPICO_PLATFORM="${chip}" \
+        -DPICO_PLATFORM="${platform}" "${board_args[@]}" \
         -DPROJECT_TYPE="${PROJECT_TYPES[$variant]}" \
         -DPGDEBUG="${PGDEBUG}" \
         > "${build_dir}.configure.log" 2>&1 \
@@ -148,6 +158,15 @@ for chip in "${PLATFORMS[@]}"; do
     mkdir -p "${BUILD_ROOT}/${chip}"
     for variant in "${VARIANTS[@]}"; do
         only="${CHIP_ONLY[$variant]:-}"
+        if [[ "${chip}" == picogus21 && -n "${NEEDS_PICOW[$variant]:-}" ]]; then
+            echo "==== ${chip} ${variant}: skipped (needs a Pico W)"
+            continue
+        fi
+        if [[ "${chip}" == picogus21 && "${variant}" == analyzer ]]; then
+            echo "==== ${chip} ${variant}: skipped (Pico Plus 2 tool)"
+            continue
+        fi
+        [[ "${only}" == rp2350 && "${chip}" == picogus21 ]] && only=picogus21
         if [[ -n "${only}" && "${only}" != "${chip}" ]]; then
             echo "==== ${chip} ${variant}: skipped (${only} only)"
             continue
