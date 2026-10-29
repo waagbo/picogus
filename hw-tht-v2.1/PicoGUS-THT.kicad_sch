@@ -8956,6 +8956,162 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:C_Small"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.254 1.778 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C_Small"
+				(at 0.254 -2.032 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor, small symbol"
+				(at 0 -10.16 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "capacitor cap"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_Small_0_1"
+				(polyline
+					(pts
+						(xy -1.524 0.508) (xy 1.524 0.508)
+					)
+					(stroke
+						(width 0.3048)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.524 -0.508) (xy 1.524 -0.508)
+					)
+					(stroke
+						(width 0.3048)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_Small_1_1"
+				(pin passive line
+					(at 0 2.54 270)
+					(length 2.032)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 90)
+					(length 2.032)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:D_Schottky"
 			(pin_numbers
 				(hide yes)
@@ -14471,7 +14627,7 @@
 		)
 		(uuid "9c95b8b6-f294-47c7-b204-7da999de0aed")
 	)
-	(text "SAMPLE RAM"
+	(text "SAMPLE RAM: on the module"
 		(exclude_from_sim no)
 		(at 161.925 24.13 0)
 		(effects
@@ -14481,6 +14637,17 @@
 			(justify left bottom)
 		)
 		(uuid "9f427631-a4d1-406a-bdd9-960aaa3471f5")
+	)
+	(text "The Core2350B2 has 8 MB of PSRAM on the RP2350B's QMI\n(CS1 = GPIO47, memory mapped). It replaces v2.0's U8\n(APS6404L on GPIO0-3, PIO SPI); GPIO0-3 are now free."
+		(exclude_from_sim no)
+		(at 158.75 33.02 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c3c078e5-da2d-5195-b197-4b314e3fe9b1")
 	)
 	(text "AEN IO MASKING"
 		(exclude_from_sim no)
@@ -14553,12 +14720,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "010b7473-3765-4266-a632-63d6fc7e7775")
-	)
-	(junction
-		(at 349.25 33.02)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "01552029-c966-4f1d-a479-15bece0ba6be")
 	)
 	(junction
 		(at 310.515 105.41)
@@ -14807,12 +14968,6 @@
 		(uuid "a190a4f8-a0f8-4be7-ae27-bafed3fda5d4")
 	)
 	(junction
-		(at 348.615 38.1)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a45ec5f7-8b19-41bc-a8ae-b8e4ec4eb33e")
-	)
-	(junction
 		(at 364.49 149.86)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -14989,6 +15144,10 @@
 		(uuid "1ce0cf52-23c2-502a-a036-076ab31d3bf9")
 	)
 	(no_connect
+		(at 92.71 42.545)
+		(uuid "2522026a-a366-5f7f-b622-e9e7a6fa906a")
+	)
+	(no_connect
 		(at 64.135 72.39)
 		(uuid "254456ed-97f7-461f-a273-df6784f1d689")
 	)
@@ -15015,6 +15174,10 @@
 	(no_connect
 		(at 381 132.08)
 		(uuid "3e5ec63c-a5fa-5033-9851-cf3fb5e404d5")
+	)
+	(no_connect
+		(at 92.71 37.465)
+		(uuid "4370e7e0-7a3c-5f9c-a1ad-7e14f3243b2b")
 	)
 	(no_connect
 		(at 355.6 109.22)
@@ -15137,6 +15300,10 @@
 		(uuid "b632c3b3-b900-46db-8412-789f156e2cab")
 	)
 	(no_connect
+		(at 92.71 45.085)
+		(uuid "c87edbd2-ec56-5c36-8a91-863aec48b9c3")
+	)
+	(no_connect
 		(at 325.755 102.87)
 		(uuid "c9fdc738-b3cc-4302-a9b1-c8571ed627bc")
 	)
@@ -15167,6 +15334,10 @@
 	(no_connect
 		(at 64.135 69.85)
 		(uuid "eb9a309f-4128-4de0-9b13-ed3a064d6025")
+	)
+	(no_connect
+		(at 92.71 40.005)
+		(uuid "eb9f8dfc-d8ce-5f70-842e-cf446d2f4353")
 	)
 	(no_connect
 		(at 358.14 30.48)
@@ -15658,17 +15829,7 @@
 	)
 	(wire
 		(pts
-			(xy 334.645 38.1) (xy 337.82 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3b20e44c-2515-458e-9293-920f63ddf287")
-	)
-	(wire
-		(pts
-			(xy 20.32 210.82) (xy 27.94 210.82)
+			(xy 350.52 33.02) (xy 358.14 33.02)
 		)
 		(stroke
 			(width 0)
@@ -15715,16 +15876,6 @@
 			(type default)
 		)
 		(uuid "448e1731-83f5-4c6a-9a62-3cf0a4a8586a")
-	)
-	(wire
-		(pts
-			(xy 349.25 23.495) (xy 349.25 25.4)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "46ab5021-9c67-40f8-8fd9-7c92247374f5")
 	)
 	(wire
 		(pts
@@ -15788,6 +15939,16 @@
 	)
 	(wire
 		(pts
+			(xy 20.32 218.44) (xy 27.94 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c0d6ab8-0b79-5964-a5da-5e751de81880")
+	)
+	(wire
+		(pts
 			(xy 310.515 92.71) (xy 313.055 92.71)
 		)
 		(stroke
@@ -15795,16 +15956,6 @@
 			(type default)
 		)
 		(uuid "4cbe24ec-58a8-40bb-b443-71de6b055f4f")
-	)
-	(wire
-		(pts
-			(xy 348.615 38.1) (xy 348.615 43.815)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4ea91949-ef4e-4f5e-a106-5128eec9312d")
 	)
 	(wire
 		(pts
@@ -16118,16 +16269,6 @@
 	)
 	(wire
 		(pts
-			(xy 348.615 52.705) (xy 348.615 51.435)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "767772b8-0f4e-4361-8996-d148e5d96e97")
-	)
-	(wire
-		(pts
 			(xy 21.59 100.33) (xy 28.575 100.33)
 		)
 		(stroke
@@ -16265,6 +16406,16 @@
 			(type default)
 		)
 		(uuid "84ac05fb-a770-4d4e-9d9c-1652b64d8b9b")
+	)
+	(wire
+		(pts
+			(xy 334.645 38.1) (xy 337.82 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85331a71-a678-50d2-8945-f4bdbffdc428")
 	)
 	(wire
 		(pts
@@ -16418,16 +16569,6 @@
 	)
 	(wire
 		(pts
-			(xy 345.44 33.02) (xy 349.25 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "966111fb-7ee2-42c3-a58d-e51e95bedaa3")
-	)
-	(wire
-		(pts
 			(xy 271.78 161.29) (xy 271.78 168.91)
 		)
 		(stroke
@@ -16568,13 +16709,13 @@
 	)
 	(wire
 		(pts
-			(xy 348.615 38.1) (xy 358.14 38.1)
+			(xy 20.32 210.82) (xy 27.94 210.82)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "ad204ee0-e19a-4a45-9cb5-00012b40823b")
+		(uuid "adefb42a-acb9-5974-b5b5-f9ab37ee30e8")
 	)
 	(wire
 		(pts
@@ -16585,16 +16726,6 @@
 			(type default)
 		)
 		(uuid "af64ff76-d65f-4a31-a84d-54fa3ad04f63")
-	)
-	(wire
-		(pts
-			(xy 345.44 38.1) (xy 348.615 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "afe60573-5532-4855-9875-c52e911677e6")
 	)
 	(wire
 		(pts
@@ -16758,16 +16889,6 @@
 	)
 	(wire
 		(pts
-			(xy 337.82 33.02) (xy 334.645 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c5cdce4a-042b-43d3-bd74-42a3cfe75d15")
-	)
-	(wire
-		(pts
 			(xy 270.51 100.33) (xy 274.955 100.33)
 		)
 		(stroke
@@ -16848,16 +16969,6 @@
 	)
 	(wire
 		(pts
-			(xy 349.25 33.02) (xy 358.14 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cd36e083-978f-4ac9-8dba-220fb3d92cf7")
-	)
-	(wire
-		(pts
 			(xy 386.08 190.5) (xy 393.7 190.5)
 		)
 		(stroke
@@ -16888,7 +16999,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.32 218.44) (xy 27.94 218.44)
+			(xy 350.52 38.1) (xy 358.14 38.1)
 		)
 		(stroke
 			(width 0)
@@ -16965,6 +17076,16 @@
 			(type default)
 		)
 		(uuid "e6939e55-db03-4d14-b51b-3fcc192197b9")
+	)
+	(wire
+		(pts
+			(xy 334.645 33.02) (xy 337.82 33.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e865a05a-e917-577b-aa9a-0ddc3af996a1")
 	)
 	(wire
 		(pts
@@ -17814,30 +17935,6 @@
 			)
 		)
 	)
-	(global_label "~{SPI_CS}"
-		(shape input)
-		(at 182.245 36.195 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "29c6f4cb-a6c1-49d3-b321-7b7e75389ab6")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 191.1006 36.1156 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
 	(global_label "D2"
 		(shape bidirectional)
 		(at 64.135 39.37 0)
@@ -18001,6 +18098,29 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+	)
+	(global_label "-12V"
+		(shape input)
+		(at 20.32 218.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "38a9677f-4c0b-52b1-9fd1-35269fba417c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 20.32 218.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 	)
@@ -18218,30 +18338,6 @@
 			)
 		)
 	)
-	(global_label "SPI_SCK"
-		(shape input)
-		(at 182.245 38.735 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "484ad6eb-702c-4433-9884-7e18b07a6616")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 192.3706 38.6556 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
 	(global_label "DACK"
 		(shape output)
 		(at 179.705 93.345 0)
@@ -18422,30 +18518,6 @@
 		(uuid "5103cede-12d5-48c8-80ea-bdf3f8bc8dbd")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 20.1427 59.6106 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
-	(global_label "~{SPI_CS}"
-		(shape output)
-		(at 92.71 40.005 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "5192f8e1-b5b1-414a-9d11-9d38b2298ced")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 83.8544 39.9256 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19101,30 +19173,6 @@
 			)
 		)
 	)
-	(global_label "SPI_TX"
-		(shape input)
-		(at 182.245 46.355 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "818962f8-bf91-47fc-8fb4-28c8bf6c247b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 190.7982 46.2756 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
 	(global_label "A0"
 		(shape bidirectional)
 		(at 25.4 125.73 180)
@@ -19170,29 +19218,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-			)
-		)
-	)
-	(global_label "-12V"
-		(shape input)
-		(at 20.32 218.44 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "85331a71-a678-50d2-8945-f4bdbffdc428")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 20.32 218.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 	)
@@ -19459,30 +19484,6 @@
 			)
 		)
 	)
-	(global_label "SPI_RX"
-		(shape input)
-		(at 92.71 37.465 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "9e59ec63-9f72-47b3-9a3a-9daeb914f674")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 83.8544 37.3856 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
 	(global_label "RA9"
 		(shape bidirectional)
 		(at 145.415 126.365 0)
@@ -19520,30 +19521,6 @@
 		(uuid "a08676f6-7519-49c4-b4a4-7ff9fec983a7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 207.1956 141.5256 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
-	(global_label "SPI_SCK"
-		(shape output)
-		(at 92.71 42.545 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a167ab40-038d-40da-9e8e-d2958760407e")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 82.5844 42.4656 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19603,30 +19580,6 @@
 			)
 		)
 	)
-	(global_label "PGAUDIO_L"
-		(shape input)
-		(at 344.17 23.495 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ab04f2ab-a4f8-4a9a-a081-b26cf3cd1d56")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 331.7583 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
 	(global_label "TC"
 		(shape output)
 		(at 27.305 90.17 180)
@@ -19674,19 +19627,19 @@
 			)
 		)
 	)
-	(global_label "SPI_RX"
-		(shape output)
-		(at 182.245 48.895 0)
+	(global_label "+12V"
+		(shape input)
+		(at 20.32 210.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "ae626026-e457-4d4a-b8de-51639a3037c7")
+		(uuid "b0a9b4de-4ed0-5329-b71b-a6421489f422")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 191.1006 48.8156 0)
+			(at 20.32 210.82 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -19694,7 +19647,6 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 	)
@@ -20069,30 +20021,6 @@
 		(uuid "c5c8a25c-0302-4655-9656-2502adea28a0")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 20.7777 133.2706 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
-	(global_label "PGAUDIO_R"
-		(shape input)
-		(at 343.535 52.705 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "c5f24bc7-f521-45a6-9f94-ae7b2560889d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 330.8814 52.705 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -20652,29 +20580,6 @@
 			)
 		)
 	)
-	(global_label "+12V"
-		(shape input)
-		(at 20.32 210.82 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "e865a05a-e917-577b-aa9a-0ddc3af996a1")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 20.32 210.82 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-	)
 	(global_label "DRQ3"
 		(shape output)
 		(at 161.29 90.805 180)
@@ -20891,30 +20796,6 @@
 			)
 		)
 	)
-	(global_label "SPI_TX"
-		(shape output)
-		(at 92.71 45.085 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ff2aa41f-cdee-4efd-8e3d-73b0586c1922")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 84.1568 45.0056 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
 	(symbol
 		(lib_id "74xx:74LS126")
 		(at 120.015 179.07 0)
@@ -21030,40 +20911,40 @@
 			(uuid "390760b8-427c-56b3-b9e6-da1b6b50ac7c")
 		)
 		(pin "1"
-			(uuid "d8b1aab7-6172-4071-b525-1b679c05d345")
+			(uuid "4f70eba2-80d3-4632-9fbf-3dbab2ea9bd1")
 		)
 		(pin "2"
-			(uuid "705104d6-15b5-4fa7-8b5d-bd3ba9f71fd5")
+			(uuid "6ed221ea-ae03-42f7-9df6-dfd6137d1845")
 		)
 		(pin "3"
-			(uuid "8549b57e-418f-40bb-b786-8cb2e8e7c350")
+			(uuid "41390b75-9254-4e46-8798-74bba806a07e")
 		)
 		(pin "4"
-			(uuid "be140b9c-5de8-482f-a6f9-08eb937ba5ad")
+			(uuid "4392db5e-e52d-48ef-9ad4-546f832704de")
 		)
 		(pin "5"
-			(uuid "5b25d11a-0958-467f-8d1b-f2cf9c5d3cce")
+			(uuid "81981ccd-6d8f-44e9-9f2a-04c143e70edd")
 		)
 		(pin "6"
-			(uuid "d989862b-7933-4f0f-82c0-db91d11b8e25")
+			(uuid "fffdd23e-620e-4105-936e-77dd1357f1a9")
 		)
 		(pin "8"
-			(uuid "ec685c50-6a83-48f4-a1f5-ffd300252dfc")
+			(uuid "3e37de85-9c86-413d-b19b-39d93d48d0a6")
 		)
 		(pin "9"
-			(uuid "eac14420-401f-4a47-81f1-bfa4e4b932bd")
+			(uuid "92f6dbb1-836e-44b9-955f-bbd255080114")
 		)
 		(pin "10"
-			(uuid "a1c7322d-6ae3-4a11-9c9e-6e864e7db105")
+			(uuid "4e7db1d8-b2aa-4561-b6e5-a7bfca25ff20")
 		)
 		(pin "11"
-			(uuid "c139399a-1510-4592-a627-de31a4da6258")
+			(uuid "31a296f3-37a9-4c5d-9715-d3bb8ef0cfcf")
 		)
 		(pin "12"
-			(uuid "fc1ca793-de34-461a-93ff-aa3b5317369a")
+			(uuid "28353362-6046-4b1c-86b4-12876ecfc6e6")
 		)
 		(pin "13"
-			(uuid "46c7e240-c893-4505-9ef6-e28539eed71e")
+			(uuid "7b91122e-75df-4f0d-b0bc-5805539665ea")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -21431,37 +21312,37 @@
 			(uuid "8d0385b9-4a3c-5595-9ec1-7899b0871832")
 		)
 		(pin "1"
-			(uuid "7f5bf740-6d0b-4da5-8a71-a6a91c2a47b5")
+			(uuid "81afbdf0-19f7-4931-840e-590ba97cfe3e")
 		)
 		(pin "2"
-			(uuid "89970cdd-afa2-410b-9a28-6d41f02e6b70")
+			(uuid "e83ff8a1-5e48-487a-b3c3-4efadcb80d84")
 		)
 		(pin "3"
-			(uuid "416a0eb1-c9f6-4c3f-8e1b-6c3155f4c263")
+			(uuid "174f066a-0b17-4b9e-8e4f-390ce54c6604")
 		)
 		(pin "8"
-			(uuid "6abf063c-2b90-4f27-b548-85273e17bc5f")
+			(uuid "065f063d-7a32-401b-9f44-c93604f3dfa2")
 		)
 		(pin "9"
-			(uuid "eb85b746-0ebf-4600-81cf-c5d671016b67")
+			(uuid "1703310d-b93a-4664-98b4-30234c0febbf")
 		)
 		(pin "10"
-			(uuid "4dd038bb-c54e-41cb-915c-3d5a700cb949")
+			(uuid "8a3317ce-9314-4e9e-b7c5-b0892bbef95f")
 		)
 		(pin "11"
-			(uuid "2771b7cf-c8d0-4816-b835-e055064c2355")
+			(uuid "46be05e0-77e1-4c5e-8c2a-9eba291d2572")
 		)
 		(pin "12"
-			(uuid "fab60f95-9b9a-46a9-b256-3ba788e89062")
+			(uuid "9a457b4b-f9e4-47c1-8b5b-a73be21b1c6b")
 		)
 		(pin "13"
-			(uuid "c0de026f-6a8a-4923-b95d-0f7040a21bfc")
+			(uuid "9a56d97d-0eda-4589-aa33-ae4545c21c5e")
 		)
 		(pin "7"
-			(uuid "c21edd50-354e-4d0b-8caa-254c3680cbad")
+			(uuid "1efdf425-1010-4885-b78c-924e0b678be5")
 		)
 		(pin "14"
-			(uuid "2aa3298b-038b-4cb1-a07b-75a22ec49271")
+			(uuid "4e4e526f-fbdf-4779-834f-dcd9735ad7c0")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -21704,130 +21585,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "#PWR035")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 349.25 29.21 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "07ab4cee-4f96-4dca-a5ae-aac9a2f9d424")
-		(property "Reference" "R9"
-			(at 344.805 29.21 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 346.71 29.21 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 351.028 29.21 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 349.25 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1k 1/4W 1% metal film"
-			(at 349.25 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Yageo"
-			(at 349.25 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "MFR-25FBF52-1K"
-			(at 349.25 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1.00KXBK-ND"
-			(at 349.25 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C57435 (UNI-ROYAL MFR0W4F1001A50)"
-			(at 349.25 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e680fee8-20f6-452c-8a15-5d69af743699")
-		)
-		(pin "2"
-			(uuid "ea238d46-519c-4b03-8118-5cc03ddcea24")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -23693,209 +23450,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 182.245 41.275 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "320e5485-a3ba-49ef-97cb-723a26a53b86")
-		(property "Reference" "#PWR029"
-			(at 188.595 41.275 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 189.23 41.275 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 182.245 41.275 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 182.245 41.275 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 182.245 41.275 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "b4cf0611-da8d-4f52-b81f-139355d023c9")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "#PWR029")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 52.705 186.69 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "32dae933-9975-42b3-99e4-3c00ac1a5770")
-		(property "Reference" "C8"
-			(at 51.435 184.15 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "0.1uF"
-			(at 50.165 189.23 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
-			(at 53.6702 190.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 52.705 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "0.1uF decoupling (+3V3)"
-			(at 52.705 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Murata"
-			(at 52.705 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "RDER71H104K0M1H03A"
-			(at 52.705 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "490-9144-1-ND"
-			(at 52.705 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C527620"
-			(at 52.705 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e6bad0fc-adb0-42fd-927f-4c221cb77bc7")
-		)
-		(pin "2"
-			(uuid "185ce906-23aa-402a-bc4a-e1bd949ff4d2")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "C8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PiGUS library:AGND")
 		(at 298.45 25.4 0)
 		(unit 1)
@@ -24153,7 +23707,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized_Small")
+		(lib_id "Device:C_Small")
 		(at 299.72 31.75 90)
 		(unit 1)
 		(body_style 1)
@@ -24174,7 +23728,7 @@
 				)
 			)
 		)
-		(property "Value" "2.2uF"
+		(property "Value" "2.2uF film"
 			(at 303.53 29.845 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -24184,7 +23738,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
+		(property "Footprint" "PiGUS library:C_Film_P5.00mm_7.8x7.8mm_or_CP_D5.0mm_P2.00mm"
 			(at 299.72 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -24206,7 +23760,7 @@
 				)
 			)
 		)
-		(property "Description" "2.2uF 50V aluminium electrolytic, 5 mm, 2.0 mm pitch: audio coupling"
+		(property "Description" "2.2uF 63V polyester film (PET), 5.0 mm pitch, box up to 7.8 x 7.8 mm: audio coupling, non-polar"
 			(at 299.72 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -24217,7 +23771,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Cornell Dubilier"
+		(property "Manufacturer" "TDK"
 			(at 299.72 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -24228,7 +23782,7 @@
 				)
 			)
 		)
-		(property "MPN" "225CKH050M"
+		(property "MPN" "B32529D0225J000"
 			(at 299.72 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -24239,7 +23793,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "1572-1376-ND"
+		(property "DigiKey" "495-1127-ND"
 			(at 299.72 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -24250,7 +23804,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C112511 (AISHI ERS1HM2R2D11OT)"
+		(property "LCSC" "C5372007 (Faratronic C241J225J2SC000)"
 			(at 299.72 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -24607,130 +24161,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized_Small")
-		(at 346.71 23.495 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3fbd5e2b-39c7-4da8-8281-fae9b1833056")
-		(property "Reference" "C43"
-			(at 349.25 22.225 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "2.2uF"
-			(at 350.52 24.765 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "2.2uF 50V aluminium electrolytic, 5 mm, 2.0 mm pitch: audio coupling"
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Cornell Dubilier"
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "225CKH050M"
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1572-1376-ND"
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C112511 (AISHI ERS1HM2R2D11OT)"
-			(at 346.71 23.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9fbae692-e839-445a-94b9-6a9fa88f6615")
-		)
-		(pin "2"
-			(uuid "9082db18-5fa1-4a61-82d6-9ce693c198e1")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "C43")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "74xx:74LS00")
 		(at 246.38 170.18 0)
 		(unit 4)
@@ -25072,7 +24502,7 @@
 				)
 			)
 		)
-		(property "Description" "100uF 16V aluminium electrolytic, 5 mm, 2.0 mm pitch: AVDD bulk"
+		(property "Description" "100uF 16V low-impedance electrolytic (Panasonic FR), 5 x 11 mm, 2.0 mm pitch: AVDD bulk"
 			(at 295.91 21.59 0)
 			(hide yes)
 			(show_name no)
@@ -25083,7 +24513,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Cornell Dubilier"
+		(property "Manufacturer" "Panasonic"
 			(at 295.91 21.59 0)
 			(hide yes)
 			(show_name no)
@@ -25094,7 +24524,7 @@
 				)
 			)
 		)
-		(property "MPN" "107CKS016M"
+		(property "MPN" "EEU-FR1C101"
 			(at 295.91 21.59 0)
 			(hide yes)
 			(show_name no)
@@ -25105,7 +24535,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "1572-1658-ND"
+		(property "DigiKey" "P14391-ND"
 			(at 295.91 21.59 0)
 			(hide yes)
 			(show_name no)
@@ -25116,7 +24546,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C108735 (Rubycon 16YXJ100M5X11)"
+		(property "LCSC" "C439880 (Rubycon 16ZLH100MEFC5X11)"
 			(at 295.91 21.59 0)
 			(hide yes)
 			(show_name no)
@@ -26325,37 +25755,37 @@
 			(uuid "a70acf87-8976-5ebe-afa4-e1963ef44f4c")
 		)
 		(pin "1"
-			(uuid "3b237c53-164e-404d-8a37-5d7145dea1e8")
+			(uuid "4c367868-435d-4a02-82fc-6adfb589e587")
 		)
 		(pin "2"
-			(uuid "4bc7fdd3-eb35-447b-8c5c-f5aeadc8e64a")
+			(uuid "746209de-4e82-4f15-8bae-271fb6cc0caa")
 		)
 		(pin "3"
-			(uuid "04139572-9265-41c8-b879-5de7659899dc")
+			(uuid "0d7e800d-6299-47c0-a3e8-281480ad76eb")
 		)
 		(pin "4"
-			(uuid "5a3184fc-ec45-41d7-800e-97169e81197d")
+			(uuid "28a0e0ef-7edc-41dd-af57-73c0672d1ed6")
 		)
 		(pin "5"
-			(uuid "661d00f1-d3d8-483d-a4ae-658512e5d7f9")
+			(uuid "5cb4c2a4-687d-427d-b6c6-25b2e009cd67")
 		)
 		(pin "6"
-			(uuid "e52ccb81-b56c-4a68-ba64-18b1eb0bc7b2")
+			(uuid "1518ac92-2001-47e4-ba26-49a7ea22bc6a")
 		)
 		(pin "11"
-			(uuid "a8468cdb-5e5e-4dd1-9f7c-f1f2c4b62178")
+			(uuid "e87fae1c-4827-4b2d-a1b5-aa14977763ff")
 		)
 		(pin "12"
-			(uuid "bc55dbc3-287f-4f45-99f9-d15c862ea670")
+			(uuid "9d486c22-8013-4d43-87e1-91425ed70fc8")
 		)
 		(pin "13"
-			(uuid "6450b6a4-edac-4438-a7dc-858d3f79df9d")
+			(uuid "50cc5333-f329-4458-a4d2-2dc3f5be55e9")
 		)
 		(pin "7"
-			(uuid "4d111bc1-7772-4f24-aff5-32d7e4488599")
+			(uuid "7c8a3888-d526-46fb-8f36-0d2fba7594a7")
 		)
 		(pin "14"
-			(uuid "ed100d39-5807-436d-a93b-30e91da93e4c")
+			(uuid "f0fae740-a5f2-45c3-82d7-82ca5bd196c8")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -26378,7 +25808,7 @@
 		(dnp no)
 		(uuid "5fd8ed17-9cce-5001-b21b-2ff6edc78e0d")
 		(property "Reference" "R19"
-			(at 389.89 184.36 0)
+			(at 389.89 184.36 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26388,7 +25818,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 389.89 186.06 0)
+			(at 389.89 186.06 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26452,7 +25882,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "5.10KXBK-ND"
+		(property "DigiKey" "MFR-25FBF52-5K1-ND"
 			(at 389.89 187.96 0)
 			(hide yes)
 			(show_name no)
@@ -26463,7 +25893,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1500210 (UNI-ROYAL MFR0W4F5101A50)"
+		(property "LCSC" "C1369975"
 			(at 389.89 187.96 0)
 			(hide yes)
 			(show_name no)
@@ -27347,130 +26777,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 341.63 33.02 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "6d72c8c3-117d-4e60-986e-6d0e5c4a49aa")
-		(property "Reference" "R7"
-			(at 341.63 28.575 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 341.63 30.48 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 341.63 34.798 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 341.63 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1k 1/4W 1% metal film"
-			(at 341.63 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Yageo"
-			(at 341.63 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "MFR-25FBF52-1K"
-			(at 341.63 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1.00KXBK-ND"
-			(at 341.63 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C57435 (UNI-ROYAL MFR0W4F1001A50)"
-			(at 341.63 33.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "5cd3eaec-0953-4ef8-8bb6-48129b7754e3")
-		)
-		(pin "2"
-			(uuid "a5cdeb0c-5616-4282-be83-0c58f3cfa443")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "74xx:74LS126")
 		(at 116.84 213.36 0)
 		(unit 4)
@@ -27588,37 +26894,37 @@
 			(uuid "0cf1e42d-614e-537a-bb68-72b2704c97a0")
 		)
 		(pin "1"
-			(uuid "4cafc1b6-38e5-4d10-8b8f-13601c5df68a")
+			(uuid "7c3c96a7-5417-491e-a5b0-43e6ae918eef")
 		)
 		(pin "2"
-			(uuid "32f811c9-701a-4efb-881f-21f5f25583d7")
+			(uuid "aa4a5ac9-f9ad-4e17-a06a-0d173a70a4e1")
 		)
 		(pin "3"
-			(uuid "ef7be698-4f48-4a42-8ccd-a68a8d6e6861")
+			(uuid "71c2d9f2-2b61-4d87-96df-cd6570a8c000")
 		)
 		(pin "4"
-			(uuid "e5fdfdb5-322a-4d84-906c-b15b0afb92af")
+			(uuid "56a24101-00ec-4b6a-8a05-b168a747ac17")
 		)
 		(pin "5"
-			(uuid "8b2f1997-11b8-479c-8ead-40f228d69f82")
+			(uuid "ea8a19d6-4c80-4717-9344-305c21453b6f")
 		)
 		(pin "6"
-			(uuid "120182dc-2749-4f0b-be92-52d414b71c00")
+			(uuid "c5330d5b-a2d5-4faf-afce-fda35fe82e2d")
 		)
 		(pin "8"
-			(uuid "d804e62b-000b-4f15-a755-e289cd586462")
+			(uuid "b6221b78-7651-4207-9d0d-1152c1a18718")
 		)
 		(pin "9"
-			(uuid "a551ea72-21b3-4383-a9a6-807b86b8ae65")
+			(uuid "d9cc6896-74d9-456f-9249-e9815e6d2e2b")
 		)
 		(pin "10"
-			(uuid "7fcc1bb8-42fa-45f5-b117-4f0d6f591690")
+			(uuid "3d594da0-113b-424c-a966-b55a74c6457c")
 		)
 		(pin "7"
-			(uuid "a0cba9d1-d71d-448c-afe0-ddd0d74acdbc")
+			(uuid "6fc026dd-af69-4383-88cd-b507a576dc49")
 		)
 		(pin "14"
-			(uuid "711c71b0-9d40-4e68-9f30-5090cd6d548e")
+			(uuid "bb376c19-1840-42ff-b3ae-8dc86f1b45f8")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -27872,285 +27178,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "#PWR018")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 348.615 47.625 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "72baad9e-9152-4b6b-9891-badf5648cc2a")
-		(property "Reference" "R8"
-			(at 346.075 47.625 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 344.17 47.625 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 346.837 47.625 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 348.615 47.625 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1k 1/4W 1% metal film"
-			(at 348.615 47.625 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Yageo"
-			(at 348.615 47.625 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "MFR-25FBF52-1K"
-			(at 348.615 47.625 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1.00KXBK-ND"
-			(at 348.615 47.625 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C57435 (UNI-ROYAL MFR0W4F1001A50)"
-			(at 348.615 47.625 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "3c04b910-531d-488f-bc97-716fcf410590")
-		)
-		(pin "2"
-			(uuid "9946ce56-1052-4d53-8387-87b0c686118c")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "R8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Memory_RAM:ESP-PSRAM32")
-		(at 172.085 43.815 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "7320db56-5ec0-4bb2-b9b7-1cabf8a75396")
-		(property "Reference" "U8"
-			(at 173.355 29.21 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "APS6404L-3SQR-SN"
-			(at 191.135 31.75 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "PiGUS library:DIP-8_W7.62mm_SOIC-8_Adapter"
-			(at 172.085 59.055 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" "https://www.espressif.com/sites/default/files/documentation/esp-psram32_datasheet_en.pdf"
-			(at 161.925 31.115 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "8 MB QSPI PSRAM (GUS sample RAM, PIO SPI on GPIO0-3), SOIC-8 on a 300-mil DIP-8 adapter"
-			(at 172.085 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "AP Memory"
-			(at 172.085 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "APS6404L-3SQR-SN"
-			(at 172.085 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1528-4677-ND (Adafruit 4677)"
-			(at 172.085 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C5333729"
-			(at 172.085 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Adapter" "Chip Quik PA0001C (DK 315-PA0001C-ND) or SparkFun BOB-13655"
-			(at 172.085 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "7e00f51c-fba6-4ce2-b417-7a7a25c60e64")
-		)
-		(pin "2"
-			(uuid "05e86b8a-c42b-4232-8ef9-54f0b916c571")
-		)
-		(pin "3"
-			(uuid "3eefdc32-88c1-4d6a-9c06-132ddaf9c91d")
-		)
-		(pin "4"
-			(uuid "2d6f8c87-2d00-40dc-bc1b-8fb65822b087")
-		)
-		(pin "5"
-			(uuid "b69e2231-3c9b-4609-ad2b-945674ff9f3c")
-		)
-		(pin "6"
-			(uuid "23422649-f95e-42fa-96e6-b1e3c7f09f2d")
-		)
-		(pin "7"
-			(uuid "719ba1fd-28b1-4506-9485-51ea20761881")
-		)
-		(pin "8"
-			(uuid "2627ef29-8811-417d-82c7-80b3e3318fe8")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "U8")
 					(unit 1)
 				)
 			)
@@ -29077,7 +28104,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "2156-M62429FP#CF0J-ND (Renesas M62429FP, 4.5-5.5V)"
+		(property "DigiKey" "not stocked: LCSC only (DigiKey marketplace 2156-M62429FP#CF0J-ND is the 4.5-5.5V Renesas part, MOQ 143)"
 			(at 315.595 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -29138,83 +28165,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "U13")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 182.245 43.815 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "805510a6-855a-40dc-9fa8-12b2f14c0216")
-		(property "Reference" "#PWR030"
-			(at 188.595 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 189.23 43.815 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 182.245 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 182.245 43.815 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 182.245 43.815 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ecad2b1b-a061-4114-af5f-3e38083ed4e6")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "#PWR030")
 					(unit 1)
 				)
 			)
@@ -29695,13 +28645,13 @@
 			)
 		)
 		(pin "3"
-			(uuid "d3e14086-d740-5457-b052-6d6e887e05b1")
+			(uuid "903cefb1-93f0-5282-a49b-ae6900d9c02c")
 		)
 		(pin "2"
-			(uuid "7c3d6715-fa48-5730-a0c5-c55f9cedcb80")
+			(uuid "5c569642-39eb-5533-a8ec-a91d40796ef2")
 		)
 		(pin "1"
-			(uuid "3ea24f45-29ef-5199-9a09-07c0e45324da")
+			(uuid "c351ab5b-cb6b-5e20-a64b-16cd526daef7")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -30013,130 +28963,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "#PWR047")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 341.63 38.1 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "8f361fd4-bed2-416c-8f96-c78c7dbd860b")
-		(property "Reference" "R6"
-			(at 341.63 40.64 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 341.63 42.545 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 341.63 39.878 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 341.63 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "1k 1/4W 1% metal film"
-			(at 341.63 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Yageo"
-			(at 341.63 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "MFR-25FBF52-1K"
-			(at 341.63 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1.00KXBK-ND"
-			(at 341.63 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C57435 (UNI-ROYAL MFR0W4F1001A50)"
-			(at 341.63 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "2bd9887a-8d2d-4b65-87c2-5127b5d4a6fa")
-		)
-		(pin "2"
-			(uuid "1197ec53-5682-48b9-9535-7059938678e7")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -30714,132 +29540,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "J9")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 57.785 186.69 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "9c0f3364-bb29-48b6-aa1a-5644e4d6f40e")
-		(property "Reference" "C9"
-			(at 56.515 184.15 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "0.1uF"
-			(at 55.88 189.23 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm"
-			(at 58.7502 190.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 57.785 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "0.1uF decoupling (+3V3)"
-			(at 57.785 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Murata"
-			(at 57.785 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "RDER71H104K0M1H03A"
-			(at 57.785 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "490-9144-1-ND"
-			(at 57.785 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C527620"
-			(at 57.785 186.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ced697a9-de4f-46eb-819b-3f3373b4321e")
-		)
-		(pin "2"
-			(uuid "4ee8b75f-35dc-4b93-ade5-4eb270703ef1")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "C9")
 					(unit 1)
 				)
 			)
@@ -31772,88 +30472,88 @@
 			(uuid "0287916f-318e-54e1-ab78-57046e504300")
 		)
 		(pin "1"
-			(uuid "243f6309-b0f2-4ffd-be38-62f64ce7f9ac")
+			(uuid "26d03547-df1a-45d3-8425-e03bdcaba65e")
 		)
 		(pin "17"
-			(uuid "a9f41cf6-7121-4a1b-8529-b3cd57f0fb5e")
+			(uuid "2be2c330-ba44-42c7-947e-b1fe5d5fd691")
 		)
 		(pin "18"
-			(uuid "09199252-189f-456a-919a-d39498db3d09")
+			(uuid "25737558-e4fc-4f5c-8a8e-64e49ac4baf8")
 		)
 		(pin "19"
-			(uuid "58780265-5436-41cf-9806-b7762819a442")
+			(uuid "221e725d-7263-4898-97c7-ca6057c23975")
 		)
 		(pin "20"
-			(uuid "79f05bc7-752e-4800-becc-52727574c764")
+			(uuid "eb6527f9-2b82-4a1b-ae2d-2f7b504eeaf6")
 		)
 		(pin "24"
-			(uuid "59cfc1ec-5c78-43ef-9a7a-60e6db35f697")
+			(uuid "8f272d93-d681-4219-9299-72e7f94ff838")
 		)
 		(pin "28"
-			(uuid "62defb08-06eb-43dd-8365-39cc18e9650a")
+			(uuid "7c60a682-fbb8-4fbb-93c0-489907b5315d")
 		)
 		(pin "29"
-			(uuid "60151d53-48cd-4882-8403-0e3761a1ca71")
+			(uuid "847ba275-d1d1-46b2-b22d-235c2d54533b")
 		)
 		(pin "30"
-			(uuid "ee718151-2047-48f2-b8ef-6254c2550056")
+			(uuid "cbc623d8-e374-4f8b-8e25-eb0ead44afab")
 		)
 		(pin "31"
-			(uuid "f2178035-6f9f-4610-9b0c-8faf85e1a2f7")
+			(uuid "ca0eaf2e-1873-4bc2-a8a5-149d4b4de4e6")
 		)
 		(pin "32"
-			(uuid "b6c53aa9-3368-44ec-9a77-87cd0af29b86")
+			(uuid "351dd9b3-2c16-4a2d-a6f0-c1b428ff1559")
 		)
 		(pin "33"
-			(uuid "58b5951c-5510-4dae-8f35-345416ec1391")
+			(uuid "2d380aaa-af71-4cad-970b-563b37b6a45f")
 		)
 		(pin "49"
-			(uuid "52fa37e0-7301-4dce-a8b2-cb6fed452c69")
+			(uuid "df11035f-fab4-4518-9ebc-486ee9b55d98")
 		)
 		(pin "50"
-			(uuid "637d08a7-7a46-4eb9-ab30-7ff12ce5f2f6")
+			(uuid "9a143cc7-8b9b-4106-965c-b9fceb285625")
 		)
 		(pin "51"
-			(uuid "38a1bd83-7764-4ea6-9a2f-8ba9d780e3d7")
+			(uuid "efa54f53-e007-4bb5-8935-739c34f9ad5f")
 		)
 		(pin "52"
-			(uuid "731a0c4e-ce37-4c3d-9f78-f4f52367e681")
+			(uuid "0b7c19c5-a805-4e31-957d-4d6d0a1858a3")
 		)
 		(pin "53"
-			(uuid "4c6c5857-392e-4b52-814c-caec1f9f2c90")
+			(uuid "7f54795f-7473-4157-a1af-24bff1d1b615")
 		)
 		(pin "54"
-			(uuid "fdae0132-c2f1-42e8-a9c8-5ae8f6ca37ca")
+			(uuid "932e36fc-77b7-4b2b-9475-ebceecba6cb2")
 		)
 		(pin "55"
-			(uuid "387399fe-5a30-4d60-9f30-e48c218b8448")
+			(uuid "8d2f78f6-a6ea-48cf-be7a-ed366f9ae61f")
 		)
 		(pin "56"
-			(uuid "7a9d1e0e-0122-434b-acfb-96d34302ab13")
+			(uuid "5a152ad1-eefe-4ac0-bfe0-3160b6e4da8a")
 		)
 		(pin "57"
-			(uuid "b3172551-a385-4a15-b863-93d115b7bd24")
+			(uuid "217fc85b-eab2-47c7-ac62-e233e638eaac")
 		)
 		(pin "58"
-			(uuid "a6101f0d-7c94-4977-a23e-d285d78a1d57")
+			(uuid "d1986a5d-7bf8-4397-a343-7470b458c5c6")
 		)
 		(pin "59"
-			(uuid "d3326f4c-26de-462d-a365-b4a0da4217bd")
+			(uuid "ba7fafa2-dc3d-4ca8-bbcf-1d3f9a506857")
 		)
 		(pin "60"
-			(uuid "89025250-69c5-41fb-945f-4506c36bdf3b")
+			(uuid "2c7cabf4-4fc9-4338-af7d-0dceef408ae9")
 		)
 		(pin "61"
-			(uuid "fd583dc2-f779-4f1f-9cbf-2881421a283b")
+			(uuid "70473082-ae47-481a-9be1-725b1405277b")
 		)
 		(pin "62"
-			(uuid "f6038750-145d-4a4f-93f8-9781092d1f00")
+			(uuid "33c007bb-358c-4890-8783-641810c98eff")
 		)
 		(pin "63"
-			(uuid "a8c9a3e4-494d-47cd-a638-130c23c22871")
+			(uuid "b9d8b808-2153-40e1-99bb-7b573963d904")
 		)
 		(pin "64"
-			(uuid "94238c8b-0d53-44fe-a144-05a826d0b66b")
+			(uuid "83635f0f-e7c8-498e-9bea-0194782b87d1")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -33528,7 +32228,7 @@
 		(dnp no)
 		(uuid "c565bf8a-47f9-5e86-b185-012d9b728bc4")
 		(property "Reference" "R20"
-			(at 397.51 193.9 0)
+			(at 397.51 193.9 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33538,7 +32238,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 397.51 192.2 0)
+			(at 397.51 192.2 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33602,7 +32302,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "5.10KXBK-ND"
+		(property "DigiKey" "MFR-25FBF52-5K1-ND"
 			(at 397.51 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -33613,7 +32313,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1500210 (UNI-ROYAL MFR0W4F5101A50)"
+		(property "LCSC" "C1369975"
 			(at 397.51 190.5 0)
 			(hide yes)
 			(show_name no)
@@ -35294,130 +33994,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized_Small")
-		(at 346.075 52.705 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "ddc0c186-afaf-40ec-8a38-637d9d3709ff")
-		(property "Reference" "C44"
-			(at 348.615 51.435 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "2.2uF"
-			(at 349.885 53.975 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "2.2uF 50V aluminium electrolytic, 5 mm, 2.0 mm pitch: audio coupling"
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "Cornell Dubilier"
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "225CKH050M"
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "DigiKey" "1572-1376-ND"
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C112511 (AISHI ERS1HM2R2D11OT)"
-			(at 346.075 52.705 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "bab5b425-8e67-42d6-a858-da101da34590")
-		)
-		(pin "2"
-			(uuid "c7713ac7-45a2-457c-9d18-87df0cb58564")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "C44")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 248.92 92.71 0)
 		(unit 1)
@@ -36526,7 +35102,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized_Small")
+		(lib_id "Device:C_Small")
 		(at 299.72 35.56 90)
 		(unit 1)
 		(body_style 1)
@@ -36547,7 +35123,7 @@
 				)
 			)
 		)
-		(property "Value" "2.2uF"
+		(property "Value" "2.2uF film"
 			(at 303.53 36.83 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36557,7 +35133,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
+		(property "Footprint" "PiGUS library:C_Film_P5.00mm_7.8x7.8mm_or_CP_D5.0mm_P2.00mm"
 			(at 299.72 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36579,7 +35155,7 @@
 				)
 			)
 		)
-		(property "Description" "2.2uF 50V aluminium electrolytic, 5 mm, 2.0 mm pitch: audio coupling"
+		(property "Description" "2.2uF 63V polyester film (PET), 5.0 mm pitch, box up to 7.8 x 7.8 mm: audio coupling, non-polar"
 			(at 299.72 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36590,7 +35166,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Cornell Dubilier"
+		(property "Manufacturer" "TDK"
 			(at 299.72 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36601,7 +35177,7 @@
 				)
 			)
 		)
-		(property "MPN" "225CKH050M"
+		(property "MPN" "B32529D0225J000"
 			(at 299.72 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36612,7 +35188,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "1572-1376-ND"
+		(property "DigiKey" "495-1127-ND"
 			(at 299.72 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36623,7 +35199,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C112511 (AISHI ERS1HM2R2D11OT)"
+		(property "LCSC" "C5372007 (Faratronic C241J225J2SC000)"
 			(at 299.72 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36644,83 +35220,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "C40")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 169.545 56.515 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ecfcfaf9-9b1b-42af-ac7c-97cfc230fa09")
-		(property "Reference" "#PWR027"
-			(at 169.545 62.865 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 169.545 60.96 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 169.545 56.515 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 169.545 56.515 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 169.545 56.515 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "17e8ab96-f1f1-4a98-8cb6-4bfc07f0e83b")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "#PWR027")
 					(unit 1)
 				)
 			)
@@ -37557,112 +36056,112 @@
 			(uuid "9a3649cd-858c-51fe-82cf-bd51ae208132")
 		)
 		(pin "2"
-			(uuid "56861627-c75c-4b93-af7e-3d0ed79eb59b")
+			(uuid "d3884edb-3a30-4ea4-8e42-136c91a12166")
 		)
 		(pin "3"
-			(uuid "7a60957a-128d-4db4-996d-713f9c6596c7")
+			(uuid "ca70d239-9cba-4732-a3ca-c4c1ba37d8dc")
 		)
 		(pin "4"
-			(uuid "d68e19d3-6940-466b-a9a9-343a48274108")
+			(uuid "28cc5b76-164a-45df-bf85-44d3da423520")
 		)
 		(pin "5"
-			(uuid "021d96c4-ba17-46df-bf8e-8fe4d5819f8c")
+			(uuid "03b07a02-5364-4856-ae58-190c656e22e1")
 		)
 		(pin "6"
-			(uuid "f1f1d170-d283-4422-96a7-9d8d814111f0")
+			(uuid "2323c2de-03ae-4c97-b4fd-1dcd9941f180")
 		)
 		(pin "7"
-			(uuid "7732633d-79ea-4601-9308-61d2901c9c10")
+			(uuid "a2403c11-68b3-405a-b04e-58c3927069c3")
 		)
 		(pin "8"
-			(uuid "ca13f422-236d-4a37-9731-e0f2084206a6")
+			(uuid "9e4b51d8-462e-4c0d-a25b-a1d55f77f025")
 		)
 		(pin "9"
-			(uuid "3df1a7f8-aa9c-40b7-a18b-8ca6f60306d0")
+			(uuid "7ac0da37-7a04-4b27-9df8-50359b72d28f")
 		)
 		(pin "10"
-			(uuid "03e4b80e-1cce-4d03-939c-ca2a0ade2814")
+			(uuid "a571eed3-1243-44ce-a297-6038fa461451")
 		)
 		(pin "11"
-			(uuid "e41f8283-b642-4da2-a2bf-c66992c01481")
+			(uuid "821c2162-f6cf-40fa-9d89-bbbf03423449")
 		)
 		(pin "12"
-			(uuid "b7f09d2b-f96d-4c83-9b11-1e0442daa800")
+			(uuid "63ecbc45-05b9-48fd-82fc-7632239e8f78")
 		)
 		(pin "13"
-			(uuid "bcf821c0-795a-4585-ab69-e6eca56551f0")
+			(uuid "8466eb49-6fad-4817-ae3e-831db2e3f6f8")
 		)
 		(pin "14"
-			(uuid "85bdad73-2e32-4c62-81ea-f44be74c59f1")
+			(uuid "b4f71b15-5fe6-479e-a35d-da6af078b70a")
 		)
 		(pin "15"
-			(uuid "d1f569e1-55f3-43fc-97f2-c1057159dcf9")
+			(uuid "5a2f3b7a-8c7e-4952-b049-ad478de96ee8")
 		)
 		(pin "16"
-			(uuid "053ea179-738a-4e93-98f3-4a052bc25ebe")
+			(uuid "22f59f38-70ad-4692-a69b-16d23a93eb47")
 		)
 		(pin "21"
-			(uuid "f77e9765-24c8-47ad-92b7-f913a90e67ce")
+			(uuid "2011923a-1d21-467d-baf0-c497bd3f14c8")
 		)
 		(pin "22"
-			(uuid "d9208671-ea20-4e06-9c5b-3f64c9ba09c2")
+			(uuid "d13ab548-2daa-435b-8607-5ae2ba68dae7")
 		)
 		(pin "23"
-			(uuid "60e72b8d-e46b-43c8-bd05-2214b417abaf")
+			(uuid "fc0a49b3-2784-4310-981e-6fb14dc62fd0")
 		)
 		(pin "25"
-			(uuid "66f905c9-fef1-46d4-bc86-f5958dda7e19")
+			(uuid "bd0db376-5ed8-4375-b43f-ed2a261cc6e8")
 		)
 		(pin "26"
-			(uuid "8ceb2f6b-052d-44b9-9c70-8fa84d8f5235")
+			(uuid "9d40b199-4d32-4cff-90f8-4a1abbb2fe81")
 		)
 		(pin "27"
-			(uuid "ff58b7f8-3a0a-46a0-bce5-6542706c59f9")
+			(uuid "84bb6707-db1d-4b81-9a19-eca9cdf1495f")
 		)
 		(pin "34"
-			(uuid "552e388f-f0df-429a-9a26-9afac154a26e")
+			(uuid "f18ae00e-110f-43f2-8081-bd852e3bc5b2")
 		)
 		(pin "35"
-			(uuid "332d9f92-10f2-4878-8c65-7a847d0fecf3")
+			(uuid "7f624645-b5c4-4f8f-b937-35e4bcd061c3")
 		)
 		(pin "36"
-			(uuid "538659b8-5a73-44c1-ad87-a3579274c1e0")
+			(uuid "e924eae3-5525-4032-a240-b7dcb9ed4326")
 		)
 		(pin "37"
-			(uuid "fdcfd3b0-a07b-42a5-8518-a32d8ea79423")
+			(uuid "49090674-356d-49f0-86e0-01e87899c364")
 		)
 		(pin "38"
-			(uuid "6017a1a0-de7c-4c71-a4c3-5b0235eb68c0")
+			(uuid "b60151c0-2858-4aab-b004-4b5ea540d553")
 		)
 		(pin "39"
-			(uuid "e1a15695-0180-4e1f-b99d-3fbffa912b4d")
+			(uuid "77ad4c81-90c1-4299-a901-63be0487ea9e")
 		)
 		(pin "40"
-			(uuid "f4fadc07-1246-4356-a18c-c2449a4f6851")
+			(uuid "c0626a90-7db1-4551-812f-ef899d9c8966")
 		)
 		(pin "41"
-			(uuid "9b1c5690-cfb1-4842-af11-73ebeef4d04c")
+			(uuid "19d48c74-c34e-45c7-9f3e-c5d0ebbafb92")
 		)
 		(pin "42"
-			(uuid "3e4a2e8e-f09c-47c3-ac03-9541f7369ee9")
+			(uuid "5a4fff46-7ed0-4f12-8eb6-d62b3dbd8981")
 		)
 		(pin "43"
-			(uuid "498beb85-0a1c-4f4d-8ddf-d79c04a936ea")
+			(uuid "fb080ce9-ce5f-402a-8dc7-d1047f85d493")
 		)
 		(pin "44"
-			(uuid "aff84379-1164-4581-9bba-f889cdd25886")
+			(uuid "358d3a53-43e6-431b-bf4b-3e50601c9b65")
 		)
 		(pin "45"
-			(uuid "36fab279-1417-473f-96c5-69837f119d47")
+			(uuid "db731820-5b68-4da5-aa7e-1787148ceba9")
 		)
 		(pin "46"
-			(uuid "88e73ae7-dc93-4b04-8be0-ce99ed783366")
+			(uuid "8194ac77-47d2-4cca-8fcc-71653db445f2")
 		)
 		(pin "47"
-			(uuid "d841ddc6-3096-4c96-8a28-829df7cc6e84")
+			(uuid "dc57fca1-5183-47f0-a1e2-1f961b9e7085")
 		)
 		(pin "48"
-			(uuid "30a1d71a-6be1-4c4d-bfe5-47786a5c3bc4")
+			(uuid "efa1db31-24ce-4580-8e5b-d47e69359951")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -37878,83 +36377,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3V3")
-		(at 169.545 31.115 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "f7b264c0-965d-4e8d-b19a-6af9c7c1a08b")
-		(property "Reference" "#PWR026"
-			(at 169.545 34.925 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 169.545 26.035 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 169.545 31.115 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 169.545 31.115 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 169.545 31.115 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f727c08f-e802-4e60-8a46-d7468cefa70c")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "#PWR026")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 165.1 130.81 0)
 		(unit 1)
@@ -38135,7 +36557,7 @@
 				)
 			)
 		)
-		(property "Description" "USB-A receptacle, through hole, right angle (joystick/mouse/storage host port, as v2.0)"
+		(property "Description" "USB-A receptacle, through hole (joystick/mouse/storage host port, the v2.0 part and position)"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -38146,7 +36568,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "CNC Tech"
+		(property "Manufacturer" "Jing Extension of the Electronic Co."
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -38158,6 +36580,28 @@
 			)
 		)
 		(property "MPN" "902-131A1011D10100"
+			(at 216.535 74.295 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "DigiKey" "not stocked: LCSC only"
+			(at 216.535 74.295 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C2345"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -38438,7 +36882,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized_Small")
+		(lib_id "Device:C_Small")
 		(at 332.105 38.1 90)
 		(unit 1)
 		(body_style 1)
@@ -38459,7 +36903,7 @@
 				)
 			)
 		)
-		(property "Value" "2.2uF"
+		(property "Value" "2.2uF film"
 			(at 335.915 39.37 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38469,7 +36913,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
+		(property "Footprint" "PiGUS library:C_Film_P5.00mm_7.8x7.8mm_or_CP_D5.0mm_P2.00mm"
 			(at 332.105 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -38491,7 +36935,7 @@
 				)
 			)
 		)
-		(property "Description" "2.2uF 50V aluminium electrolytic, 5 mm, 2.0 mm pitch: audio coupling"
+		(property "Description" "2.2uF 63V polyester film (PET), 5.0 mm pitch, box up to 7.8 x 7.8 mm: audio coupling, non-polar"
 			(at 332.105 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -38502,7 +36946,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Cornell Dubilier"
+		(property "Manufacturer" "TDK"
 			(at 332.105 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -38513,7 +36957,7 @@
 				)
 			)
 		)
-		(property "MPN" "225CKH050M"
+		(property "MPN" "B32529D0225J000"
 			(at 332.105 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -38524,7 +36968,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "1572-1376-ND"
+		(property "DigiKey" "495-1127-ND"
 			(at 332.105 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -38535,7 +36979,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C112511 (AISHI ERS1HM2R2D11OT)"
+		(property "LCSC" "C5372007 (Faratronic C241J225J2SC000)"
 			(at 332.105 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -38679,37 +37123,37 @@
 			(uuid "ec5f3542-3226-5821-9b9f-88cdf9d6eed9")
 		)
 		(pin "4"
-			(uuid "4ae73218-22eb-4f3f-80bb-1a8610024845")
+			(uuid "05ca6ff5-9134-427c-83d2-ecb265546966")
 		)
 		(pin "5"
-			(uuid "a8a936be-beeb-4839-a1b0-9dc345ae26ea")
+			(uuid "a5a7f63a-4ff7-4fab-bd9a-0e95e312dc8f")
 		)
 		(pin "6"
-			(uuid "f35d46b2-6f8a-4b13-81c8-7e8ace17b5ec")
+			(uuid "9553373b-d273-4b01-bd2c-84d80d5a70ac")
 		)
 		(pin "8"
-			(uuid "e0d32087-e8f3-48c7-9f22-2e382eb63abc")
+			(uuid "3e064572-a7a9-4a67-9305-bb834a2716ec")
 		)
 		(pin "9"
-			(uuid "d0b7e383-1149-48c3-9f91-9810ad6838a8")
+			(uuid "6201a29b-f3a7-4885-83ed-df7102ba22c7")
 		)
 		(pin "10"
-			(uuid "6f665aba-12eb-467f-b88b-7ee131cf53e6")
+			(uuid "fe3d2359-5366-4b3e-af9d-51c459e6a1fb")
 		)
 		(pin "11"
-			(uuid "7ba55dcc-018a-456c-ad6c-c5f702d86f1b")
+			(uuid "d76e5c18-0479-4f9c-b9dc-46efe300b8fa")
 		)
 		(pin "12"
-			(uuid "f197747a-cd28-429e-80b6-f0dede81303c")
+			(uuid "a1e16031-e55a-4a8c-b9b2-ea6ada4601ae")
 		)
 		(pin "13"
-			(uuid "a993f178-98db-42dc-855f-c028b54d3a64")
+			(uuid "62603caa-5700-4bb1-84b7-d04b604e259b")
 		)
 		(pin "7"
-			(uuid "104b8c05-01ee-4fca-a655-6a4a00725584")
+			(uuid "99bf88ca-b912-42ae-9d1f-2c5c39e17e6c")
 		)
 		(pin "14"
-			(uuid "60018646-f66b-4067-8a76-e44553cf8b15")
+			(uuid "9a08142c-4437-475e-8955-b84a55e6fe5f")
 		)
 		(instances
 			(project "PicoGUS-THT"
@@ -38721,7 +37165,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized_Small")
+		(lib_id "Device:C_Small")
 		(at 332.105 33.02 90)
 		(unit 1)
 		(body_style 1)
@@ -38742,7 +37186,7 @@
 				)
 			)
 		)
-		(property "Value" "2.2uF"
+		(property "Value" "2.2uF film"
 			(at 335.915 31.115 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -38752,7 +37196,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:CP_Radial_D5.0mm_P2.00mm"
+		(property "Footprint" "PiGUS library:C_Film_P5.00mm_7.8x7.8mm_or_CP_D5.0mm_P2.00mm"
 			(at 332.105 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -38774,7 +37218,7 @@
 				)
 			)
 		)
-		(property "Description" "2.2uF 50V aluminium electrolytic, 5 mm, 2.0 mm pitch: audio coupling"
+		(property "Description" "2.2uF 63V polyester film (PET), 5.0 mm pitch, box up to 7.8 x 7.8 mm: audio coupling, non-polar"
 			(at 332.105 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -38785,7 +37229,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Cornell Dubilier"
+		(property "Manufacturer" "TDK"
 			(at 332.105 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -38796,7 +37240,7 @@
 				)
 			)
 		)
-		(property "MPN" "225CKH050M"
+		(property "MPN" "B32529D0225J000"
 			(at 332.105 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -38807,7 +37251,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "1572-1376-ND"
+		(property "DigiKey" "495-1127-ND"
 			(at 332.105 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -38818,7 +37262,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C112511 (AISHI ERS1HM2R2D11OT)"
+		(property "LCSC" "C5372007 (Faratronic C241J225J2SC000)"
 			(at 332.105 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -39381,6 +37825,92 @@
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "#PWR09")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(sheet
+		(at 337.82 27.94)
+		(size 12.7 15.24)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "6a1c2f0e-5b7d-4c3e-9f21-8d4b7a6e3c10")
+		(property "Sheetname" "Mixer"
+			(at 337.82 27.2284 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mixer.kicad_sch"
+			(at 337.82 43.7646 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "WTVOL_L" input
+			(at 337.82 33.02 180)
+			(uuid "e77b55a6-8c3d-565e-9b25-e9c5563ba71e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "WTVOL_R" input
+			(at 337.82 38.1 180)
+			(uuid "fc264ed9-8d48-53a6-970e-0fa26816e88b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LINE_L" output
+			(at 350.52 33.02 0)
+			(uuid "f2d9bc00-9e51-563f-9416-484df31e6158")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "LINE_R" output
+			(at 350.52 38.1 0)
+			(uuid "82381577-0a9b-5659-8b62-85be9a521a40")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "PicoGUS-THT"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
+					(page "3")
 				)
 			)
 		)

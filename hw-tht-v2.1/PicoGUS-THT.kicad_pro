@@ -585,6 +585,25 @@
         "via_diameter": 0.8,
         "via_drill": 0.4,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.2,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "usb",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.2,
+        "tuning_profile": "",
+        "via_diameter": 0.7,
+        "via_drill": 0.35,
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -684,6 +703,22 @@
       {
         "netclass": "audio",
         "pattern": "Net-(J9-PadR)"
+      },
+      {
+        "netclass": "usb",
+        "pattern": "/USB_D+"
+      },
+      {
+        "netclass": "usb",
+        "pattern": "/USB_D-"
+      },
+      {
+        "netclass": "usb",
+        "pattern": "Net-(J6-CC1)"
+      },
+      {
+        "netclass": "usb",
+        "pattern": "Net-(J6-CC2)"
       }
     ]
   },
@@ -759,6 +794,10 @@
     [
       "eb9d8d40-5fcf-46de-8d54-60aaa282e1c2",
       "Audio"
+    ],
+    [
+      "6a1c2f0e-5b7d-4c3e-9f21-8d4b7a6e3c10",
+      "Mixer"
     ]
   ],
   "text_variables": {},

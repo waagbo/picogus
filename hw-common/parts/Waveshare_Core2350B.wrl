@@ -182,7 +182,7 @@ Shape {
 Shape {
  appearance Appearance {
   material Material {
-   diffuseColor 0.100 0.220 0.550
+   diffuseColor 0.130 0.330 0.780
    specularColor 0.200 0.200 0.200
    shininess 0.2
   }
