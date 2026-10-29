@@ -227,7 +227,7 @@ Positions are footprint origins (pin 1 for the DIPs), in mm.
   71.6 × 37.0 mm). The back text block (version, copyright, licence, URL, thanks, dedication) and `< REAR` stay.
 * **Front copper logo moved.** The exposed-copper PicoGUS logo (F.Mask openings over the front GND pour, with a rule
   area that keeps tracks and vias out) is turned horizontal and sits along the top edge above `LINE OUT`, x
-  185.6–211.4, y 37.8–40.6, with `v1.3.2` right of it at (213.8, 40.0). Before, the logo stood vertically at the left
+  185.9–211.6, y 37.8–40.6, with `v1.3.2` right of it at (214.1, 40.0). Before, the logo stood vertically at the left
   edge (x 118.3–121.1, y 43.5–69.3) and `v1.3.2` at (120.5, 40.5). The logo only shows copper once the pour is
   filled.
 * Labels moved: `DAC` horizontal above U9 at (158.7, 66.0) (was vertical at (186.3, 74.5)), `MIXER` to
