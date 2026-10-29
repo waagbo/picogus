@@ -6,6 +6,7 @@
 *.obj
 *.o
 build/
+binaries/
 *.kicad_prl
 fp-info-cache
 .vscode
