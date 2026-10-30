@@ -33,9 +33,11 @@ fi
 grep -E '^\*\* Found' "$out/$name-drc.rpt" || true
 
 echo "== Gerbers"
+# inner copper layers of a multilayer board (In1.Cu,In2.Cu,...), from the board's layer table
+inner=$(grep -oE '^\s*\([0-9]+ "In[0-9]+\.Cu"' "$pcb" | grep -oE 'In[0-9]+\.Cu' | sort -V | sed 's/^/,/' | tr -d '\n')
 # JLCPCB: Protel extensions (default), no X2 attributes, silkscreen clipped by the mask openings
 kicad-cli pcb export gerbers -o "$out/gerbers" \
-    --layers F.Cu,B.Cu,F.Paste,B.Paste,F.Silkscreen,B.Silkscreen,F.Mask,B.Mask,Edge.Cuts \
+    --layers F.Cu${inner},B.Cu,F.Paste,B.Paste,F.Silkscreen,B.Silkscreen,F.Mask,B.Mask,Edge.Cuts \
     --exclude-value --subtract-soldermask --no-x2 --no-netlist --check-zones "$pcb" >/dev/null
 
 echo "== Drill"

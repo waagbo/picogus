@@ -13,8 +13,8 @@ Parts that only exist as SMD sit on DIP adapter boards (TSSOP/SOIC to 300-mil DI
 [THT v1.3.2](../hw-tht-v1.3.2/README.md): U1/U2 (SN74CB3T3257), U10 (PCM5100A) and U13 (M62429L). There is no SMD
 part on the card itself; see [Parts with no through-hole version](#parts-with-no-through-hole-version).
 
-> **Status: schematic done, board placed (not routed yet), not built or tested. The firmware does not support the
-> board yet** (the RP2350B + module-PSRAM port is in progress, see [Firmware](#firmware)).
+> **Status: schematic and board done (routed, DRC clean), not built or tested. Firmware: ported and built
+> (`picogus-v21.uf2`), not tested on hardware** (see [Firmware](#firmware) and [Layout status](#layout-status)).
 
 Files:
 
@@ -55,7 +55,7 @@ Reference designators are v2.0's; new ones are D3, R19, R20 and C46.
 | 0402/0603/0805/1206 R/C, CP_Elec_4x5.4, SOD-323, 0603 LED, 1206 PTC, 0805 beads, TL3305 switch, JST-SH debug | axial resistors and beads, radial MLCC discs and electrolytics, DO-41, 3 mm LED, radial PTC, 6 mm tactile switch, 1x3 header | Through hole |
 | C11 47 µF (+3V3) | C11 10 µF | MCP1826S: at most 22 µF on its output |
 | C38 100 µF ceramic | C38 100 µF electrolytic | Through hole |
-| 4 layers | 2 layers | As the other THT boards |
+| 4 layers: In1 GND + AGND, In2 +3V3 + AVDD | 4 layers, the same split: In1.Cu GND plane with an AGND island and In2.Cu +3V3 plane with an AVDD island under the audio section, joined only through FB3/FB4; signals on the outside | As v2.0. On 2 layers the THT parts left the bus area a few connections short of routable |
 | `+3.3V` power symbols | `+3V3` | The RP2040 sheet joined the two names; without it they would have split |
 
 Unchanged: J1 (ISA), J3 (IRQ/DMA, same position), J5 (USB-A host, same part and position), J7 (MIDI out), J8
@@ -92,6 +92,13 @@ Replaced by a different through-hole part (circuit change): 74LVC2G06 → **74AH
   stock on 2026-10-29 (TDK B32529D0225J000 on backorder), LCSC has Faratronic C241J225J2SC000. The footprint also
   takes a 5 mm bipolar electrolytic (Rubycon 50NXA2R2MEFC5X11, in stock) on its inner holes. Nichicon's Muse ES/BP, FG
   and FW are discontinued in 5 mm cans, so AVDD bulk C38 is a Panasonic FR (EEU-FR1C101).
+
+* **Ground and supply planes**: as on v2.0, AGND and AVDD are copper islands on the inner layers (In1/In2) under the
+  audio section: the DAC's analog pin row and its output filter, the Waveblaster's audio pins, the volume control, the
+  film capacitors, the mixer and the line-out jack. They meet GND and +3V3 only at FB3 and FB4. The MIDI jack, the
+  DAC's digital row and the Waveblaster's digital pins are outside the islands. Digital tracks cross the islands only
+  where they must: the volume control's clock and data (U13 sits on the island), about 10 mm of MIDI/UART to the
+  Waveblaster, 2 mm of the Waveblaster reset and 2 mm of BCK; the DAC's I2S lines otherwise stay off them.
 
 ## Core2350B module
 
@@ -177,21 +184,27 @@ check that the PCB fab accepts it.
 
 ## Firmware
 
-**The current firmware does not run on this board yet.** What a port needs:
+**The firmware for v2.1 is on this branch, built but not tested on hardware**: `picogus-v21.uf2` (the multi-mode
+bundle, like `picogus.uf2`) and single-mode `pg-*-v21.uf2` images. Build them with
 
-* **RP2350B build.** The RP2350 work on branch `claude/sweet-goodall-x5r6j6` (`sw/docs/rp2350.md`) builds for the
-  30-GPIO RP2350A (Pico 2) and stops on purpose for RP2350B. v2.1 needs a board header for the Core2350B (RP2350B,
-  16 MB flash, 12 MHz crystal) with the same pins as v2.0.
-* **Board detection.** v2.0 is recognised by GPIO29 reading 0 V on the ADC; on the RP2350B the ADC inputs are
-  GPIO40–47, so GPIO29 cannot be read that way. GPIO29 is still grounded (a digital read gives 0), but a v2.1 build
-  should simply set `BOARD_TYPE = PICOGUS_2` at compile time. Everything that depends on it (LED on GPIO23, M62429 on
-  GPIO24/25) is wired as on v2.0.
-* **PSRAM.** The GUS sample RAM is the Core2350B2's 8 MB PSRAM on the RP2350B's QMI (chip select CS1 = GPIO47,
-  memory mapped at 0x11000000). The firmware's PIO-SPI PSRAM driver (GPIO0–3) has to be replaced by a QMI backend for
-  this board: set up QMI window 1 for the PSRAM (QPI, quad read/write commands, timing from the system clock, again
-  after every clock change) and turn the `psram_read*`/`psram_write*` calls into memory accesses.
-* The rest of the RP2350 port (GPIO input enable/isolation, overclock voltage, flash clock divider, multifw,
-  `pgusinit /flash` chip checks) is in that branch.
+```
+sw/scripts/build_variants.sh -p picogus21 all
+```
+
+or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/docs/rp2350.md](../sw/docs/rp2350.md#picogus-v21-tht-core2350b2-rp2350b):
+
+* Built on the RP2350 port (Pico 2) merged from branch `claude/sweet-goodall-x5r6j6`, plus a board header
+  (`sw/boards/picogus21.h`: RP2350B, 16 MB flash, PSRAM CS on GPIO47).
+* **Board type at compile time**: v2.0 is recognised by GPIO29 on the ADC, which the RP2350B cannot do (its ADC is
+  GPIO40–47), so the v2.1 build is a PicoGUS 2.0 by definition: LED on GPIO23, M62429 on GPIO24/25, same ISA, I2S
+  and MIDI pins.
+* **GUS sample RAM in the module's PSRAM** (QMI window 1, memory mapped). The GUS code's `psram_*` calls become memory
+  accesses; at boot the PSRAM is identified, reset, switched to QPI and set up for quad reads/writes at 92.5 MHz
+  (370 MHz / 4), with the read sample delay calibrated on a test pattern. The setup is re-applied after every clock
+  change and settings save, and a settings save holds core 1 (which plays from the PSRAM) while the flash is written.
+* Use the `-v21` files on this board: the bootloader and `pgusinit /flash` accept any RP2350 image and cannot tell
+  a Pico 2 image from a v2.1 one.
+* A Core2350B0 (no PSRAM) runs every mode except GUS, which stops at the PSRAM check.
 
 ## Mechanical
 
@@ -206,7 +219,24 @@ check that the PCB fab accepts it.
 
 ## Layout status
 
-Placed, not routed (2026-10-29). DRC with schematic parity: no errors apart from the unrouted connections; the
-silkscreen labels are provisional. The placement keeps everything taller than about 10 mm (module on sockets, U9,
-electrolytics, film capacitors, F1, the headers and switch) out of the Waveblaster daughterboard area; the mixer and the
-Waveblaster volume sit between U13 and J9 at the top right.
+**Routed (2026-10-30), 4 layers.** DRC with schematic parity: no errors, no unconnected items, no parity issues. The
+only warnings are 36 connector silkscreen lines past the bracket edge (J5, J6, J7, J9 hang over it, as on v1.3.2).
+
+* **Planes**: In1.Cu GND with the AGND island, In2.Cu +3V3 with the AVDD island (see [Audio](#audio)). The three GND
+  fingers (B1, B10, B31) each have a via into the GND plane. The Waveblaster's digital GND pins sit in a pocket of the
+  In1 GND plane, enclosed by the AGND island; two 0.5 mm GND tracks join it to the main plane.
+* **Routing**: Freerouting (2.1.0) did all but a few nets; it left 7 bus connections between the ISA fingers, U1/U2,
+  U7 and the module unrouted, and had put vias and tracks between the gold fingers. Those connections were routed
+  again with stricter rules: nothing between the fingers (vias stay above the finger tops), no digital track in the
+  audio section, and the I2S, MIDI and Waveblaster reset lines kept off the analog islands. Where the bus area left no
+  room on the outer layers, 9 nets take short hops on In2.Cu in the bus area between U1/U2, the module and the fingers
+  (about 76 mm in total; In2.Cu is now layer type "mixed"); the +3V3 plane fills around them.
+* **Silkscreen**: front labels (Jost); on the back, the title, copyright, licence, project URL and thanks.
+* **Fabrication**: `hw-common/tools/jlcpcb.sh hw-tht-v2.1/PicoGUS-THT.kicad_pcb` writes the gerbers (now including the
+  inner copper layers) and drill files into `build/jlcpcb/`. Order it as a 4-layer, 1.6 mm board.
+* Not reviewed by a second person yet. Worth a look before ordering: the autorouted bus area around U1/U2/U7 (some
+  long detours and many vias), the USB-C (J6) fan-out at 0.85 mm pitch, and the outline of the analog islands.
+
+The placement keeps everything taller than about 10 mm (module on sockets, U9, electrolytics, film capacitors, F1, the
+headers and switch) out of the Waveblaster daughterboard area; the mixer and the Waveblaster volume sit between U13 and
+J9 at the top right.
