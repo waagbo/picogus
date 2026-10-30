@@ -20,18 +20,23 @@ The main board is through-hole apart from **U8** (APS6404L PSRAM, SOIC-8, 1.27 m
 (USBLC6-2SC6, SOT-23-6), both on the front. The TSSOPs are soldered to the adapters, not to the card. The rest of the
 circuit is v1.3.1's: USB-A host port, Waveblaster header, op-amp mixer.
 
-> **Status: placed, not routed; not built or tested.** The board holds the new 102 mm placement (2026-10-28). It
-> has no tracks or vias and the GND pour is unfilled, so it has to be routed again. The routed 103.7 mm layout
-> before it (DRC clean, reviewed against v1.3.1) is commit 8dbb6c6. The schematic's ERC is the same as v1.3.1's (280
-> warnings, 0 errors). DRC with schematic parity finds the 309 unrouted connections and 12 courtyard overlaps in the
-> logic column (accepted), no other errors, so `hw-common/tools/jlcpcb.sh` stops before exporting. See
+> **Status: routed; not built or tested yet.** The 102 mm placement (2026-10-28) is routed on two layers
+> (2026-10-30). The schematic's ERC is the same as v1.3.1's (280 warnings, 0 errors). DRC with schematic parity finds
+> 0 unconnected items and, as errors, only the 12 accepted courtyard overlaps in the logic column, so
+> `hw-common/tools/jlcpcb.sh` exports with `FORCE=1`; `build/jlcpcb/` holds that export (not in git: the repository
+> ignores `build/`). The routing was reviewed twice from an analog/power and a digital/ISA/USB/manufacturing side,
+> and the findings were fixed or are listed as accepted. Compared with the routed 103.7 mm layout before it (commit
+> 8dbb6c6) it is better on the ISA data bus, digital-to-audio and DAC isolation, the line-out's ground error from a
+> ground loop to the fingers or from USB load, ±12V and power clearances, vias near the fingers and the USB-host +5V
+> feed, and worse on I2S length and vias, the line-out's ground error from a ground loop to the bracket, the B10
+> ground-finger track and the ground resistances if the Pico's GND pins are not tied inside the module: see
 > [Layout status](#layout-status).
 
 Files:
 
 | File | What |
 |---|---|
-| `PicoGUS-THT.kicad_pro/.kicad_sch/.kicad_pcb` | KiCad **10** project (the root sheet is the v1.2 logic). The board is placed, not routed |
+| `PicoGUS-THT.kicad_pro/.kicad_sch/.kicad_pcb` | KiCad **10** project (the root sheet is the v1.2 logic). The board is routed |
 | `audio.kicad_sch` | PCM510x DAC sheet: U9 on its DIP-20 adapter, C36 a THT disc, no J10 |
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.1) |
 | `usb.kicad_sch` | USB host port (J11 USB-A, F1, C34/C35, U12) (as v1.3.1) |
@@ -41,7 +46,7 @@ Files:
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every IC (and adapter) socketed, with heights (see [Socket build](#socket-build)) |
 | `adapters/TSSOP16-DIP16-300mil/`, `adapters/TSSOP20-DIP20-300mil/` | The two adapter PCBs: KiCad 10 projects with ready JLCPCB files (see [Adapter boards](#adapter-boards)) |
 | `adapters/adapter-pins-digikey-upload.csv` (+ `-10x`) | DigiKey upload: the round machined pin strips for the own adapter PCBs (one card: 4 × 1x8, 2 × 1x10) |
-| `docs/renders/` | 3D renders of the card from the front and the back, in red, purple, black and blue solder mask (ENIG, white silkscreen; the adapter boards on their DIP sockets in the same colour). Placement only: they are redone once the board is routed |
+| `docs/renders/` | 3D renders of the routed card from the front and the back, in red, purple, black and blue solder mask (ENIG, white silkscreen; the adapter boards on their DIP sockets in the same colour) |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards. **New in the
 shared library for v1.3.2:** `DIP-16_W7.62mm_TSSOP-16_Adapter`, `DIP-20_W7.62mm_TSSOP-20_Adapter` and
@@ -107,7 +112,9 @@ vertically just below DIP-20 pin 1 (CPVDD), its courtyard against the DIP-20's. 
 soldered adapter sits about 0.45 mm above the board, and a socket body covers the area. C36 pad 1 is 2.70 mm
 straight below pin 1; pad 2 (GND) is 9.2 mm in a straight line from CPGND (pin 3), and C16 sits on that line, so
 the ground leg will be longer than that (v1.3.1, with the 0603 under the TSSOP: 1.9 / 0.6 mm of copper; the routed
-v1.3.2 layout, commit 8dbb6c6: 2.7 mm of track / 8.2 mm through the pour). Turning C36 horizontal right under
+v1.3.2 layout, commit 8dbb6c6: 2.7 mm of track / 8.2 mm through the pour by its README; the script of
+[Layout status](#layout-status) gives 2.7 / 10.0 mm for 8dbb6c6 and the same for this layout). Turning C36
+horizontal right under
 pins 1–3 would bring both legs to 2.7 mm (see [Placement suggestions](#placement-suggestions)).
 
 ### C8/C10: through-hole discs above U8
@@ -155,7 +162,8 @@ the trim means for the bracket is under [Bracket](#bracket): the tab holes need 
 
 ### Placement
 
-The board holds a new hand arrangement on the 102 mm outline (2026-10-28), not routed yet. Compared with v1.3.1:
+The board holds a new hand arrangement on the 102 mm outline (2026-10-28), routed afterwards (see
+[Layout status](#layout-status)). Compared with v1.3.1:
 
 * **Logic column at the left edge.** U10, U7, U6 and U5 (DIP-14, 90°, pin 1 at the left as on v1.3.1) are stacked
   in line with U2 at x 120.07, 12.05 mm apart (pin 1 at y 65.62 / 77.67 / 89.71 / 101.76; U2: 113.81). Each chip's
@@ -229,8 +237,8 @@ Positions are footprint origins (pin 1 for the DIPs), in mm.
 * **Front copper logo moved.** The exposed-copper PicoGUS logo (F.Mask openings over the front GND pour, with a rule
   area that keeps tracks and vias out) is turned horizontal and sits along the top edge above `LINE OUT`, x
   185.9–211.6, y 37.8–40.6, with `v1.3.2` right of it at (214.1, 40.0). Before, the logo stood vertically at the left
-  edge (x 118.3–121.1, y 43.5–69.3) and `v1.3.2` at (120.5, 40.5). The logo only shows copper once the pour is
-  filled.
+  edge (x 118.3–121.1, y 43.5–69.3) and `v1.3.2` at (120.5, 40.5). The pour under it is filled, so the logo shows
+  copper.
 * Labels moved: `DAC` horizontal above U9 at (158.7, 66.0) (was vertical at (186.3, 74.5)), `MIXER` to
   (168.5, 39.0) (was (165.9, 41.0)), `MIDI OUT` 1.05 mm, `UART` 0.30 mm and `USB PWR` 0.10 mm left, and `< REAR`
   1.70 mm left with H1/H2, its arrow tip still in line with them. The references of C22, C23, C31, C32, C33 and RV1
@@ -256,20 +264,30 @@ Positions are footprint origins (pin 1 for the DIPs), in mm.
 
 ## Layout status
 
-The board is a placement only. The routed 103.7 mm layout before it is commit 8dbb6c6; its README
-(`git show 8dbb6c6:hw-tht-v1.3.2/README.md`) has the routing notes, the review fixes, the comparison with v1.3.1
-and the accepted weak points of that layout. Its numbers (track lengths, vias, ground resistances) do not carry
-over to this placement.
+The 102 mm placement is routed on two layers (2026-10-30) and was reviewed twice, each time from an analog/power
+and a digital/ISA/USB/manufacturing side, against the routed 103.7 mm layout of commit 8dbb6c6 with the same
+scripts. The comparison below is with that layout; its README (`git show 8dbb6c6:hw-tht-v1.3.2/README.md`) has
+the comparison of that layout with v1.3.1.
 
-### State of the board
+### Routing
 
-* No tracks and no vias; the GND pour (both layers) is unfilled. The rule areas moved with the logo and the Pico.
-  Net classes and design rules are unchanged: 0.2 mm clearance, 0.25 mm default track width (0.2 mm minimum),
-  0.7/0.35 mm vias, 0.3 mm copper to edge, and the `audio` class with 0.6 mm clearance.
-* DRC with schematic parity: 309 unconnected items (212 with the pour filled first), 12 errors (the courtyard overlaps below) and no parity errors.
-  Warnings: 3 `lib_footprint_mismatch` (J3, J11, RV1; expected, see [Kept from v1.3.1](#kept-from-v131)), 19
-  `silk_edge_clearance`, 3 `starved_thermal` (pads that the unfilled pour cannot reach yet) and 83 schematic-parity
-  field warnings (footprints without the symbols' Manufacturer/MPN fields, J3's BOM flag; as on the routed layout). The silkscreen check is under [Silkscreen and back artwork](#silkscreen-and-back-artwork).
+* Routed with a grid router (negotiated-congestion rip-up and re-route, as for 8dbb6c6), then
+  polished: digital, I2S and USB nets kept 1 mm away from the audio-class and DAC-output copper, a second rip-up
+  pass for the address and control nets, USB D+/D− re-routed as flow-through chains through U12, power widened up
+  to 0.8 mm where it fits, GND poured on both layers with stitching vias. The review fixes are listed below.
+* Design rules unchanged (the `.kicad_pro` is v1.3.1's): 0.2 mm clearance, 0.3 mm copper to edge, 0.25 mm default
+  track and 0.7/0.35 mm vias, `pwr` 0.4 mm and `GND` 0.5 mm with 0.8/0.4 mm vias, `audio` with 0.6 mm clearance.
+  19 segments (13.5 mm) are narrower than their class, each where the class width does not fit: the centred 0.2 mm
+  necks of +5V, +3V3 and ±12V between Pico and U2 pins (0.32 mm from the Pico pads) and a few short +5V, VSYS and
+  −12V jogs at pads (8dbb6c6: 2.9 m of track under class width).
+* 5503 mm of track and 445 vias: 194 GND, 32 power, 219 signal (8dbb6c6: 5925 mm, 420 vias, 145 GND).
+* DRC with schematic parity: 0 unconnected items, and as errors only the 12 accepted courtyard overlaps below, so
+  `jlcpcb.sh` needs `FORCE=1`. Warnings: 3 `lib_footprint_mismatch` (J3, J11, RV1; expected, see
+  [Kept from v1.3.1](#kept-from-v131)), 19 `silk_edge_clearance`, 6 `starved_thermal` (one spoke instead of two
+  at the Pico's GND pin 8 on both layers and on its castellation pad, at the castellation pads of pins 3 and 28, and
+  at C5.2, whose one F.Cu spoke joins only an isolated piece of the front pour; pin 8 also has a B.Cu track, the
+  others are joined through their holes on B.Cu) and 83
+  schematic-parity field warnings (footprints without the symbols' Manufacturer/MPN fields, J3's BOM flag).
 * **Courtyard overlaps (accepted), all in the logic column**: each decoupling disc's courtyard overlaps those of the
   DIPs above and below it by 0.33–0.34 mm (C21/U10, C6/U10, C6/U7, C9/U7, C9/U6, C7/U6, C7/U5, C4/U5, C4/U2), and
   the vertical resistors' overlap end to end by 0.20 mm (R18/R5, R5/R6, R6/R17). The disc bodies (F.Fab) stay about
@@ -277,38 +295,153 @@ over to this placement.
   DIP pads. The resistors' pads are 0.29 mm apart end to end (GND/RESET, GND/+5V, DACK/+3V3): solder those with
   care.
 
-### Open items for routing
+### Review fixes
 
-* Route everything and fill the pour. DRC with schematic parity should then show 0 unconnected items and only the 12
-  accepted courtyard overlaps. These are errors in this project's rules, so `jlcpcb.sh` stops on them even on the
-  routed board: export with `FORCE=1` once the report lists nothing else.
-* **Bracket end**: no track or via fits between the bracket-side parts and the edge (0.36–0.39 mm of room, a track
-  needs 0.7 mm). Reach J8, J5, H1/H2 and the Pico's USB end (pins 1/40, TP1–TP3) from the inside.
-* **J11's front shield pad (GND) now faces Pico pin 3 (GND)**, 0.48 mm away on F.Cu, so a bridge there is harmless;
-  pin 4 (SPI_SCK) is 0.80 mm from it (v1.3.1 and the routed v1.3.2 layout had pin 4 at 0.48 mm).
-* Worth keeping from the routed layout and its review: USB D+/D− flow-through U12 (J11 → pin 6 → pin 1, D− pin 4 →
-  pin 3) to TP3/TP2 with no stubs; the `audio` class; no +5V or ±12V copper within 0.30 mm of a Pico pad; ±12V on
-  centred 0.2 mm necks where it crosses the Pico's and U2's pin rows; +5V out of the Waveblaster header rows (it ran
-  between J9.17 (GND) and J9.18 (+12V) at first); the USB-host +5V feed (D1 → F1, up to 500 mA) kept off the Pico's
-  bottom test pads and crossing its pin rows only on centred 0.2 mm necks; a 1.0 mm back-side track from each ISA GND
-  finger (B1, B10, B31) into the pour; a GND via about 1.25 mm from U12 pin 2; GND stitching along the copper logo
-  and at J9.
-* After routing, check the back texts against the via holes (the routed layout kept every hole at least 0.10 mm from
-  a letter) and the `JLCJLCJLCJLC` box on B.Fab (see [Kept from v1.3.1](#kept-from-v131)).
+First review round:
+
+* **DAC analog half kept clear.** I2S, ~RI/OCHRDY, ~RIOR and I/OCHRDY ran through U9's charge-pump and output-filter
+  block and took the front ground away under it. They are re-routed around it: no digital track or via is within 1 mm
+  of U9 pins 1–10, the CAPP/CAPM/VNEG/AVDD copper or any audio net (8dbb6c6: LRCK 3.6 mm next to U9's analog pins),
+  and the pour covers 63 % (front) / 70 % (back) of the DAC's analog half again (8dbb6c6 61 / 73 %). Digital pads are
+  nearer, as set by the placement: the MIDI-out parts R3/FB1 sit 0.62–0.90 mm from the AUDIO_R and R12-Pad1 tracks,
+  and R16's WT_MIDI pad 0.84 mm from WT_R (8dbb6c6: R3 0.68 mm from AUDIO_R, R16 0.94 mm from WT_L).
+* **FB3 (AVDD filter) has its own +3V3 feed** from the Pico's 3V3 pin: no 74xx logic or DAC-digital current
+  shares its path, but U8 (PSRAM) and its decoupling still share part of it (8dbb6c6: 6 mΩ shared with logic, 49 mΩ
+  with U8; now 0 and 35 mΩ of FB3's 54.5 mΩ).
+* **±12V at least 0.30 mm from every non-GND THT pad** on the solder side (it passed D1.2, R9.2, FB1/FB2, R4 and
+  C24 at 0.22–0.27 mm), and GND vias tie the back pour under the Pico and the front pour inside U11.
+* USB D+ no longer makes a stacked U-turn at U12, and no via sits within 0.10 mm of an SMD pad; VBUS_USB enters
+  U12 pin 5 on a 0.4 mm neck; redundant vias on THT pads and dead-end stubs inside pads removed; segments widened
+  to their class width wherever it fits; narrow GND pockets and most vias in silk text removed.
+
+Final review round:
+
+* **Gold fingers.** Each finger has its own mask opening the size of the finger (from y 128.97, see
+  [Kept from v1.3.1](#kept-from-v131)), so a track beside a finger top is covered only by the mask between them.
+  +12V passed 0.22 / 0.23 mm from J3.8 (B8, 0WS on AT boards) and J3.7 (−12V), −12V 0.24 mm from J3.6 (DRQ2) and
+  +5V 0.21 mm from J3.30 (OSC). They are now 0.36 / 0.42 / 0.34 / 0.31 mm away (+12V moved 0.2 mm up, the last
+  millimetres of −12V/+12V/+5V necked to 0.6 mm). The wide finger entries no longer stick out of the finger
+  outline into the opening between the fingers (J3.10's GND entry keeps its 1.0 mm width, bent inside the finger).
+* **Mixer ground to the line-out sleeve.** The output of U11's B half (U11.7 → R22) ran on the solder side between
+  U11 and J8 and cut the back pour between the mixer's reference pins and J8's sleeve. It now runs on the component
+  side above WT_L, and the B half's inverting input (U11.6 → R20) passes just east of R22/R21's pad 1 (x 192, under
+  their bodies) as on 8dbb6c6. The A half's output run (C30 → R21) on the solder side moved from y 55.4 (between U11
+  and the resistor row) to y 58.6, across the R19–R24 resistor row, as on 8dbb6c6. Two GND vias were added and one
+  moved. The resistance between U11.3 and J8's sleeve dropped by 35–38 % (to 1.24 mΩ from 2.01 in the DC model of the
+  table; three different ground models agree on the drop, and put it within ±5 % of 8dbb6c6's, which is as close as
+  the models agree with each other). At the line-out jack, the ground error from a loop to the fingers fell from
+  1054 / 1229 to 285 / 465 µV/A (worst channel, without a Waveblaster / with one at full volume; see the table).
+* **USB D+/D− at least 0.30 mm from C35.1** (VBUS_USB) on the solder side (0.21 mm at two corners before).
+* The ~RI/OCHRDY via beside C20 moved 0.25 mm: no via is closer than 0.30 mm to an other-net pad.
+* **USB D+/D− at least 0.33 mm from the Pico's NPTH peg hole** at (213.85, 106.47) on the solder side: D− passed it
+  at 0.26 mm and D+ at 0.27 mm, just above the 0.254 mm hole-clearance rule. D− now runs 0.1 mm lower and D+'s loop
+  over the hole 0.1 mm wider; all copper is at least 0.30 mm from every NPTH hole, slot and the outline.
+* **The front pour ends 0.30 mm from the Pico's TP1 (GND) pad**: the TP1–TP3 rule area (`revb-pico-4`) now starts
+  0.2 mm further west (x 212.83), so a pour stub no longer stops 0.10 mm from the pad. (The DC model of the table had
+  counted that gap as a connection; with the Pico's GND pins split, its resistances to the fingers now read 0.03 mΩ
+  higher; its other results did not change.)
+* A 1 nm gap between two overlapping −12V segments at J9.22 is closed (it was harmless).
+* The JLCPCB package in `build/jlcpcb/` (not in git: the repository ignores `build/`) and this README are made from
+  the routed board (the package left in `build/jlcpcb/` before was the export of the 103.7 mm layout of 8dbb6c6).
+
+### Compared with the 103.7 mm layout (8dbb6c6)
+
+| | 8dbb6c6 (103.7 mm) | v1.3.2 (102 mm) |
+|---|---|---|
+| DRC errors / unconnected (schematic parity) | 0 / 0 | 12 (the accepted courtyard overlaps) / 0 |
+| starved_thermal warnings | 2 | 6 |
+| Track / vias (GND / power / signal) | 5925 mm / 420 (145 / 49 / 226) | 5503 mm / 445 (194 / 32 / 219) |
+| ISA D0–D7 length / vias | 442 mm / 52 | 283 mm / 21 |
+| I2S length / vias | 236 mm / 1 | 261 mm / 6 |
+| USB D+ / D− length | 53.5 / 51.8 mm | 51.3 / 43.8 mm |
+| +12V / −12V length (vias) | 187 (9) / 185 (4) mm | 125 (0) / 159 (5) mm |
+| Digital tracks and vias within 1 mm of audio copper / of U9 pins 1–10 | 0.05 / 3.6 mm (LRCK) | none / none |
+| Other-net track within 1 mm of audio copper, same layer | 9.5 mm | 11.4 mm (all power) |
+| AUDIO_L over AUDIO_R on opposite layers | 21.6 mm | 7.5 mm |
+| GND resistance to the fingers: U11.3 / U9 AGND / J8 sleeve / J9.1, Pico GND pins tied | 2.62 / 2.59 / 2.46 / 2.95 mΩ | 2.37 / 2.07 / 2.29 / 2.49 mΩ |
+| same, Pico GND pins split | 3.21 / 3.27 / 3.09 / 3.46 mΩ | 3.59 / 3.37 / 3.56 / 3.65 mΩ |
+| DAC-to-mixer ground offset U9.9 − U11.3 (Pico 100 mA / USB 500 mA / WT 150 mA) | +3.9 / −21.1 / −39.4 µV | +0.7 / −21.6 / −29.2 µV |
+| Waveblaster ground J9.25 − U11.3 (WT 150 mA) | +147 µV | +88 µV |
+| Line-out ground error per ampere of loop current from J8's sleeve to the fingers, worst channel: no Waveblaster / Waveblaster at full volume | 410 / 715 µV/A | 285 / 465 µV/A |
+| same, loop current to the bracket (H1/H2) | 185 / 166 µV/A | 313 / 222 µV/A |
+| Line-out ground error at 500 mA of USB-host load, worst channel: no Waveblaster / at full volume | 226 / 314 µV | 128 / 133 µV |
+| +5V resistance, fingers to F1 (USB host) / to J9's +5V pins | 80.6 / 96–107 mΩ | 47.3 / 96–101 mΩ |
+| +3V3 path to FB3 (AVDD) shared with logic / with U8 | 6.1 / 48.8 mΩ | 0 / 35.0 mΩ |
+| ±12V within 0.30 mm of an other-net non-GND pad (both sides, gold fingers included) | 6 (+12V, component side; 11 with GND pads, one on the solder side) | none |
+| Power copper within 0.30 mm of a gold finger | 1 (+5V, 0.29 mm from J3.30) | none |
+| +5V / +3V3 within 0.30 mm of an other-net THT pad (solder side) or Pico pad (either side) | 28 | 17 |
+| Vias < 0.5 / < 1.0 mm from a gold finger | 5 / 16 | 0 / 0 |
+| Vias < 0.30 / < 0.25 mm from an other-net pad | 21 / 5 | 0 / 0 |
+| Pour more than 5 mm from a GND via | 2047 mm² | 853 mm² |
+| DAC decoupling, supply track / ground path: C13 (AVDD), C36 (CPVDD) | 3.2 / 4.2, 2.7 / 10.0 mm | 4.7 / 7.2, 2.7 / 10.0 mm |
+| Via holes < 0.10 mm from silk text (inside the ink) | 8 (1) | 6 (4) |
+| Track joints inside a via but off its centre / tee joints | 11 / 0 | 46 / 12 |
+
+Both columns come from the same scripts. Resistances, offsets and line-out ground errors are from a DC copper model
+of the refilled pours (0.1 mm grid; "tied" treats the Pico's GND pins as one node through the module's ground plane,
+"split" leaves them separate; the line-out rows are "tied", "split" ranks the layouts the same way). The offsets are
+the ground-voltage difference between the two pins for the named load current. The line-out ground error is what the
+ground drops add to the signal at the jack, measured against its sleeve; for the inverting mixer
+`e = (Vref − Vsleeve) + 0.977·(Vref − V(U9.9)) + 2·(Vref − Vwt)`, where Vref is U11's + input (pin 3 left, pin 5
+right), 0.977 the PCM gain (R19/(R7+R10)) and 2 the Waveblaster gain (R19/R12). With a Waveblaster at full volume Vwt
+is J9's ground; without one, the worst case is RV1 turned down, where RV1's ground end reaches the summing node
+through R12 alone. Loop current enters at J8's sleeve (from a cable shield or a grounded amplifier) and leaves at the
+fingers or at the bracket. An independent 0.1 mm raster solver gives the same ranking (loop to the fingers 347 / 481
+against 425 / 740 µV/A, to the bracket 311 / 228 against 191 / 175 µV/A, USB 142 / 140 against 230 / 323 µV). The
+model differs from the one behind 8dbb6c6's README, which gave that layout 3.02 / 3.07 / 2.95 / 3.26 mΩ; compare
+within this table only.
+
+**Better** than 8dbb6c6: the ISA data bus, digital-to-audio and DAC isolation, AUDIO_L/R stacking, the line-out
+ground error from a ground loop to the fingers and from USB load, ±12V and power clearances (pads and fingers), vias
+near the fingers and pads, the USB-host +5V feed, the FB3 feed, the GND resistances with the Pico's GND pins tied,
+the DAC and Waveblaster ground offsets under Waveblaster load, stitching, track widths. **Worse**: I2S length and
+vias, the GND resistances if the Pico's GND pins are not tied inside the module, the line-out ground error from a
+ground loop to the bracket, the B10 GND finger track (0.6 / 0.5 mm for about 10 mm, with a via, before it reaches a
+pour; 8dbb6c6 1.0 mm), the power copper next to audio copper (11.4 against 9.5 mm), digital over audio on the other
+layer, the C13 supply and ground paths (placement), the starved thermals, and the cosmetic points below.
+
+### Known weaker points (accepted)
+
+* **Line-out ground loop to the bracket**: per ampere of loop current from J8's sleeve to the bracket (H1/H2), the
+  ground error at the jack is 313 / 222 µV (worst channel, without a Waveblaster / with one at full volume; 8dbb6c6
+  185 / 166 µV); a loop to the fingers gives less than on 8dbb6c6 (285 / 465 against 410 / 715 µV/A). With 10 mA of
+  loop current and no Waveblaster that is at most 3.1 µV of hum through the bracket and 2.8 / 1.1 µV (left / right)
+  through the fingers (8dbb6c6 1.8 and 4.1 / 1.3 µV), below −100 dBV and under the DAC's noise floor (formula below
+  the table).
+* **USB load, right channel**: 500 mA of USB-host load gives −101 µV at the right channel's jack without a
+  Waveblaster (−29 µV before the final review's mixer re-route, 8dbb6c6 −170 µV); the worst channel improved (128 µV
+  against 214 before, 8dbb6c6 226).
+* **Pico GND pins split**: if the Pico's GND pins are not tied through the module, the resistances to the fingers are
+  0.10–0.47 mΩ above 8dbb6c6 (U11.3 3.59, J8 sleeve 3.56 mΩ).
+* **I2S**: 261 mm with 6 vias (8dbb6c6 236 mm, 1 via): the nets go round the DAC's analog half instead of across
+  it. None crosses an audio net.
+* **DAC decoupling**: C13 (AVDD) has 4.7 mm of supply track and a 7.2 mm ground path to AGND (8dbb6c6 3.2 /
+  4.2 mm), C36 2.7 / 10.0 mm; both are set by the placement (see [Placement suggestions](#placement-suggestions)).
+* **Router traces**: at 46 points (44 vias, 94 track ends) tracks join a via off its centre (inside the via; 8dbb6c6
+  11 points), 12 tracks join another track part-way (tees), and 30 finger-entry segments end inside the finger short
+  of its centre. All are sound copper and pass DRC.
+* **Silk**: 4 signal via holes are inside reference-designator ink (C11, C7, U4, C2) and 2 more are within 0.10 mm
+  of text (U8's reference, the jumper label `3`); none had a free spot within reach.
+* **−12V on F.Cu under the Pico** (x 190–197, y 112–116): under the mask and the module, at least 0.73 mm from the
+  castellation pads.
+* **Digital over audio on the other layer**: 5.0 mm, all perpendicular crossings (WT_MIDI twice, R3's net)
+  (8dbb6c6 3.3 mm).
 
 ### Placement suggestions
 
 Not done: each one needs parts moved.
 
 * **F1 back west of U12**, as on v1.3.1: one straight, centred B.Cu +5V run could then cross both Pico rows (each
-  row crossing still needs a centred 0.2 mm neck). On the routed layout the D1 → F1 feed was 91 mm with 6 vias, 80.5
-  mΩ from the fingers to F1 (v1.3.1: 40 mΩ).
-* **U12 back next to J11**: shorter USB D+/D− (irrelevant at 12 Mbit/s).
+  row crossing still needs a centred 0.2 mm neck). The D1 → F1 feed is 47.3 mΩ from the fingers to F1 now
+  (8dbb6c6 80.5 mΩ, v1.3.1 40 mΩ).
+* **U12 back next to J11**: shorter USB D+/D− (51.3 / 43.8 mm now, 42.2 / 42.5 on v1.3.1; irrelevant at
+  12 Mbit/s).
 * **C36 horizontal right under U9 pins 1–3** (pads at (146.0, 81.0) / (151.0, 81.0)), with C16/C17 one row down: both
-  CPVDD legs 2.7 mm (pin 1 → C36, C36 → CPGND pin 3).
+  CPVDD legs 2.7 mm (pin 1 → C36, C36 → CPGND pin 3; now 2.7 / 10.0 mm).
 * **C1 0.27 mm right** (back to x 173.5): 0.68 mm instead of about 0.4 mm between its can (nominal size) and a
   full-size Waveblaster daughterboard's maximum outline.
-* C19/C20 nearer U9 pins 6–9 would shorten their ground return to AGND (pin 9).
+* C19/C20 nearer U9 pins 6–9 would shorten their ground return to AGND (pin 9; 21.1 / 22.4 mm of copper now, as on
+  8dbb6c6). The ground model shows no penalty, so this is not worth a revision on its own.
 
 ### Before ordering and building
 
@@ -485,9 +618,15 @@ card with every IC socketed. The same parts are the optional socket lines of `BO
   tall) out from under the daughterboard at (180.4, 39.4). C1's can is about 0.4 mm from a full-size
   daughterboard's maximum outline at nominal size, 0.16 mm at maximum can size (v1.3.1: 0.68 / 0.43 mm; C1 moved
   0.27 mm with the Pico row).
-* No copper inside the gold-finger area: a no-fill rule area covers the strip above the fingers, and **J3's finger
-  mask opening starts 0.63 mm lower (y 129.6)**. On the routed layout the ISA GND fingers B1, B10 and B31 each had a
-  1.0 mm back-side track into the pour; they need them again (see [Open items for routing](#open-items-for-routing)).
+* No copper inside the gold-finger area: a no-fill rule area covers the strip above the fingers, and **J3's mask
+  opening between the fingers starts 0.63 mm lower (y 129.6) than the finger tops**. Each finger also has its own
+  mask opening, the size of the finger (from y 128.97, no mask expansion), so a track beside a finger top is
+  covered only by the mask between them. Keep power copper at least 0.30 mm from the finger copper (this layout:
+  0.31 mm, +5V next to B30 (OSC); ±12V 0.34 mm or more). The ISA GND fingers B1, B10 and B31 each have a back-side
+  track into the pour, but only B1's is 1.0 mm all the way. B10's and B31's are 1.0 mm only inside the finger: B31's
+  leaves it at 0.5 mm next to a +5V via and reaches the back pour 0.5 mm further on; B10's leaves it at 0.6 mm next
+  to the +12V finger, runs 4.7 mm to a via in the no-fill strip and then about 5 mm at 0.5 mm on the front before it
+  reaches the front pour (8dbb6c6: 1.0 mm tracks from all three).
 * **Don't run "Update footprint from library"** on J3 (the mask edit), J11 (the shield padstack below) or RV1 (the
   library footprint has a stray Edge.Cuts line that breaks the outline). DRC lists these three as
   `lib_footprint_mismatch` warnings; that is expected. J5, J8, RV1 and F1 also carry 3D models from `hw-common/parts`
@@ -503,10 +642,10 @@ card with every IC socketed. The same parts are the optional socket lines of `BO
   smaller (it sits 0.38 mm from Pico pin 39).
 * Rule areas keep copper tracks out of the front exposed-copper logo, and vias and the front GND pour out from under
   the flat Pico's test pads (TP4–TP6, Pico 2 TP7) and its TP1–TP3 USB area.
-* On the routed layout U12's GND (pin 2) had a GND via 1.25 mm from the pin; keep one there.
-* A `JLCJLCJLCJLC` order-number placeholder sits on B.Fab next to the Pico (not plotted). On the routed layout three
-  via holes touched the bottom edge of its box: if an order ever uses "Specify a location", check the box for via
-  holes first.
+* U12's GND (pin 2) has a GND via 1.26 mm from the pin (8dbb6c6: 1.25 mm); keep one there.
+* A `JLCJLCJLCJLC` order-number placeholder sits on B.Fab next to the Pico (not plotted). On 8dbb6c6 three via holes
+  touched the bottom edge of its box; on this layout none does (the nearest, a +5V via, is 0.15 mm below it). If an
+  order ever uses "Specify a location", check the box for via holes again after any routing change.
 
 ## Unchanged from v1.3.1
 
@@ -530,7 +669,7 @@ PicoGUS NE2000 card and the PicoMEM 2.
   receptacle face is 0.9 mm behind the outside of the bracket (PicoGUS 2.0: 1.3 mm), see [Bracket](#bracket).
 * **VBUS**: ISA +5 V through **F1** (Bourns MF-R050, 0.5 A hold) with C34 (220 µF low-impedance; USB 2.0 asks for
   ≥ 120 µF) and C35 (0.1 µF), always on, like the PicoMEM 2's USB-A port. The Pico's VBUS pin (J7) is not involved.
-* **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−, to be routed flow-through as on v1.3.1: D+ J11 →
+* **U12** (USBLC6-2SC6, SOT-23-6): optional ESD protection on D+/D−, routed flow-through as on v1.3.1: D+ J11 →
   pin 6 → under the body → pin 1, D− pin 4 → pin 3, on to the Pico, so there are no stubs and the port works without
   U12. On v1.3.2 it sits next to U8, about 10 mm west of J11's pins (F1 between), with C35 (0.1 µF) just below it.
   Pin 1 is marked by the footprint's silk triangle just above it (v1.3.1's hand-placed dot is removed). **If you fit
@@ -701,7 +840,8 @@ C22 = 10 µF bipolar · RV1A = 10k log (CW end from C22, CCW end to GND, wiper t
   the pin. DVDD and CPVDD stay on the plain 3.3 V, as on v1.2/v1.3.0. Since rev B the charge-pump supply CPVDD (pin 1)
   has its own 0.1 µF, C36, so its current loop pin 1 → C36 → pin 3 (CPGND) is short: 1.9 + 0.6 mm on rev B; on v1.3.2,
   a THT disc just below DIP-20 pin 1 (pad 1 2.7 mm from the pin; the routed layout, commit 8dbb6c6, had 2.7 mm of
-  track and 8.2 mm of pour back to pin 3) (before rev B it was
+  track and 8.2 mm of pour back to pin 3; 10.0 mm by the script of [Layout status](#layout-status), as on this
+  layout) (before rev B it was
   about 24 mm of track to C4 and back through the pour). TI's layout guide and PicoGUS 2.0 put this cap right at the
   pin. CPVDD stays on +3V3, as on v1.2/v1.3.0, and TI's 10 µF bulk cap at CPVDD is not fitted locally (the nearest
   bulk is C1). The bead drops only millivolts at the DAC's ~10 mA.
@@ -724,8 +864,9 @@ is to be UV printed on the back instead (the routed v1.3.2 layout, commit 8dbb6c
 The version and licence block sits between the Pico's pin rows, one text per line, ending with the thanks and the
 dedication: *Thanks to polpo and all the PicoGUS contributors. This revision is dedicated to my wonderful family, Mila
 and Alisa.* On v1.3.1 each line was nudged (at most 0.9 mm) so that no via hole lands in a letter; on the routed
-v1.3.2 layout the lines were re-spaced so that no via hole was within 0.10 mm of a letter, and the unrouted board
-keeps those positions. "< REAR" points at the bracket, its arrow tip in line
+v1.3.2 layout the lines were re-spaced so that no via hole was within 0.10 mm of a letter. This board keeps those
+positions, and its via holes are at least 0.13 mm from every back-side letter (0.18 mm from the text block).
+"< REAR" points at the bracket, its arrow tip in line
 with the bracket tab holes H1/H2. All are mirrored on B.SilkS so they read correctly from the back.
 
 ### Other changes
@@ -738,7 +879,7 @@ with the bracket tab holes H1/H2. All are mirrored on B.SilkS so they read corre
   and STEP exports have the right thickness).
 * Design rules are relaxed for THT/DIY: 0.2 mm clearance, 0.25 mm signal / 0.4 mm power tracks
   (+5 V, +3.3 V, VSYS), 0.7/0.35 mm vias (rev B and v1.3.2: the same, plus a 0.6 mm-clearance `audio` class).
-  GND is poured on both layers (v1.3.2: the zone is defined but stays unfilled until the board is routed again).
+  GND is poured on both layers (v1.3.2 too, with stitching vias; see [Layout status](#layout-status)).
 * **J2 (the 2x31 ISA debug/probe header of v1.2, never fitted) is removed.** On a through-hole board
   its pads formed a wall right above the gold fingers that every ISA signal had to cross.
 * The `+3.3V` power symbols are renamed `+3V3`. KiCad 8+ names power nets after the symbol value, so the
@@ -797,13 +938,14 @@ C2905423 is a female header, not the Pico. C2935925 is DEALON, not Amphenol. C69
 ## JLCPCB files
 
 ```
-hw-common/tools/jlcpcb.sh hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb   # -> hw-tht-v1.3.2/build/jlcpcb/
+FORCE=1 hw-common/tools/jlcpcb.sh hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb   # -> hw-tht-v1.3.2/build/jlcpcb/
 ```
 
-The script stops if DRC (including the schematic-parity check) finds errors. On the unrouted v1.3.2 placement it
-finds 309 unconnected items and the 12 accepted courtyard overlaps, so it stops; on the routed board the overlaps
-remain, so export with `FORCE=1` once the report lists nothing else (see [Layout status](#layout-status)). It
-writes:
+The script stops if DRC (including the schematic-parity check) finds errors. On this board DRC finds only the 12
+accepted courtyard overlaps (see [Layout status](#layout-status)), which are errors in this project's rules, so
+export with `FORCE=1` after checking that the report lists nothing else. `build/jlcpcb/` holds the export of the
+routed board made that way (2026-10-30; not in git: the repository ignores `build/` and `*.zip`, so a clone has to
+run the script): outline to x 218.29 (102.0 mm), 445 vias, 831 plated holes. It writes:
 
 * `PicoGUS-THT-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
   and the Excellon drill files (PTH and NPTH separate, mm).
@@ -829,9 +971,8 @@ location", move it to B.Silkscreen first, or JLCPCB prints the placeholder text 
 
 ## Caveats
 
-1. **Not built or tested.** v1.3.2 is placed but not routed (the routed layout before it, commit 8dbb6c6, was DRC
-   clean and reviewed). The circuit is the proven v1.2 one with the v1.3.x additions, but no v1.3.x THT board has
-   been fabricated or run in a PC yet. See [Layout status](#layout-status) for what routing still has to do.
+1. **Not built or tested.** v1.3.2 is routed and reviewed (see [Layout status](#layout-status)). The circuit is the
+   proven v1.2 one with the v1.3.x additions, but no v1.3.x THT board has been fabricated or run in a PC yet.
 2. **Audio needs −12 V.** The mixer op-amp runs from ISA ±12 V, so without −12 V there is
    **no line output at all** (not even PCM). Every AT/ATX PC power supply provides −12 V. Some unusual
    backplanes or small DC-DC "pico" supplies may not, so check yours.
