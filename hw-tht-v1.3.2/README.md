@@ -47,6 +47,7 @@ Files:
 | `adapters/TSSOP16-DIP16-300mil/`, `adapters/TSSOP20-DIP20-300mil/` | The two adapter PCBs: KiCad 10 projects with ready JLCPCB files (see [Adapter boards](#adapter-boards)) |
 | `adapters/adapter-pins-digikey-upload.csv` (+ `-10x`) | DigiKey upload: the round machined pin strips for the own adapter PCBs (one card: 4 × 1x8, 2 × 1x10) |
 | `docs/renders/` | 3D renders of the routed card from the front and the back, in red, purple, black and blue solder mask (ENIG, white silkscreen; the adapter boards on their DIP sockets in the same colour) |
+| `docs/figures/` | Figures for the README's exceptions and design choices (e.g. the accepted courtyard overlaps), with the scripts that make them in `docs/figures/src/` |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards. **New in the
 shared library for v1.3.2:** `DIP-16_W7.62mm_TSSOP-16_Adapter`, `DIP-20_W7.62mm_TSSOP-20_Adapter` and
@@ -294,6 +295,9 @@ the comparison of that layout with v1.3.1.
   1.5 mm from the DIP bodies and 0.11 mm (seen from above) from the DIP pads; the discs' pads are 0.61 mm from the
   DIP pads. The resistors' pads are 0.29 mm apart end to end (GND/RESET, GND/+5V, DACK/+3V3): solder those with
   care.
+
+  ![The 12 courtyard overlaps: 3D render, courtyard map with each overlap's depth, and close-ups of a disc between two
+  DIPs and of two resistors end to end](docs/figures/courtyard-overlaps.png)
 
 ### Review fixes
 
