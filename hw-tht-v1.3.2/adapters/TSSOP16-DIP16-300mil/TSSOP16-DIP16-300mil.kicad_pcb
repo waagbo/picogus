@@ -153,6 +153,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -164,6 +165,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -175,6 +177,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -186,6 +189,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -439,6 +443,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -450,6 +455,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -461,6 +467,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -472,6 +479,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -483,6 +491,7 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -800,44 +809,22 @@
 			)
 		)
 	)
-	(gr_text "U3/U4"
-		(at 103.16 101.49 0)
-		(layer "F.SilkS")
-		(uuid "0a3e8c35-88a4-4f97-ac37-1ea420af2b6a")
-		(effects
-			(font
-				(size 1 0.9)
-				(thickness 0.15)
-			)
-		)
-	)
-	(gr_text "v1.3.2"
-		(at 104.46 116.29 0)
-		(layer "F.SilkS")
-		(uuid "1195b6bf-d0a9-4bee-b766-892ae3cb7bb8")
-		(effects
-			(font
-				(size 1 0.9)
-				(thickness 0.15)
-			)
-		)
-	)
-	(gr_text "SN74CB3T3257  TSSOP16"
-		(at 101.76 108.89 90)
+	(gr_text "TSSOP-16\nDIP-16"
+		(at 103.81 112.18 0)
 		(layer "B.SilkS")
-		(uuid "be75f331-fe97-4165-ae00-039b6e7977a1")
+		(uuid "043af73d-25ec-4718-a449-f2ba6da50fe6")
 		(effects
 			(font
-				(size 1 0.75)
+				(size 1 0.7)
 				(thickness 0.15)
 			)
 			(justify mirror)
 		)
 	)
-	(gr_text "PicoGUS v1.3.2   U3/U4"
-		(at 105.86 108.89 90)
+	(gr_text "SN74CB3T3257"
+		(at 101.76 105.68 90)
 		(layer "B.SilkS")
-		(uuid "55fed0ff-d401-4def-b7bd-f00f7788834a")
+		(uuid "be75f331-fe97-4165-ae00-039b6e7977a1")
 		(effects
 			(font
 				(size 1 0.75)

@@ -501,8 +501,10 @@ them with `hw-common/tools/jlcpcb.sh hw-tht-v1.3.2/adapters/<name>/<name>.kicad_
   0.185 mm from the DIP pads (custom rule, above JLCPCB's 0.15 mm).
 * Routing: 0.2 mm tracks (0.3 mm on the 16-pin GND/VCC), ≥ 0.2 mm clearance, copper ≥ 0.3 mm from the edge, tented
   0.6/0.3 mm vias, no pour (every net is one pin-to-pin link).
-* Silkscreen on both sides: pin-1 triangle and the DIP corner numbers; top "U3/U4" + "v1.3.2" or "U9"; bottom
-  "SN74CB3T3257 TSSOP16" / "PCM5100A TSSOP20" and "PicoGUS v1.3.2".
+* Silkscreen on both sides: pin-1 triangle and the DIP corner numbers. The bottom says what the board does, in two
+  centred lines, `TSSOP-16` / `DIP-16` or `TSSOP-20` / `DIP-20` (1.0 mm high, 0.7 mm wide), and names the chip it
+  carries on PicoGUS (`SN74CB3T3257` / `PCM5100A`). No reference designators or version number, so the boards are
+  not tied to one card.
 
 ### Optional DAC charge-pump pads (20-pin board only)
 
