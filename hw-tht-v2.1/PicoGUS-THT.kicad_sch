@@ -24998,7 +24998,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder"
+		(property "Footprint" "PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder_TestPads"
 			(at 90.805 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -26018,7 +26018,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder"
+		(property "Footprint" "PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder_TestPads"
 			(at 46.99 120.65 0)
 			(hide yes)
 			(show_name no)

@@ -38,7 +38,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder"
+			(property "Footprint" "PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder_TestPads"
 				(at -1.27 19.05 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -3254,7 +3254,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder"
+		(property "Footprint" "PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder_TestPads"
 			(at 63.5 36.83 0)
 			(hide yes)
 			(show_name no)
