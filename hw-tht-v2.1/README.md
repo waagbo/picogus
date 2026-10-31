@@ -4,17 +4,19 @@ Board revision **v2.1**: the [PicoGUS 2.0](../hw-chipdown) circuit (chip-down RP
 with through-hole parts. The RP2040, its flash, crystal and core regulator are replaced by a
 **Waveshare Core2350B2** module (RP2350B, 16 MB flash, **8 MB PSRAM**) on four 2x8 sockets, and the module's PSRAM is
 the GUS sample RAM, so v2.0's separate APS6404L is gone. Everything else is v2.0's circuit with the same GPIO map:
-ISA bus logic, PCM5100A DAC, M62429 Waveblaster volume, MIDI out, USB-A host port, IRQ/DMA jumpers, and the v2.0
-card outline with its bracket-side connectors in the v2.0 places, so the [v2.0 bracket](../hw-chipdown/bracket) fits.
+ISA bus logic, PCM5100A DAC, M62429 Waveblaster volume, MIDI out, USB-A host port and IRQ/DMA jumpers. The card is
+the [THT v1.3.2](../hw-tht-v1.3.2/README.md) outline (102.0 × 99.95 mm), with v1.3.2's bracket-side connectors (USB-A,
+line out, MIDI out) and bracket tab holes in v1.3.2's places, so the [v1.3.2 bracket](../hw-tht-v1.3.2/README.md#bracket) fits.
 v2.0's passive line-out mix (four 1k resistors) is replaced by the **op-amp mixer of the THT v1.3 boards** (NE5532 on
 ISA ±12 V, Waveblaster +6 dB), with film coupling capacitors and a DC-coupled DAC path.
 
-Parts that only exist as SMD sit on DIP adapter boards (TSSOP/SOIC to 300-mil DIP), as on
-[THT v1.3.2](../hw-tht-v1.3.2/README.md): U1/U2 (SN74CB3T3257), U10 (PCM5100A) and U13 (M62429L). There is no SMD
-part on the card itself; see [Parts with no through-hole version](#parts-with-no-through-hole-version).
+The parts that only exist as SMD are soldered on the card with v2.0's footprints: U1/U2 (SN74CB3T3257, TSSOP-16),
+U10 (PCM5100A, TSSOP-20) and U13 (M62429L, SOIC-8). Everything else is through hole; see
+[Parts with no through-hole version](#parts-with-no-through-hole-version).
 
-> **Status: schematic and board done (routed, DRC clean), not built or tested. Firmware: ported and built
-> (`picogus-v21.uf2`), not tested on hardware** (see [Firmware](#firmware) and [Layout status](#layout-status)).
+> **Status: schematic done; board placed but not routed: the placement is up for review before routing. Not built
+> or tested. Firmware: ported and built (`picogus-v21.uf2`), not tested on hardware** (see [Firmware](#firmware) and
+> [Layout status](#layout-status)).
 
 Files:
 
@@ -24,15 +26,16 @@ Files:
 | `audio.kicad_sch` | PCM5100A DAC sheet (v2.0's, footprints only) |
 | `mixer.kicad_sch` | Line-out mixer: NE5532 inverting summing amplifier (from THT v1.3), ±12 V filters, Waveblaster input pull-downs |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
-| `BOM-THT.csv` | BOM with a **THT status** column (THT / THT but a different part than v2.0 / no THT version exists / module), the v2.0 part each line replaces, manufacturer, MPN, DigiKey and LCSC numbers, a digikey.no link, alternatives and digikey.no prices; then the kit items (module sockets and headers, the own adapter PCBs and their pin strip, jumpers), the optional IC sockets and the v2.0 parts that are gone |
-| `BOM-THT-digikey-upload.csv` | DigiKey cart/BOM upload with the references as Customer Reference. The adapter PCBs are not in it (see [Cost](#cost)) |
+| `BOM-THT.csv` | BOM with a **THT status** column (THT / THT but a different part than v2.0 / no THT version exists / module), the v2.0 part each line replaces, manufacturer, MPN, DigiKey and LCSC numbers, a digikey.no link, alternatives and digikey.no prices; then the kit items (module sockets and headers, jumpers), the optional IC sockets and the v2.0 parts that are gone |
+| `BOM-THT-digikey-upload.csv` | DigiKey cart/BOM upload with the references as Customer Reference (see [Cost](#cost)) |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`) | Optional: every IC socketed, with socket and part heights against the Waveblaster daughterboard. The same parts are the optional socket lines of `BOM-THT.csv` |
 | `tools/gen_core2350b.py` | Generates the Core2350B footprint and 3D model in `hw-common` and checks the pin map |
 | `PicoGUS-THT-top.png`, `PicoGUS-THT-bottom.png` | 3D renders |
 
 The shared `PiGUS library` footprints are linked from `hw-common/`. **New in the shared library for v2.1:**
 `Waveshare_Core2350B` (with a generated 3D model, `hw-common/parts/Waveshare_Core2350B.wrl`),
-`USB_C_Receptacle_GCT_USB4085` and `DIP-8_W7.62mm_SOIC-8_Adapter`.
+`USB_C_Receptacle_GCT_USB4085`, `USB_A_Molex_67643_Horizontal_ShieldPin5` (KiCad's Molex 67643 with the shield pads
+numbered 5, as the `USB_A` symbol's shield pin) and `DIP-8_W7.62mm_SOIC-8_Adapter` (no longer used here).
 
 ## What changed compared to v2.0
 
@@ -48,18 +51,19 @@ Reference designators are v2.0's; new ones are D3, R19, R20 and C46.
 | J6 micro-USB (SMD) | **J6 GCT USB4085** through-hole USB-C + **R19/R20** 5.1 kΩ CC pull-downs | Through hole; device only, never sources VBUS |
 | U6 74LVC2G06 (SOT-363), open-drain MIDI and I/O CH RDY drivers | **U6 74AHCT126** (DIP-14) on +5V + **C46** | No DIP open-drain inverter that runs on 3.3 V; the v1.3 THT boards' solution (OE = the old input, A tied low, so OE high pulls the line low). Spare gates tied low |
 | U4/U5 74LVC00, U3 74AHC14, U7 SN74CB3T3245 (TSSOP) | 74AHC00 ×2, 74AHC14, **74AHC244** (DIP) | AHC: 3.3 V supply with 5 V tolerant inputs (as on v1.2/v1.3) |
-| U1/U2 SN74CB3T3257, U10 PCM5100 (TSSOP) | same chips on **TSSOP-to-DIP adapters** | No through-hole version exists |
+| U1/U2 SN74CB3T3257, U10 PCM5100 (TSSOP) | same chips, **SMD on the card** (TSSOP-16/-20, v2.0's footprints) | No through-hole version exists |
 | U8 APS6404L PSRAM (SOIC-8, GPIO0–3, PIO SPI) | **removed**: the Core2350B2's 8 MB PSRAM on the RP2350B's QMI (CS1 = GPIO47) | No through-hole PSRAM exists; the module's is memory mapped and faster. Needs the firmware port. GPIO0–3 are free |
-| U13 M62429L (SOP-8) | same chip on a **SOIC-8-to-DIP-8 adapter** | The DIP-8 M62429P is not buyable |
+| U13 M62429L (SOP-8) | same chip, **SMD on the card** (SOIC-8, v2.0's footprint) | The DIP-8 M62429P is not buyable |
 | R6–R9 (1k passive mix), C43/C44 | **U11 NE5532 mixer** (sheet `mixer.kicad_sch`): R21–R32, C24–C29 | As THT v1.3: Waveblaster ×2 (+6 dB) and PCM ×1 summed, 100 Ω outputs, buffered line out |
 | C39–C42 2.2 µF electrolytic (SMD) | **2.2 µF polyester film**, dual footprint (film on 5 mm, or a bipolar electrolytic on 2 mm) | Audio coupling: non-polar, low distortion |
 | 0402/0603/0805/1206 R/C, CP_Elec_4x5.4, SOD-323, 0603 LED, 1206 PTC, 0805 beads, TL3305 switch, JST-SH debug | axial resistors and beads, radial MLCC discs and electrolytics, DO-41, 3 mm LED, radial PTC, 6 mm tactile switch, 1x3 header | Through hole |
 | C11 47 µF (+3V3) | C11 10 µF | MCP1826S: at most 22 µF on its output |
 | C38 100 µF ceramic | C38 100 µF electrolytic | Through hole |
-| 4 layers: In1 GND + AGND, In2 +3V3 + AVDD | 4 layers, the same split: In1.Cu GND plane with an AGND island and In2.Cu +3V3 plane with an AVDD island under the audio section, joined only through FB3/FB4; signals on the outside | As v2.0. On 2 layers the THT parts left the bus area a few connections short of routable |
+| Card outline 102.87 × 96.74 mm, v2.0 bracket | **THT v1.3.2's outline** (102.0 × 99.95 mm) and bracket: J5 (USB-A, now v1.3.2's **Molex 67643**), J9 (line out), J7 (MIDI out), H1/H2 and the ISA fingers at v1.3.2's positions | Reuses the v1.3.2 bracket; the 102 mm card is v1.3.2's cheaper JLCPCB size. The bracket's volume-pot hole is unused (v2.1's Waveblaster volume is digital) |
+| 4 layers: In1 GND + AGND, In2 +3V3 + AVDD | 4 layers: In1.Cu GND plane, In2.Cu +3V3 plane; AGND/AVDD islands under the audio section to be drawn once the placement is settled | As v2.0 |
 | `+3.3V` power symbols | `+3V3` | The RP2040 sheet joined the two names; without it they would have split |
 
-Unchanged: J1 (ISA), J3 (IRQ/DMA, same position), J5 (USB-A host, same part and position), J7 (MIDI out), J8
+Unchanged: J1 (ISA, now at v1.3.2's position), J3 (IRQ/DMA, same position), J7 (MIDI out), J8
 (Waveblaster), J9 (line out), H1/H2, the card outline and every GPIO assignment except GPIO0–3 (PSRAM, now free).
 
 ## Parts with no through-hole version
@@ -71,9 +75,9 @@ axial or radial equivalent (`THT status` column of `BOM-THT.csv`).
 |---|---|---|---|
 | **RP2040** (+ W25Q128 flash, 12 MHz crystal) | QFN-56, SOIC-8, 3225 | No THT microcontroller of this class | **Waveshare Core2350B2 module** (RP2350B QFN-80 + 16 MB flash + crystal + 8 MB PSRAM) on four 2x8 headers |
 | **APS6404L** 8 MB PSRAM | SOIC-8 | No THT PSRAM; the largest DIP SRAM (23LC1024) is 128 KB, a GUS needs 1 MB | **On the module**: the Core2350B2's PSRAM (firmware port needed) |
-| **SN74CB3T3257** ×2 (5 V tolerant bus switches) | TSSOP-16 (no DIP/SOIC) | TI makes it in TSSOP/SSOP/TVSOP/VQFN only; the ISA interface needs it | Same chip on a **TSSOP-16 → DIP-16 adapter**: the THT v1.3.2 adapter PCB (or Chip Quik PA0034C) |
-| **PCM5100A** DAC | TSSOP-20 only | The whole PCM510x family is TSSOP-20 | Same chip on a **TSSOP-20 → DIP-20 adapter**: the v1.3.2 adapter PCB (or PA0035C) |
-| **M62429** volume control | SOP-8 (DIP-8 M62429P discontinued) | No DIP part in stock at DigiKey or LCSC; DIP clones (FM62429, U2429) only at hobby shops | Same chip on a **SOIC-8 → DIP-8 adapter**: any 300-mil board (or PA0001C, SparkFun BOB-13655) |
+| **SN74CB3T3257** ×2 (5 V tolerant bus switches) | TSSOP-16 (no DIP/SOIC) | TI makes it in TSSOP/SSOP/TVSOP/VQFN only; the ISA interface needs it | Same chip, **SMD on the card** (TSSOP-16, 0.65 mm pitch) |
+| **PCM5100A** DAC | TSSOP-20 only | The whole PCM510x family is TSSOP-20 | Same chip, **SMD on the card** (TSSOP-20, 0.65 mm pitch) |
+| **M62429** volume control | SOP-8 (DIP-8 M62429P discontinued) | No DIP part in stock at DigiKey or LCSC; DIP clones (FM62429, U2429) only at hobby shops | Same chip, **SMD on the card** (SOIC-8, 1.27 mm pitch) |
 | micro-USB receptacle | SMD | – | **GCT USB4085** through-hole USB-C: through hole, but 0.85 mm contact pitch (the hardest joint on the card) |
 
 Replaced by a different through-hole part (circuit change): 74LVC2G06 → **74AHCT126** (U6), AO3401A → **1N5819**
@@ -85,16 +89,13 @@ digikey.no prices of 2026-10-30, for one board, in NOK; shipping not included. P
 
 | | NOK excl. MVA | NOK incl. 25 % MVA |
 |---|---|---|
-| DigiKey order, `BOM-THT-digikey-upload.csv` (43 lines) | 699.39 | 874.24 |
-| Optional IC sockets, `BOM-THT-sockets-digikey-upload.csv` | 97.80 | 122.25 |
-| Both | 797.19 | 996.49 |
+| DigiKey order, `BOM-THT-digikey-upload.csv` (43 lines) | 580.00 | 725.00 |
+| Optional IC sockets, `BOM-THT-sockets-digikey-upload.csv` (U3–U7, U11) | 58.98 | 73.72 |
+| Both | 638.98 | 798.73 |
 
-* **Not in the DigiKey order**: the Core2350B2 (waveshare.com, US$6.99), the M62429L (LCSC C52260216, minimum 5)
-  and J5 (LCSC C2345, minimum 10); the adapter PCBs, which you order with the card: U1/U2 and U10 from
-  `hw-tht-v1.3.2/adapters` (TSSOP16-DIP16-300mil ×2, TSSOP20-DIP20-300mil), U13 any 300-mil SOIC-8-to-DIP-8 board.
-  Their pins are one DigiKey line: a Mill-Max 1x64 round machined strip (136 NOK, the biggest single line), cut into
-  4× 1x8, 2× 1x10 and 2× 1x4.
-* Bought Chip Quik adapters instead (PA0034C ×2, PA0035C, PA0001C, pins fitted) would add 270 NOK and save the pin strip.
+* **Not in the DigiKey order**: the Core2350B2 (waveshare.com, US$6.99) and the M62429L (LCSC C52260216, minimum 5),
+  and the PCB.
+* J5 is now v1.3.2's Molex 67643 (DK WM4993-ND, 16.58 NOK, price of 2026-10-31), so it is in the DigiKey order.
 * **C39–C42** (2.2 µF film, 61 NOK) are on backorder at DigiKey until about April 2027: see the LCSC film part or the
   bipolar electrolytic in [Audio](#audio).
 
@@ -113,12 +114,12 @@ digikey.no prices of 2026-10-30, for one board, in NOK; shipping not included. P
   takes a 5 mm bipolar electrolytic (Rubycon 50NXA2R2MEFC5X11, in stock) on its inner holes. Nichicon's Muse ES/BP, FG
   and FW are discontinued in 5 mm cans, so AVDD bulk C38 is a Panasonic FR (EEU-FR1C101).
 
-* **Ground and supply planes**: as on v2.0, AGND and AVDD are copper islands on the inner layers (In1/In2) under the
-  audio section: the DAC's analog pin row and its output filter, the Waveblaster's audio pins, the volume control, the
-  film capacitors, the mixer and the line-out jack. They meet GND and +3V3 only at FB3 and FB4. The MIDI jack, the
-  DAC's digital row and the Waveblaster's digital pins are outside the islands. Digital tracks cross the islands only
-  where they must: the volume control's clock and data (U13 sits on the island), about 10 mm of MIDI/UART to the
-  Waveblaster, 2 mm of the Waveblaster reset and 2 mm of BCK; the DAC's I2S lines otherwise stay off them.
+* **Ground and supply planes** (to be drawn once the placement is settled): as on v2.0, AGND and AVDD get copper
+  islands on the inner layers (In1/In2) under the audio section: the DAC's analog pin row and its output filter, the
+  Waveblaster's audio pins, the volume control, the film capacitors, the mixer and the line-out jack. They meet GND
+  and +3V3 only at FB3 and FB4. The MIDI jack, the DAC's digital row and the Waveblaster's digital pins stay outside
+  them, and digital tracks cross them only where they must (on the routed v2.1 draft: the volume control's clock and
+  data, about 10 mm of MIDI/UART to the Waveblaster, 2 mm of the Waveblaster reset and 2 mm of BCK).
 
 ## Core2350B module
 
@@ -228,35 +229,32 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
 
 ## Mechanical
 
-* **Outline**: v2.0's (102.87 × 96.74 mm), with J5, J7, J9 and H1/H2 at their v2.0 positions, so the v2.0 bracket
-  (`hw-chipdown/bracket`: sheet metal STEP and 3D-printable STL) fits. J8 (Waveblaster, with the two daughterboard
-  standoff holes) and J3 (IRQ/DMA) are also where they were on v2.0.
+* **Outline**: THT v1.3.2's (101.90 × 99.85 mm at the line centres, 102.0 × 99.95 mm over the lines), without its
+  Pico micro-USB relief slots. J5 (USB-A, Molex 67643, x 208.64), J9 (line out) and J7 (MIDI out) at (217.00, 49.10)
+  / (217.00, 75.50), the bracket tab holes H1/H2 (x 214.70) and the ISA fingers are at v1.3.2's positions, so the
+  [v1.3.2 bracket](../hw-tht-v1.3.2/README.md#bracket) fits (its drawing is on User.Drawings). Its volume-pot hole stays
+  unused. J8 (Waveblaster, with the two daughterboard standoff holes) and J3 (IRQ/DMA) are where they were on v2.0.
 * **Under the Waveblaster daughterboard** (the area left of x ≈ 167 mm, about 11 mm high): only low parts. The
-  logic DIPs, the adapters, the DAC and its passives, axial resistors and disc capacitors. Socketed own adapter PCBs
-  reach about 10 mm (see the [v1.3.2 socket notes](../hw-tht-v1.3.2/README.md#socket-build)); solder them directly if
-  your daughterboard has parts underneath. The module, U9 (TO-220), the electrolytics, F1 and the user-facing headers
-  and switch are all outside that area.
+  logic DIPs, the SMD chips (U1, U2, U10), the DAC's passives, axial resistors and disc capacitors. The module, U9
+  (TO-220), the electrolytics, the film capacitors, F1 and the user-facing headers and switch are all outside that area.
 
 ## Layout status
 
-**Routed (2026-10-30), 4 layers.** DRC with schematic parity: no errors, no unconnected items, no parity issues. The
-only warnings are 36 connector silkscreen lines past the bracket edge (J5, J6, J7, J9 hang over it, as on v1.3.2).
+**Placed, not routed (2026-10-31), for review: the placement will change before routing.** DRC with schematic
+parity: no errors and no parity issues; the unconnected items are the unrouted nets. The only warnings are connector
+silkscreen lines past the bracket edge (J5, J6, J7, J9 hang over it, as on v1.3.2).
 
-* **Planes**: In1.Cu GND with the AGND island, In2.Cu +3V3 with the AVDD island (see [Audio](#audio)). The three GND
-  fingers (B1, B10, B31) each have a via into the GND plane. The Waveblaster's digital GND pins sit in a pocket of the
-  In1 GND plane, enclosed by the AGND island; two 0.5 mm GND tracks join it to the main plane.
-* **Routing**: Freerouting (2.1.0) did all but a few nets; it left 7 bus connections between the ISA fingers, U1/U2,
-  U7 and the module unrouted, and had put vias and tracks between the gold fingers. Those connections were routed
-  again with stricter rules: nothing between the fingers (vias stay above the finger tops), no digital track in the
-  audio section, and the I2S, MIDI and Waveblaster reset lines kept off the analog islands. Where the bus area left no
-  room on the outer layers, 9 nets take short hops on In2.Cu in the bus area between U1/U2, the module and the fingers
-  (about 76 mm in total; In2.Cu is now layer type "mixed"); the +3V3 plane fills around them.
-* **Silkscreen**: front labels (Jost); on the back, the title, copyright, licence, project URL and thanks.
-* **Fabrication**: `hw-common/tools/jlcpcb.sh hw-tht-v2.1/PicoGUS-THT.kicad_pcb` writes the gerbers (now including the
-  inner copper layers) and drill files into `build/jlcpcb/`. Order it as a 4-layer, 1.6 mm board.
-* Not reviewed by a second person yet. Worth a look before ordering: the autorouted bus area around U1/U2/U7 (some
-  long detours and many vias), the USB-C (J6) fan-out at 0.85 mm pitch, and the outline of the analog islands.
+* **Fixed by the bracket and the slot**: the outline, J1 (ISA fingers), J5, J7, J9 and H1/H2 at v1.3.2's positions
+  (see [Mechanical](#mechanical)).
+* **Moved for the v1.3.2 bracket parts**: the mixer op-amp U11 sits between J9 and H1 with R27/R28 beside it and
+  C28/C29 below; R25 and C26 moved up; MIDI out FB1/R2 sit left of J7, FB2 left of J5; F1, C1 and R3 under J5.
+  U1, U2, U10 and U13 are the SMD chips at the centres of the old DIP adapters.
+* **Planes**: In1.Cu GND and In2.Cu +3V3 over the whole card; the AGND/AVDD islands come back once the placement is
+  settled (see [Audio](#audio)).
+* **Silkscreen**: front labels (Jost), the title in the strip along the top edge; on the back, the title, copyright,
+  licence, project URL and thanks behind U1/U2.
+* An earlier draft on the v2.0 outline was routed (commit `1028cb0`); its routing rules (nothing between the gold
+  fingers, digital tracks off the analog islands) carry over.
 
 The placement keeps everything taller than about 10 mm (module on sockets, U9, electrolytics, film capacitors, F1, the
-headers and switch) out of the Waveblaster daughterboard area; the mixer and the Waveblaster volume sit between U13 and
-J9 at the top right.
+headers and switch) out of the Waveblaster daughterboard area.

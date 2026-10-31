@@ -9,7 +9,7 @@
 		(date "2026-10-29")
 		(rev "v2.1")
 		(comment 1 "Through-hole PicoGUS 2.0 on a Waveshare Core2350B (RP2350B) module")
-		(comment 2 "v2.0 ISA logic and GPIO map; TSSOP/SOIC-only chips on DIP adapters")
+		(comment 2 "v2.0 ISA logic and GPIO map; TSSOP/SOIC-only chips as SMD")
 	)
 	(lib_symbols
 		(symbol "74FST3257DR2G_1"
@@ -24998,7 +24998,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-16_W7.62mm_TSSOP-16_Adapter"
+		(property "Footprint" "Package_SO:TSSOP-16_4.4x5mm_P0.65mm"
 			(at 90.805 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -25022,7 +25022,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "Quad 2:1 FET mux/demux, 5V-tolerant, TSSOP-16 on a 300-mil DIP-16 adapter (Chip Quik PA0034C)"
+		(property "Description" "Quad 2:1 FET mux/demux, 5V-tolerant, TSSOP-16 (SMD: no through-hole version exists)"
 			(at 90.805 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -25152,17 +25152,6 @@
 			)
 		)
 		(property "LCSC" "C544573"
-			(at 69.215 123.19 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Adapter" "Chip Quik PA0034C (DK 315-PA0034C-ND) or own adapter PCB hw-tht-v1.3.2/adapters/TSSOP16-DIP16-300mil"
 			(at 69.215 123.19 0)
 			(hide yes)
 			(show_name no)
@@ -26029,7 +26018,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-16_W7.62mm_TSSOP-16_Adapter"
+		(property "Footprint" "Package_SO:TSSOP-16_4.4x5mm_P0.65mm"
 			(at 46.99 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -26053,7 +26042,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "Quad 2:1 FET mux/demux, 5V-tolerant, TSSOP-16 on a 300-mil DIP-16 adapter (Chip Quik PA0034C)"
+		(property "Description" "Quad 2:1 FET mux/demux, 5V-tolerant, TSSOP-16 (SMD: no through-hole version exists)"
 			(at 46.99 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -26183,17 +26172,6 @@
 			)
 		)
 		(property "LCSC" "C544573"
-			(at 25.4 123.19 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Adapter" "Chip Quik PA0034C (DK 315-PA0034C-ND) or own adapter PCB hw-tht-v1.3.2/adapters/TSSOP16-DIP16-300mil"
 			(at 25.4 123.19 0)
 			(hide yes)
 			(show_name no)
@@ -28049,7 +28027,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-8_W7.62mm_SOIC-8_Adapter"
+		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
 			(at 315.595 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -28071,7 +28049,7 @@
 				)
 			)
 		)
-		(property "Description" "2-channel digital volume control (Waveblaster volume, GPIO24/25), SOP-8 on a 300-mil DIP-8 adapter; powered from AVDD (3.3V) as on v2.0, so use a 3-5.5V part (Wuxi I-core M62429L)"
+		(property "Description" "2-channel digital volume control (Waveblaster volume, GPIO24/25), SOIC-8 (SMD: no through-hole version is buyable); powered from AVDD (3.3V) as on v2.0, so use a 3-5.5V part (Wuxi I-core M62429L)"
 			(at 315.595 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -28116,17 +28094,6 @@
 			)
 		)
 		(property "LCSC" "C52260216"
-			(at 315.595 35.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Adapter" "Chip Quik PA0001C (DK 315-PA0001C-ND) or SparkFun BOB-13655"
 			(at 315.595 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -36535,7 +36502,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:USB-A_902-131A1011D10100"
+		(property "Footprint" "PiGUS library:USB_A_Molex_67643_Horizontal_ShieldPin5"
 			(at 220.345 75.565 0)
 			(hide yes)
 			(show_name no)
@@ -36557,7 +36524,7 @@
 				)
 			)
 		)
-		(property "Description" "USB-A receptacle, through hole (joystick/mouse/storage host port, the v2.0 part and position)"
+		(property "Description" "USB-A receptacle, through hole (joystick/mouse/storage host port); THT v1.3.2 part and position, for its bracket"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -36568,7 +36535,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Jing Extension of the Electronic Co."
+		(property "Manufacturer" "Molex"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -36579,7 +36546,7 @@
 				)
 			)
 		)
-		(property "MPN" "902-131A1011D10100"
+		(property "MPN" "0676430910"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -36590,7 +36557,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "not stocked: LCSC only"
+		(property "DigiKey" "WM4993-ND"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)
@@ -36601,7 +36568,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2345"
+		(property "LCSC" "C2798029"
 			(at 216.535 74.295 0)
 			(hide yes)
 			(show_name no)

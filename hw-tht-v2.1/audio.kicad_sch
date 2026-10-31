@@ -3254,7 +3254,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-20_W7.62mm_TSSOP-20_Adapter"
+		(property "Footprint" "Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm"
 			(at 63.5 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -3276,7 +3276,7 @@
 				)
 			)
 		)
-		(property "Description" "I2S DAC, TSSOP-20 on a 300-mil DIP-20 adapter (Chip Quik PA0035C)"
+		(property "Description" "I2S DAC, TSSOP-20 (SMD: no through-hole version exists)"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(show_name no)
@@ -3321,17 +3321,6 @@
 			)
 		)
 		(property "LCSC" "C131154"
-			(at 64.77 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Adapter" "Chip Quik PA0035C (DK 315-PA0035C-ND) or own adapter PCB hw-tht-v1.3.2/adapters/TSSOP20-DIP20-300mil"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(show_name no)
