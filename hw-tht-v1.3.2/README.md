@@ -152,6 +152,11 @@ J11 and RV1 stay where they were. The distances are to the outline's line centre
 there is no room for a track or a via: 0.3 mm copper-to-edge, a 0.2 mm track and 0.2 mm clearance need 0.7 mm. What
 the trim means for the bracket is under [Bracket](#bracket): the tab holes need a bracket with 1.70 mm longer tabs.
 
+![The bracket end trimmed from 103.74 to 101.90 mm: old (dashed) and new outline with the trimmed 1.84 mm strip, the
+bracket plate and tabs from User.Drawings, the tab holes H1/H2 1.70 mm further in (7.03 mm from the plate instead of
+5.33), J8, RV1, J5, J11 and the Pico's USB end with their moves and nearest copper to the new edge, and a table of the
+x positions](docs/figures/bracket-trim.png)
+
 * **U1 uses the new footprint `PiGUS library:RPi_Pico_SMD_TH_USB_NoSWD`**: `RPi_Pico_SMD_TH_USB` without the
   three SMD castellation pads at the SWD end (pads 41–43: SWCLK and SWDIO, both not connected, and GND; their
   through-holes stay) and with the courtyard 0.2 mm past the module there instead of 0.5 mm. With the old
@@ -289,9 +294,17 @@ the comparison of that layout with v1.3.1.
   `jlcpcb.sh` needs `FORCE=1`. Warnings: 3 `lib_footprint_mismatch` (J3, J11, RV1; expected, see
   [Kept from v1.3.1](#kept-from-v131)), 19 `silk_edge_clearance`, 6 `starved_thermal` (one spoke instead of two
   at the Pico's GND pin 8 on both layers and on its castellation pad, at the castellation pads of pins 3 and 28, and
-  at C5.2, whose one F.Cu spoke joins only an isolated piece of the front pour; pin 8 also has a B.Cu track, the
-  others are joined through their holes on B.Cu) and 83
-  schematic-parity field warnings (footprints without the symbols' Manufacturer/MPN fields, J3's BOM flag).
+  at C5.2. The single F.Cu spoke at pins 8 and 3 and at C5.2 ends in a stub or an isolated piece of the front pour,
+  so these three are joined on B.Cu: pin 8 by one spoke and a 0.5 mm track, pin 3 by two spokes and a 1.0 mm track,
+  C5.2 by two spokes and a 0.5 mm track. Pin 28 is joined on F.Cu, by its spoke and a 0.5 mm track to pin 23; its
+  B.Cu spokes reach only dead-end pour) and 83 schematic-parity field warnings (footprints without the symbols'
+  Manufacturer/MPN fields, J3's BOM flag).
+
+  ![The 6 starved thermals: front and back close-ups of Pico U1 pins 8, 3 and 28 and of C5 pad 2 with the GND pour,
+  the single thermal spoke of each (green), red crosses where the tracks beside the Pico pads or the neighbouring pads
+  leave no room for a second spoke, and hatching on copper that is a dead end; pins 8 and 3 and C5.2 are joined to GND
+  on B.Cu, pin 28 on F.Cu](docs/figures/starved-thermals.png)
+
 * **Courtyard overlaps (accepted), all in the logic column**: each decoupling disc's courtyard overlaps those of the
   DIPs above and below it by 0.33–0.34 mm (C21/U10, C6/U10, C6/U7, C9/U7, C9/U6, C7/U6, C7/U5, C4/U5, C4/U2), and
   the vertical resistors' overlap end to end by 0.20 mm (R18/R5, R5/R6, R6/R17). The disc bodies (F.Fab) stay about
@@ -452,6 +465,11 @@ layer, the C13 supply and ground paths (placement), the starved thermals, and th
 * **Silk**: 4 signal via holes are inside reference-designator ink (C11, C7, U4, C2) and 3 more are within 0.10 mm
   of text (U8's reference, the jumper label `3`, and C22's hand-placed reference 0.09 mm below a GND via); none of the
   signal vias had a free spot within reach.
+
+  ![The 7 via holes at silkscreen text: close-ups of the C7, C11, C2 and U4 references with a signal via hole inside
+  the ink (0.010 to 0.042 mm² of ink lost), of U8's reference, J1's jumper label 3 and C22's reference 0.068 to
+  0.089 mm from a via hole, and a board map of where they are](docs/figures/silk-vias.png)
+
 * **−12V on F.Cu under the Pico** (x 190–197, y 112–116): under the mask and the module, at least 0.73 mm from the
   castellation pads.
 * **Digital over audio on the other layer**: 5.0 mm, all perpendicular crossings (WT_MIDI twice, R3's net)
@@ -752,7 +770,7 @@ bracket's top surface, height = centre above the card's component side):
   outside of its plate; J11's is 0.89 mm behind a Keystone 9202's, so J11 (x 208.64) is right. Moving it out would
   put its front lip into the plate. A PicoGUS 2.0 bracket does not fit this card: its cut-outs are elsewhere, and
   its tab holes are 0.94 mm, not 1.70 mm, further in.
-* **J8 and J5 moved in** with the trim (1.10 / 0.90 mm), so their noses now end 0.31 mm behind the plate's outer
+* **J8 and J5 moved in** with the trim (1.10 / 0.90 mm), so their noses now end 0.31 / 0.32 mm behind the plate's outer
   face (on the bracket drawing's 0.78 mm plate, x 221.73–222.51; v1.3.1: 0.79 / 0.58 mm past it). A
   plug whose body is wider than the hole then stops on the plate about 0.3 mm short of the jack. A counterbore of
   about 0.4–0.5 mm around those two holes on the outside of the plate lets it seat fully; on a thicker (3D-printed)
