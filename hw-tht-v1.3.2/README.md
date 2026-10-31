@@ -28,7 +28,7 @@ circuit is v1.3.1's: USB-A host port, Waveblaster header, op-amp mixer.
 > and the findings were fixed or are listed as accepted. Compared with the routed 103.7 mm layout before it (commit
 > 8dbb6c6) it is better on the ISA data bus, digital-to-audio and DAC isolation, the line-out's ground error from a
 > ground loop to the fingers or from USB load, ±12V and power clearances, vias near the fingers and the USB-host +5V
-> feed, and worse on I2S length and vias, the line-out's ground error from a ground loop to the bracket, the B10
+> feed, and worse on I2S length and vias, the line-out's ground error from a ground loop to a metal bracket, the B10
 > ground-finger track and the ground resistances if the Pico's GND pins are not tied inside the module: see
 > [Layout status](#layout-status).
 
@@ -337,7 +337,7 @@ Final review round:
   moved. The resistance between U11.3 and J8's sleeve dropped by 35–38 % (to 1.24 mΩ from 2.01 in the DC model of the
   table; three different ground models agree on the drop, and put it within ±5 % of 8dbb6c6's, which is as close as
   the models agree with each other). At the line-out jack, the ground error from a loop to the fingers fell from
-  1054 / 1229 to 285 / 465 µV/A (worst channel, without a Waveblaster / with one at full volume; see the table).
+  1054 / 1229 to 285 / 466 µV/A (worst channel, without a Waveblaster / with one at full volume; see the table).
 * **USB D+/D− at least 0.30 mm from C35.1** (VBUS_USB) on the solder side (0.21 mm at two corners before).
 * The ~RI/OCHRDY via beside C20 moved 0.25 mm: no via is closer than 0.30 mm to an other-net pad.
 * **USB D+/D− at least 0.33 mm from the Pico's NPTH peg hole** at (213.85, 106.47) on the solder side: D− passed it
@@ -369,8 +369,8 @@ Final review round:
 | same, Pico GND pins split | 3.21 / 3.27 / 3.09 / 3.46 mΩ | 3.59 / 3.37 / 3.56 / 3.65 mΩ |
 | DAC-to-mixer ground offset U9.9 − U11.3 (Pico 100 mA / USB 500 mA / WT 150 mA) | +3.9 / −21.1 / −39.4 µV | +0.7 / −21.6 / −29.2 µV |
 | Waveblaster ground J9.25 − U11.3 (WT 150 mA) | +147 µV | +88 µV |
-| Line-out ground error per ampere of loop current from J8's sleeve to the fingers, worst channel: no Waveblaster / Waveblaster at full volume | 410 / 715 µV/A | 285 / 465 µV/A |
-| same, loop current to the bracket (H1/H2) | 185 / 166 µV/A | 313 / 222 µV/A |
+| Line-out ground error per ampere of loop current from J8's sleeve to the fingers, worst channel: no Waveblaster / Waveblaster at full volume | 410 / 715 µV/A | 285 / 466 µV/A |
+| same, loop current to the bracket (H1/H2) | 185 / 166 µV/A | 313 / 223 µV/A |
 | Line-out ground error at 500 mA of USB-host load, worst channel: no Waveblaster / at full volume | 226 / 314 µV | 128 / 133 µV |
 | +5V resistance, fingers to F1 (USB host) / to J9's +5V pins | 80.6 / 96–107 mΩ | 47.3 / 96–101 mΩ |
 | +3V3 path to FB3 (AVDD) shared with logic / with U8 | 6.1 / 48.8 mΩ | 0 / 35.0 mΩ |
@@ -403,18 +403,27 @@ ground error from a ground loop to the fingers and from USB load, ±12V and powe
 near the fingers and pads, the USB-host +5V feed, the FB3 feed, the GND resistances with the Pico's GND pins tied,
 the DAC and Waveblaster ground offsets under Waveblaster load, stitching, track widths. **Worse**: I2S length and
 vias, the GND resistances if the Pico's GND pins are not tied inside the module, the line-out ground error from a
-ground loop to the bracket, the B10 GND finger track (0.6 / 0.5 mm for about 10 mm, with a via, before it reaches a
+ground loop to a metal bracket (a 3D-printed one carries none), the B10 GND finger track (0.6 / 0.5 mm for about 10 mm, with a via, before it reaches a
 pour; 8dbb6c6 1.0 mm), the power copper next to audio copper (11.4 against 9.5 mm), digital over audio on the other
 layer, the C13 supply and ground paths (placement), the starved thermals, and the cosmetic points below.
 
 ### Known weaker points (accepted)
 
 * **Line-out ground loop to the bracket**: per ampere of loop current from J8's sleeve to the bracket (H1/H2), the
-  ground error at the jack is 313 / 222 µV (worst channel, without a Waveblaster / with one at full volume; 8dbb6c6
-  185 / 166 µV); a loop to the fingers gives less than on 8dbb6c6 (285 / 465 against 410 / 715 µV/A). With 10 mA of
+  ground error at the jack is 313 / 223 µV (worst channel, without a Waveblaster / with one at full volume; 8dbb6c6
+  185 / 166 µV); a loop to the fingers gives less than on 8dbb6c6 (285 / 466 against 410 / 715 µV/A). With 10 mA of
   loop current and no Waveblaster that is at most 3.1 µV of hum through the bracket and 2.8 / 1.1 µV (left / right)
   through the fingers (8dbb6c6 1.8 and 4.1 / 1.3 µV), below −100 dBV and under the DAC's noise floor (formula below
-  the table).
+  the table). The bracket path only exists with a metal bracket whose screws tie H1/H2 to the PC chassis; with a
+  3D-printed (plastic) bracket, which this card's longer tabs call for, H1/H2 carry no loop current.
+
+  ![Line-out ground loop: ground-potential maps of the board for 1 A from J8's sleeve to the bracket tab holes H1/H2
+  and to the ISA GND fingers, with U11.3/U11.5 and U9.9 marked; the worst-channel line-out ground error against
+  8dbb6c6 (fingers 285 / 466 against 410 / 715 µV/A, bracket 313 / 223 against 185 / 166 µV/A, 500 mA USB load
+  128 / 133 against 226 / 314 µV); and at 10 mA of loop current, 2.8–3.1 µV next to the DAC's 21 µV noise floor and
+  1–3 mV across a cable shield. The bracket path needs a metal bracket screwed to the chassis; a 3D-printed bracket
+  carries no loop current](docs/figures/groundloop.png)
+
 * **USB load, right channel**: 500 mA of USB-host load gives −101 µV at the right channel's jack without a
   Waveblaster (−29 µV before the final review's mixer re-route, 8dbb6c6 −170 µV); the worst channel improved (128 µV
   against 214 before, 8dbb6c6 226).
