@@ -240,15 +240,18 @@ Positions are footprint origins (pin 1 for the DIPs), in mm.
   185.9–211.6, y 37.8–40.6, with `v1.3.2` right of it at (214.1, 40.0). Before, the logo stood vertically at the left
   edge (x 118.3–121.1, y 43.5–69.3) and `v1.3.2` at (120.5, 40.5). The pour under it is filled, so the logo shows
   copper.
-* Labels moved: `DAC` horizontal above U9 at (158.7, 66.0) (was vertical at (186.3, 74.5)), `MIXER` to
-  (168.5, 39.0) (was (165.9, 41.0)), `MIDI OUT` 1.05 mm, `UART` 0.30 mm and `USB PWR` 0.10 mm left, and `< REAR`
-  1.70 mm left with H1/H2, its arrow tip still in line with them. The references of C22, C23, C31, C32, C33 and RV1
-  moved.
+* Labels placed by hand (2026-10-31). `MIXER` at (165.5, 40.5) and `DAC` at (155.2, 67.3), both left-aligned and
+  1.2 mm high like the bracket-side labels (`DAC` was vertical at (186.3, 74.5) on v1.3.1). `WAVEBLASTER` is 1.2 mm
+  (was 0.8), centred at (143.65, 37.5); the two GND stitching vias that would have sat in its letters moved along
+  the top edge to x 136.8 and 150.6. `LINE OUT`, `WT VOL` and `MIDI OUT` are left-aligned at x 204.0 (y 43.5 / 65.0 /
+  70.0), `UART` and `USB PWR` at x 208.2 (y 121.5 / 126.0), so `UART` no longer touches J6's outline. The
+  references of C22, C23 and C32 are at (201.0, 50.0), (193.5, 50.0) and (177.0, 37.8). `< REAR` moved 1.70 mm left
+  with H1/H2, its arrow tip still in line with them; the references of C31, C33 and RV1 moved too.
 * v1.3.1's U12 pin-1 dot, left behind at (201.5, 89.7) next to F1 when U12 moved, is removed.
 * Silkscreen DRC (with silk_over_copper/silk_overlap enabled): 45 silk_over_copper, all from the outlines of the
   decoupling discs in the logic column crossing the neighbouring DIP pads (`jlcpcb.sh` plots the silkscreen with the
-  mask openings subtracted, so none of it prints on a pad); 3 silk_overlap (the IRQ/DMA divider line over J1 twice,
-  as on v1.3.1, and `UART` over J6's outline); 19 silk_edge_clearance (J8, J5, RV1, J11 and the Pico's outline at
+  mask openings subtracted, so none of it prints on a pad); 2 silk_overlap (the IRQ/DMA divider line over J1 twice,
+  as on v1.3.1); 19 silk_edge_clearance (J8, J5, RV1, J11 and the Pico's outline at
   the bracket end).
 
 ### Other
@@ -376,9 +379,9 @@ Final review round:
 | +5V / +3V3 within 0.30 mm of an other-net THT pad (solder side) or Pico pad (either side) | 28 | 17 |
 | Vias < 0.5 / < 1.0 mm from a gold finger | 5 / 16 | 0 / 0 |
 | Vias < 0.30 / < 0.25 mm from an other-net pad | 21 / 5 | 0 / 0 |
-| Pour more than 5 mm from a GND via | 2047 mm² | 853 mm² |
+| Pour more than 5 mm from a GND via | 2047 mm² | 876 mm² |
 | DAC decoupling, supply track / ground path: C13 (AVDD), C36 (CPVDD) | 3.2 / 4.2, 2.7 / 10.0 mm | 4.7 / 7.2, 2.7 / 10.0 mm |
-| Via holes < 0.10 mm from silk text (inside the ink) | 8 (1) | 6 (4) |
+| Via holes < 0.10 mm from silk text (inside the ink) | 8 (1) | 7 (4) |
 | Track joints inside a via but off its centre / tee joints | 11 / 0 | 46 / 12 |
 
 Both columns come from the same scripts. Resistances, offsets and line-out ground errors are from a DC copper model
@@ -424,8 +427,9 @@ layer, the C13 supply and ground paths (placement), the starved thermals, and th
 * **Router traces**: at 46 points (44 vias, 94 track ends) tracks join a via off its centre (inside the via; 8dbb6c6
   11 points), 12 tracks join another track part-way (tees), and 30 finger-entry segments end inside the finger short
   of its centre. All are sound copper and pass DRC.
-* **Silk**: 4 signal via holes are inside reference-designator ink (C11, C7, U4, C2) and 2 more are within 0.10 mm
-  of text (U8's reference, the jumper label `3`); none had a free spot within reach.
+* **Silk**: 4 signal via holes are inside reference-designator ink (C11, C7, U4, C2) and 3 more are within 0.10 mm
+  of text (U8's reference, the jumper label `3`, and C22's hand-placed reference 0.09 mm below a GND via); none of the
+  signal vias had a free spot within reach.
 * **−12V on F.Cu under the Pico** (x 190–197, y 112–116): under the mask and the module, at least 0.73 mm from the
   castellation pads.
 * **Digital over audio on the other layer**: 5.0 mm, all perpendicular crossings (WT_MIDI twice, R3's net)
