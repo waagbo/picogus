@@ -10,8 +10,9 @@ line out, MIDI out) and bracket tab holes in v1.3.2's places, so the [v1.3.2 bra
 v2.0's passive line-out mix (four 1k resistors) is replaced by the **op-amp mixer of the THT v1.3 boards** (NE5532 on
 ISA ±12 V, Waveblaster +6 dB), with film coupling capacitors and a DC-coupled DAC path.
 
-The parts that only exist as SMD are soldered on the card with v2.0's footprints: U1/U2 (SN74CB3T3257, TSSOP-16),
-U10 (PCM5100A, TSSOP-20) and U13 (M62429L, SOIC-8). Everything else is through hole; see
+The parts that only exist as SMD are soldered on the card: U1/U2 (SN74CB3T3257, TSSOP-16) and U10 (PCM5100A,
+TSSOP-20) on the hand-solder TSSOP land pattern of the THT v1.3.2 adapter boards (KiCad's, toes 0.3 mm longer), U13
+(M62429L) on v2.0's SOIC-8. Everything else is through hole; see
 [Parts with no through-hole version](#parts-with-no-through-hole-version).
 
 > **Status: schematic done; board placed but not routed: the placement is up for review before routing. Not built
@@ -34,7 +35,9 @@ Files:
 
 The shared `PiGUS library` footprints are linked from `hw-common/`. **New in the shared library for v2.1:**
 `Waveshare_Core2350B` (with a generated 3D model, `hw-common/parts/Waveshare_Core2350B.wrl`),
-`USB_C_Receptacle_GCT_USB4085`, `USB_A_Molex_67643_Horizontal_ShieldPin5` (KiCad's Molex 67643 with the shield pads
+`USB_C_Receptacle_GCT_USB4085`, `TSSOP-16_4.4x5mm_P0.65mm_HandSolder` (the v1.3.2 adapter boards' TSSOP-16 land
+pattern: pads 1.775 × 0.40 mm, outer ends at ±3.9 mm), `TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder` (the same toes on
+KiCad's TSSOP-20), `USB_A_Molex_67643_Horizontal_ShieldPin5` (KiCad's Molex 67643 with the shield pads
 numbered 5, as the `USB_A` symbol's shield pin) and `DIP-8_W7.62mm_SOIC-8_Adapter` (no longer used here).
 
 ## What changed compared to v2.0
@@ -51,7 +54,7 @@ Reference designators are v2.0's; new ones are D3, R19, R20 and C46.
 | J6 micro-USB (SMD) | **J6 GCT USB4085** through-hole USB-C + **R19/R20** 5.1 kΩ CC pull-downs | Through hole; device only, never sources VBUS |
 | U6 74LVC2G06 (SOT-363), open-drain MIDI and I/O CH RDY drivers | **U6 74AHCT126** (DIP-14) on +5V + **C46** | No DIP open-drain inverter that runs on 3.3 V; the v1.3 THT boards' solution (OE = the old input, A tied low, so OE high pulls the line low). Spare gates tied low |
 | U4/U5 74LVC00, U3 74AHC14, U7 SN74CB3T3245 (TSSOP) | 74AHC00 ×2, 74AHC14, **74AHC244** (DIP) | AHC: 3.3 V supply with 5 V tolerant inputs (as on v1.2/v1.3) |
-| U1/U2 SN74CB3T3257, U10 PCM5100 (TSSOP) | same chips, **SMD on the card** (TSSOP-16/-20, v2.0's footprints) | No through-hole version exists |
+| U1/U2 SN74CB3T3257, U10 PCM5100 (TSSOP) | same chips, **SMD on the card** (TSSOP-16/-20 on the v1.3.2 adapters' hand-solder land pattern) | No through-hole version exists |
 | U8 APS6404L PSRAM (SOIC-8, GPIO0–3, PIO SPI) | **removed**: the Core2350B2's 8 MB PSRAM on the RP2350B's QMI (CS1 = GPIO47) | No through-hole PSRAM exists; the module's is memory mapped and faster. Needs the firmware port. GPIO0–3 are free |
 | U13 M62429L (SOP-8) | same chip, **SMD on the card** (SOIC-8, v2.0's footprint) | The DIP-8 M62429P is not buyable |
 | R6–R9 (1k passive mix), C43/C44 | **U11 NE5532 mixer** (sheet `mixer.kicad_sch`): R21–R32, C24–C29 | As THT v1.3: Waveblaster ×2 (+6 dB) and PCM ×1 summed, 100 Ω outputs, buffered line out |
@@ -241,14 +244,22 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
 ## Layout status
 
 **Placed, not routed (2026-10-31), for review: the placement will change before routing.** DRC with schematic
-parity: no errors and no parity issues; the unconnected items are the unrouted nets. The only warnings are connector
+parity: no parity issues; the only errors are the 11 accepted courtyard overlaps of the logic column, and the
+unconnected items are the unrouted nets. The only warnings are connector
 silkscreen lines past the bracket edge (J5, J6, J7, J9 hang over it, as on v1.3.2).
 
 * **Fixed by the bracket and the slot**: the outline, J1 (ISA fingers), J5, J7, J9 and H1/H2 at v1.3.2's positions
   (see [Mechanical](#mechanical)).
+* **Logic column as on THT v1.3.2**: the five logic DIPs turned 90° in a column along the left edge, pin 1 at
+  x 120.07 and y 65.62 / 77.67 / 89.71 / 101.76 / 113.81 (v1.3.2's coordinates): U6 74AHCT126, U4 74AHC00 (AEN,
+  DACK), U5 74AHC00 (RUN, BUSOE), U3 74AHC14 and the DIP-20 U7 74AHC244 at the bottom next to J3. Each chip's 0.1 µF
+  disc sits above its VCC pin (C46, C5, C6, C4, C7), and the pull resistors R1 (RESET), R18 (DACK) and R5 (BUSOE)
+  stand at x 138.6. As on v1.3.2, the discs and the resistor column overlap the neighbouring courtyards: these **11
+  courtyard overlaps are accepted** (DRC errors), so `jlcpcb.sh` will need `FORCE=1`. The ferrites FB3/FB4 stand
+  upright where U6 was, the DAC's AVDD capacitors C15/C17 sit beside its analog row, and U1/U2 moved 1.5 mm right.
 * **Moved for the v1.3.2 bracket parts**: the mixer op-amp U11 sits between J9 and H1 with R27/R28 beside it and
   C28/C29 below; R25 and C26 moved up; MIDI out FB1/R2 sit left of J7, FB2 left of J5; F1, C1 and R3 under J5.
-  U1, U2, U10 and U13 are the SMD chips at the centres of the old DIP adapters.
+  U10 and U13 are the SMD chips at the centres of the old DIP adapters.
 * **Planes**: In1.Cu GND and In2.Cu +3V3 over the whole card; the AGND/AVDD islands come back once the placement is
   settled (see [Audio](#audio)).
 * **Silkscreen**: front labels (Jost), the title in the strip along the top edge; on the back, the title, copyright,
