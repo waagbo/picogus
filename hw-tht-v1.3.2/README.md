@@ -329,6 +329,13 @@ Final review round:
   +5V 0.21 mm from J3.30 (OSC). They are now 0.36 / 0.42 / 0.34 / 0.31 mm away (+12V moved 0.2 mm up, the last
   millimetres of −12V/+12V/+5V necked to 0.6 mm). The wide finger entries no longer stick out of the finger
   outline into the opening between the fingers (J3.10's GND entry keeps its 1.0 mm width, bent inside the finger).
+
+  ![Solder side above J3's B-row fingers: an overview of B1-B31 and the no-fill strip, then close-ups of B6-B10 (±12V)
+  and B29-B31 (+5V) before and after the fix. Each finger is its own mask opening and only mask lies between a finger
+  top (y 128.97) and the opening between the fingers (y 129.60). Before: +12V 0.22 / 0.23 mm from B8 / B7, −12V 0.24 mm
+  from B6, +5V 0.21 mm from B30. Now 0.36 / 0.42 / 0.34 / 0.31 mm, with the entries necked from 0.8 to 0.6 mm and B10's
+  1.0 mm GND entry bent inside its finger](docs/figures/gold-fingers.png)
+
 * **Mixer ground to the line-out sleeve.** The output of U11's B half (U11.7 → R22) ran on the solder side between
   U11 and J8 and cut the back pour between the mixer's reference pins and J8's sleeve. It now runs on the component
   side above WT_L, and the B half's inverting input (U11.6 → R20) passes just east of R22/R21's pad 1 (x 192, under
@@ -431,6 +438,12 @@ layer, the C13 supply and ground paths (placement), the starved thermals, and th
   0.10–0.47 mΩ above 8dbb6c6 (U11.3 3.59, J8 sleeve 3.56 mΩ).
 * **I2S**: 261 mm with 6 vias (8dbb6c6 236 mm, 1 via): the nets go round the DAC's analog half instead of across
   it. None crosses an audio net.
+
+  ![BCK, DIN and LRCK from the Pico to the DAC U9 on v1.3.2 and on 8dbb6c6, both copper layers, with U9's analog pins
+  1-10, the CAPP/CAPM/VNEG/AVDD copper and the audio-class copper inside a 1 mm keep-away. v1.3.2: 261.0 mm and 6 vias,
+  routed round the left of the analog half; the nearest I2S copper is 1.03 mm from U9 pin 1. 8dbb6c6: 235.5 mm and 1
+  via; LRCK passes U9 pin 1 at 0.33 mm, with 3.6 mm of it inside the keep-away](docs/figures/i2s-around-dac.png)
+
 * **DAC decoupling**: C13 (AVDD) has 4.7 mm of supply track and a 7.2 mm ground path to AGND (8dbb6c6 3.2 /
   4.2 mm), C36 2.7 / 10.0 mm; both are set by the placement (see [Placement suggestions](#placement-suggestions)).
 * **Router traces**: at 46 points (44 vias, 94 track ends) tracks join a via off its centre (inside the via; 8dbb6c6
@@ -646,6 +659,13 @@ card with every IC socketed. The same parts are the optional socket lines of `BO
   leaves it at 0.5 mm next to a +5V via and reaches the back pour 0.5 mm further on; B10's leaves it at 0.6 mm next
   to the +12V finger, runs 4.7 mm to a via in the no-fill strip and then about 5 mm at 0.5 mm on the front before it
   reaches the front pour (8dbb6c6: 1.0 mm tracks from all three).
+
+  ![The GND tracks from the ground fingers B1, B10 and B31 to the pours. B10 on the solder side: 1.0 mm inside the
+  finger, then 0.6 mm for 4.7 mm between IRQ2 (0.21 mm) and the +12V finger B9 (0.39 mm) to a via in the no-fill
+  strip; on the component side 0.5 mm for 5.0 mm between D4 (0.22 mm), C1 pad 1 and D3 before it touches the front
+  pour. A 1.0 mm track on the same path would leave 0.01 mm to IRQ2 and 0.00 mm to D4. B1 is 1.0 mm all the way, B31
+  reaches its pour 0.5 mm after the finger; on 8dbb6c6 B10 had 1.0 mm on both layers](docs/figures/b10-ground-finger.png)
+
 * **Don't run "Update footprint from library"** on J3 (the mask edit), J11 (the shield padstack below) or RV1 (the
   library footprint has a stray Edge.Cuts line that breaks the outline). DRC lists these three as
   `lib_footprint_mismatch` warnings; that is expected. J5, J8, RV1 and F1 also carry 3D models from `hw-common/parts`
