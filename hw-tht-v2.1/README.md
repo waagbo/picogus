@@ -24,8 +24,9 @@ Files:
 | `audio.kicad_sch` | PCM5100A DAC sheet (v2.0's, footprints only) |
 | `mixer.kicad_sch` | Line-out mixer: NE5532 inverting summing amplifier (from THT v1.3), ±12 V filters, Waveblaster input pull-downs |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
-| `BOM-THT.csv` | BOM with a **THT status** column (THT / THT but a different part than v2.0 / no THT version exists / module), the v2.0 part each line replaces, manufacturer, MPN, DigiKey and LCSC numbers, a digikey.no link and alternatives; then the kit items (module sockets and headers, adapters, jumpers), the optional IC sockets and the v2.0 parts that are gone |
-| `BOM-THT-digikey-upload.csv` (+ `-optional`) | DigiKey cart/BOM upload with the references as Customer Reference (`-optional`: the IC sockets) |
+| `BOM-THT.csv` | BOM with a **THT status** column (THT / THT but a different part than v2.0 / no THT version exists / module), the v2.0 part each line replaces, manufacturer, MPN, DigiKey and LCSC numbers, a digikey.no link, alternatives and digikey.no prices; then the kit items (module sockets and headers, the own adapter PCBs and their pin strip, jumpers), the optional IC sockets and the v2.0 parts that are gone |
+| `BOM-THT-digikey-upload.csv` | DigiKey cart/BOM upload with the references as Customer Reference. The adapter PCBs are not in it (see [Cost](#cost)) |
+| `BOM-THT-sockets.csv` (+ `-digikey-upload`) | Optional: every IC socketed, with socket and part heights against the Waveblaster daughterboard. The same parts are the optional socket lines of `BOM-THT.csv` |
 | `tools/gen_core2350b.py` | Generates the Core2350B footprint and 3D model in `hw-common` and checks the pin map |
 | `PicoGUS-THT-top.png`, `PicoGUS-THT-bottom.png` | 3D renders |
 
@@ -70,13 +71,32 @@ axial or radial equivalent (`THT status` column of `BOM-THT.csv`).
 |---|---|---|---|
 | **RP2040** (+ W25Q128 flash, 12 MHz crystal) | QFN-56, SOIC-8, 3225 | No THT microcontroller of this class | **Waveshare Core2350B2 module** (RP2350B QFN-80 + 16 MB flash + crystal + 8 MB PSRAM) on four 2x8 headers |
 | **APS6404L** 8 MB PSRAM | SOIC-8 | No THT PSRAM; the largest DIP SRAM (23LC1024) is 128 KB, a GUS needs 1 MB | **On the module**: the Core2350B2's PSRAM (firmware port needed) |
-| **SN74CB3T3257** ×2 (5 V tolerant bus switches) | TSSOP-16 (no DIP/SOIC) | TI makes it in TSSOP/SSOP/TVSOP/VQFN only; the ISA interface needs it | Same chip on a **TSSOP-16 → DIP-16 adapter** (Chip Quik PA0034C, or the THT v1.3.2 adapter PCB) |
-| **PCM5100A** DAC | TSSOP-20 only | The whole PCM510x family is TSSOP-20 | Same chip on a **TSSOP-20 → DIP-20 adapter** (PA0035C, or the v1.3.2 adapter PCB) |
-| **M62429** volume control | SOP-8 (DIP-8 M62429P discontinued) | No DIP part in stock at DigiKey or LCSC; DIP clones (FM62429, U2429) only at hobby shops | Same chip on a **SOIC-8 → DIP-8 adapter** (PA0001C or SparkFun BOB-13655) |
+| **SN74CB3T3257** ×2 (5 V tolerant bus switches) | TSSOP-16 (no DIP/SOIC) | TI makes it in TSSOP/SSOP/TVSOP/VQFN only; the ISA interface needs it | Same chip on a **TSSOP-16 → DIP-16 adapter**: the THT v1.3.2 adapter PCB (or Chip Quik PA0034C) |
+| **PCM5100A** DAC | TSSOP-20 only | The whole PCM510x family is TSSOP-20 | Same chip on a **TSSOP-20 → DIP-20 adapter**: the v1.3.2 adapter PCB (or PA0035C) |
+| **M62429** volume control | SOP-8 (DIP-8 M62429P discontinued) | No DIP part in stock at DigiKey or LCSC; DIP clones (FM62429, U2429) only at hobby shops | Same chip on a **SOIC-8 → DIP-8 adapter**: any 300-mil board (or PA0001C, SparkFun BOB-13655) |
 | micro-USB receptacle | SMD | – | **GCT USB4085** through-hole USB-C: through hole, but 0.85 mm contact pitch (the hardest joint on the card) |
 
 Replaced by a different through-hole part (circuit change): 74LVC2G06 → **74AHCT126** (U6), AO3401A → **1N5819**
 (D3), AMS1117 → **MCP1826S** (U9), 74LVC00 → 74AHC00, SN74CB3T3245/74LVC244 → 74AHC244.
+
+## Cost
+
+digikey.no prices of 2026-10-30, for one board, in NOK; shipping not included. Per-line prices are in `BOM-THT.csv`.
+
+| | NOK excl. MVA | NOK incl. 25 % MVA |
+|---|---|---|
+| DigiKey order, `BOM-THT-digikey-upload.csv` (43 lines) | 699.39 | 874.24 |
+| Optional IC sockets, `BOM-THT-sockets-digikey-upload.csv` | 97.80 | 122.25 |
+| Both | 797.19 | 996.49 |
+
+* **Not in the DigiKey order**: the Core2350B2 (waveshare.com, US$6.99), the M62429L (LCSC C52260216, minimum 5)
+  and J5 (LCSC C2345, minimum 10); the adapter PCBs, which you order with the card: U1/U2 and U10 from
+  `hw-tht-v1.3.2/adapters` (TSSOP16-DIP16-300mil ×2, TSSOP20-DIP20-300mil), U13 any 300-mil SOIC-8-to-DIP-8 board.
+  Their pins are one DigiKey line: a Mill-Max 1x64 round machined strip (136 NOK, the biggest single line), cut into
+  4× 1x8, 2× 1x10 and 2× 1x4.
+* Bought Chip Quik adapters instead (PA0034C ×2, PA0035C, PA0001C, pins fitted) would add 270 NOK and save the pin strip.
+* **C39–C42** (2.2 µF film, 61 NOK) are on backorder at DigiKey until about April 2027: see the LCSC film part or the
+  bipolar electrolytic in [Audio](#audio).
 
 ## Audio
 
