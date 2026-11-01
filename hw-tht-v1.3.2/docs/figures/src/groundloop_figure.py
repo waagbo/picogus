@@ -125,8 +125,11 @@ def annotate(im, case):
     label(dr, (h2[0] - 50, h2[1] - 14), 'H2', fl, 'rm'); label(dr, (h2[0] - 50, h2[1] + 16), t, fls, 'rm')
     # J8 sleeve
     dot(dr, pj, 13, fill=(255, 255, 255), outline=RED, width=5)
-    label(dr, (pj[0] - 30, pj[1] - 60), 'J8 sleeve: 1 A in', fl, 'rm')
-    leader(dr, (pj[0] - 28, pj[1] - 52), (pj[0] - 10, pj[1] - 14))
+    # below the sleeve when H1's labels sit just above it (J8 is the lower jack on v1.3.2)
+    below = abs(pads['J8.S'][1] - pads['H1.1'][1]) < 12
+    dyl = 60 if below else -60
+    label(dr, (pj[0] - 30, pj[1] + dyl), 'J8 sleeve: 1 A in', fl, 'rm')
+    leader(dr, (pj[0] - 28, pj[1] + dyl - (8 if not below else -8) * (1 if not below else 1)), (pj[0] - 10, pj[1] + (14 if below else -14)))
     # U11 pins 3 / 5 and U9.9
     for p, n, off in ((p3, 'U11.3', (0, 52)), (p5, 'U11.5', (0, -40))):
         q = (p[0] + off[0], p[1] + off[1])
@@ -156,7 +159,7 @@ ft = font(40, 'Bold'); fs = font(24); fh = font(27, 'SemiBold'); fsm = font(21);
 head = 150
 ymap = head + 122
 ychart = ymap + mh + 120
-H = ychart + 500 + 150
+H = ychart + 500 + 180
 can = Image.new('RGB', (W, H), BG); dr = ImageDraw.Draw(can)
 dr.text((pad, 28), 'PicoGUS THT v1.3.2: line-out ground loop to the bracket or to the fingers', font=ft, fill=INK)
 dr.text((pad, 84), "A ground-loop current (cable shield, earthed amplifier) enters at the line-out jack's sleeve J8 and leaves by the bracket or the ISA fingers.",
@@ -209,10 +212,21 @@ dr.rounded_rectangle([lgx + 330, yc + 46, lgx + 360, yc + 68], radius=4, fill=BL
 PH = 260  # plot height
 by0 = yc + 140 + PH  # baseline
 subw = 384
-VM = 800.0
-for k, (key, ttl, unit, verdict) in enumerate((('fingers', 'Loop to the fingers', 'µV per A', 'v1.3.2 better'),
-                                               ('bracket', 'Loop to the bracket', 'µV per A', 'v1.3.2 worse'),
-                                               ('usb', 'USB-host load 500 mA', 'µV', 'v1.3.2 better'))):
+VM = max(800.0, 200.0 * -(-max(v for c_ in ('fingers', 'bracket', 'usb') for t_ in README[c_].values() for v in t_) // 200))
+def verdict_of(key):
+    b = [README[key][k][1] < README[key][k][0] for k in ('noWT', 'WT')]
+    if all(b):
+        return 'v1.3.2 better'
+    if not any(b):
+        return 'v1.3.2 worse'
+    return 'v1.3.2 %s without, %s with WT' % ('better' if b[0] else 'worse', 'better' if b[1] else 'worse')
+
+
+for k, (key, ttl, unit) in enumerate((('fingers', 'Loop to the fingers', 'µV per A'),
+                                      ('bracket', 'Loop to the bracket', 'µV per A'),
+                                      ('usb', 'USB-host load 500 mA', 'µV'))):
+    verdict = verdict_of(key)
+    better = [README[key][k_][1] < README[key][k_][0] for k_ in ('noWT', 'WT')]
     x0 = pad + k * (subw + 18)
     ax = x0 + 58
     dr.text((x0, yc + 92), ttl, font=font(22, 'SemiBold'), fill=INK, anchor='lt')
@@ -227,11 +241,20 @@ for k, (key, ttl, unit, verdict) in enumerate((('fingers', 'Loop to the fingers'
         for i, (val, col) in enumerate(zip(README[key][cs], (OLD, BLUE))):
             bx = gx + i * (bw + gp)
             top = by0 - val / VM * PH
-            dr.rounded_rectangle([bx, top, bx + bw, by0 - 1], radius=4, fill=col)
-            dr.rectangle([bx, top + 6, bx + bw, by0 - 1], fill=col)
+            if by0 - 1 - top >= 10:
+                dr.rounded_rectangle([bx, top, bx + bw, by0 - 1], radius=4, fill=col)
+                dr.rectangle([bx, top + 6, bx + bw, by0 - 1], fill=col)
+            else:                       # too short for rounded corners
+                dr.rectangle([bx, top, bx + bw, by0 - 1], fill=col)
             dr.text((bx + bw / 2, top - 6), '%d' % val, font=font(20, 'SemiBold'), fill=INK, anchor='mb')
         dr.text((gx + bw + gp / 2, by0 + 10), glab, font=font(19), fill=INK, anchor='mt')
-    dr.text((ax + 28, by0 + 40), verdict, font=font(20, 'SemiBold'), fill=RED if 'worse' in verdict else INK, anchor='lt')
+        if all(better) or not any(better):
+            continue
+        # mixed: one verdict per group
+        dr.text((gx + bw + gp / 2, by0 + 38), 'v1.3.2 ' + ('better' if better[j] else 'worse'), font=font(20, 'SemiBold'),
+                fill=INK if better[j] else RED, anchor='mt')
+    if all(better) or not any(better):
+        dr.text((ax + 28, by0 + 40), verdict, font=font(20, 'SemiBold'), fill=RED if 'worse' in verdict else INK, anchor='lt')
 
 # --- scale chart (log): 10 mA of loop current, no Waveblaster ---
 sx = pad + 3 * (subw + 18) + 36
@@ -253,9 +276,13 @@ dr.text((x100 + 6, ry0 + 4 * rh + 20), '−100 dBV', font=font(18, 'SemiBold'), 
 h10 = README['hum10mA']
 # dots (single values) and ranges on a log axis: no bars, a bar's length means nothing on a log scale
 v1, v0 = h10['v132'], h10['bench']
-rows = [('v1.3.2 (this board)', sorted(v1.values()), BLUE,
-         '%.1f µV fingers – %.1f bracket' % (v1['fingers'], v1['bracket']), 'r'),
-        ('8dbb6c6', sorted(v0.values()), OLD, '%.1f µV bracket – %.1f fingers' % (v0['bracket'], v0['fingers']), 'r'),
+def span(v):
+    (a_, x_), (b_, y_) = sorted(v.items(), key=lambda kv: kv[1])
+    return '%.1f µV %s – %.1f %s' % (x_, a_, y_, b_)
+
+
+rows = [('v1.3.2 (this board)', sorted(v1.values()), BLUE, span(v1), 'r'),
+        ('8dbb6c6', sorted(v0.values()), OLD, span(v0), 'r'),
         ('DAC noise floor', [DAC_NOISE], GOLD, '≈ %.0f µV (PCM5100A: 2.1 V rms, 100 dB)' % DAC_NOISE, 'r'),
         ('cable shield 0.1–0.3 Ω', list(CABLE), RED, '%.0f–%.0f mV' % (CABLE[0] / 1000, CABLE[1] / 1000), 'l')]
 fb = font(20, 'SemiBold')
@@ -280,12 +307,18 @@ dr.text((sx, gb + 44), "The cable shield's own drop is %d–%d× what this board
         font=fz, fill=GREY, anchor='lt')
 
 # --- why accepted ---
-vy = H - 150
+vy = H - 180
 hv = README['hum10mA']['v132']
-for ln in ("Why accepted: with 10 mA of loop current the board's ground adds at most %.1f µV at the jack (%.1f µV through the fingers): below −100 dBV, below the DAC's noise floor,"
-           % (hv['bracket'], hv['fingers']),
-           "and %d–%d× less than the drop along the cable shield itself. Against 8dbb6c6 the loop to the bracket is worse (%d against %d µV/A), to the fingers and under USB load better."
-           % (round(r_lo, -2), round(r_hi, -2), README['bracket']['noWT'][1], README['bracket']['noWT'][0]),
+hmax = max(hv, key=hv.get); hmin = min(hv, key=hv.get)
+R_ = {c: README[c] for c in ('fingers', 'bracket', 'usb')}
+def cmp(c, k, unit):
+    a_, b_ = R_[c][k][1], R_[c][k][0]
+    return '%s (%d against %d %s)' % ('better' if a_ < b_ else 'worse', a_, b_, unit)
+for ln in ("Why accepted: with 10 mA of loop current the board's ground adds at most %.1f µV at the jack (through the %s; %.1f µV through the %s): below −100 dBV,"
+           % (hv[hmax], hmax, hv[hmin], hmin),
+           "below the DAC's noise floor and %d–%d× less than the drop along the cable shield itself. Against 8dbb6c6, without / with a Waveblaster: fingers %s / %s,"
+           % (round(r_lo, -2), round(r_hi, -2), cmp('fingers', 'noWT', 'µV/A').split(' (')[0], cmp('fingers', 'WT', 'µV/A').split(' (')[0]),
+           "bracket %s / %s, USB load %s / %s." % (cmp('bracket', 'noWT', 'µV/A'), cmp('bracket', 'WT', 'µV/A'), cmp('usb', 'noWT', 'µV'), cmp('usb', 'WT', 'µV')),
            "Bracket path (A): it exists only with a metal bracket whose screws tie H1/H2 to the PC chassis; with a 3D-printed (plastic) bracket, which this card's longer tabs call for, H1/H2 carry no loop current.",
            "Model: the README's DC copper model (refilled pours, 0.1 mm grid, Pico GND pins tied); e = (Vref − Vsleeve) + 0.977·(Vref − V(U9.9)) + 2·(Vref − Vwt). Cable shield: 0.1–0.3 Ω assumed."):
     dr.text((pad, vy), ln, font=fsm, fill=(60, 60, 60)); vy += 30

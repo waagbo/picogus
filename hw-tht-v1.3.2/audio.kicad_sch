@@ -8,7 +8,7 @@
 		(title "PicoGUS THT - PCM510x DAC")
 		(date "2026-10-23")
 		(rev "v1.3.2")
-		(comment 1 "U9 (TSSOP-20 only) on a 300-mil TSSOP-20 to DIP-20 adapter (Chip Quik PA0035C)")
+		(comment 1 "U9 PCM5100A (TSSOP-20) soldered to the card, with one test pad per pin")
 	)
 	(lib_symbols
 		(symbol "Audio:PCM5100"
@@ -3159,7 +3159,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-20_W7.62mm_TSSOP-20_Adapter"
+		(property "Footprint" "PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder_TestPads"
 			(at 63.5 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -3181,7 +3181,7 @@
 				)
 			)
 		)
-		(property "Description" "Audio DAC (PCM5100A/5101A/5102A). TSSOP-20 only: soldered to a 300-mil TSSOP-20 to DIP-20 adapter board that goes into the DIP-20 footprint (soldered or socketed)"
+		(property "Description" "Audio DAC (PCM5100A/5101A/5102A). TSSOP-20, soldered to the card, with one test pad per pin next to it"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(show_name no)
@@ -3240,17 +3240,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "Adapter" "Chip Quik (Proto-Advantage) PA0035C, TSSOP-20 to DIP-20 0.65 mm, 0.300 in rows, round pins fitted (DigiKey 315-PA0035C-ND)"
-			(at 64.77 55.88 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -4870,7 +4859,7 @@
 			)
 		)
 	)
-	(text "C36: CPVDD (U9 pin 1) decoupling, 0.1uF disc\nright beside DIP-20 pins 1 (CPVDD) and 3 (CPGND)"
+	(text "C36: CPVDD (U9 pin 1) decoupling, 0.1uF disc\nclose to U9 pins 1 (CPVDD) and 3 (CPGND)"
 		(exclude_from_sim no)
 		(at 20.32 85.09 0)
 		(effects

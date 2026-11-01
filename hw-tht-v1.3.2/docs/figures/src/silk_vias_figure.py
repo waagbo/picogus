@@ -23,31 +23,45 @@ for t in d['texts']:
         texts.append({'owner': None, 'field': None, **t, 'g': polys_to_geom(t['poly'])})
 texts = [t for t in texts if not t['g'].is_empty]
 
-hits = []
-for v in d['vias']:
-    h = Point(v['pos']).buffer(v['drill'] / 2, quad_segs=64)
-    best = None
-    for t in texts:
-        dist = h.distance(t['g'])
-        if dist < LIMIT and (best is None or dist < best[0]):
-            best = (dist, t)
-    if best:
-        dist, t = best
-        ov = h.intersection(t['g'])
-        # the glyph(s) the hole touches, and the share of that glyph's ink it takes
-        glyphs = [g for g in getattr(t['g'], 'geoms', [t['g']]) if g.distance(h) < LIMIT]
-        gl = unary_union(glyphs)
-        hits.append({'via': v, 'hole': h, 'text': t, 'dist': dist, 'ov': ov, 'ov_area': ov.area,
-                     'glyph_share': ov.area / gl.area if gl.area else 0})
-hits.sort(key=lambda x: (x['dist'] > 0, x['dist'] if x['dist'] > 0 else -x['ov_area']))
+def find_hits(lim):
+    out = []
+    for v in d['vias']:
+        h = Point(v['pos']).buffer(v['drill'] / 2, quad_segs=64)
+        best = None
+        for t in texts:
+            dist = h.distance(t['g'])
+            if dist < lim and (best is None or dist < best[0]):
+                best = (dist, t)
+        if best:
+            dist, t = best
+            ov = h.intersection(t['g'])
+            # the glyph(s) the hole touches, and the share of that glyph's ink it takes
+            glyphs = [g for g in getattr(t['g'], 'geoms', [t['g']]) if g.distance(h) < lim]
+            gl = unary_union(glyphs)
+            out.append({'via': v, 'hole': h, 'text': t, 'dist': dist, 'ov': ov, 'ov_area': ov.area,
+                        'glyph_share': ov.area / gl.area if gl.area else 0})
+    out.sort(key=lambda x: (x['dist'] > 0, x['dist'] if x['dist'] > 0 else -x['ov_area']))
+    return out
+
+
+hits = find_hits(LIMIT)
+# none at the limit: show the nearest ones instead (within twice the limit) so that the figure still proves the point
+NONE = not hits
+NEAR2 = 2 * LIMIT
+if NONE:
+    hits = find_hits(NEAR2)
+    print('no via hole within %.2f mm of silk text; %d within %.2f mm:' % (LIMIT, len(hits), NEAR2))
 inside = [x for x in hits if x['dist'] == 0]
 near = [x for x in hits if x['dist'] > 0]
 
 
 def near_fp(pos, lim=3.0):
+    """the footprint whose nearest through-hole pad is within lim of a board text (jumper labels and the like)"""
     best = None
     for r, f in d['fps'].items():
         for p in f['pads']:
+            if p['smd']:
+                continue
             dd = math.dist(p['pos'], pos)
             if dd < lim and (best is None or dd < best[0]):
                 best = (dd, r)
@@ -70,7 +84,7 @@ def netname(n):
     return n.replace('}', '').split('/')[-1] if n.startswith('/') else n.replace('}', '')
 
 
-print('%d via holes within %.2f mm of silk text, %d inside the ink' % (len(hits), LIMIT, len(inside)))
+print('%d via holes within %.2f mm of silk text, %d inside the ink' % (len(hits), NEAR2 if NONE else LIMIT, len(inside)))
 for x in hits:
     print('  %-16s %s.Silk  via %-10s at (%.2f, %.2f) drill %.2f: %s' % (
         tname(x['text']), x['text']['side'], netname(x['via']['net']), x['via']['pos'][0], x['via']['pos'][1], x['via']['drill'],
@@ -137,7 +151,7 @@ def closeup(x):
     return im, vw
 
 
-panels = [(x,) + closeup(x) for x in inside + near]
+panels = [(x,) + closeup(x) for x in (near[:3] if NONE else inside + near)]
 
 # ---------------------------------------------------------------- board map
 ex = d['bbox']
@@ -167,6 +181,10 @@ for tt in texts:
 mapim = mv.finish()
 md = ImageDraw.Draw(mapim)
 fnum = font(17, 'Bold')
+if NONE:
+    for x in near[len(panels):]:
+        px, py = mv.T(x['via']['pos'])
+        md.ellipse([px - 8, py - 8, px + 8, py + 8], fill=(150, 150, 150), outline=WHITE, width=2)
 for i, (x, im, vw) in enumerate(panels):
     px, py = mv.T(x['via']['pos'])
     col = RED if x['dist'] == 0 else (230, 120, 20)
@@ -175,11 +193,16 @@ for i, (x, im, vw) in enumerate(panels):
 
 gnd_near = [x for x in near if x['via']['net'] == 'GND']
 stitch = [x for x in gnd_near if not any(math.dist(p, x['via']['pos']) < 0.05 for t in d['tracks'] for p in (t['pl'][0], t['pl'][-1]))]
-WHY = ['Why accepted: the fab clips the silkscreen at every drilled hole, so a character loses a sliver of ink (at most %.0f %% of one here)'
-       % (100 * max(x['glyph_share'] for x in inside)) + ' and stays',
-       'readable; nothing changes electrically. None of the signal vias had a free spot within reach.' +
+if NONE:
+    WHY = ['The previous routed layout (2026-10-31) had 7 via holes within %.2f mm of silk text, 4 of them inside reference-designator ink; 8dbb6c6 had 8 (1).' % LIMIT,
+           'After the re-route the nearest via hole is %.3f mm from a text (%s, %s via). Hole = drilled diameter, against the glyph outlines.'
+           % (near[0]['dist'], tname(near[0]['text']), netname(near[0]['via']['net']))]
+elif True:
+  WHY = ['Why accepted: the fab clips the silkscreen at every drilled hole, so a character loses a sliver of ink (at most %.0f %% of one here)'
+         % (100 * max(x['glyph_share'] for x in inside)) + ' and stays',
+         'readable; nothing changes electrically. None of the signal vias had a free spot within reach.' +
        (' The via next to the %s is a GND' % ' and '.join(tname(x['text']) for x in stitch) if stitch else ''),
-       'stitching via (no track to it); that reference was placed beside it by hand.' if stitch else '']
+         'stitching via (no track to it); that reference was placed beside it by hand.' if stitch else '']
 
 # ---------------------------------------------------------------- compose
 pad = 40; gap = 30
@@ -189,13 +212,20 @@ W = pad + ncol * TW + (ncol - 1) * gap + pad
 head = 170
 can = Image.new('RGB', (W, 2000), WHITE); dr = ImageDraw.Draw(can)
 ft = font(40, 'Bold'); fs = font(24); fh = font(26, 'SemiBold'); fsm = font(21); fz = font(20)
-dr.text((pad, 28), 'PicoGUS THT v1.3.2: via holes in the silkscreen text', font=ft, fill=INK)
-dr.text((pad, 84), '%d via holes are inside the ink of a reference designator and %d more are less than %.2f mm from a silkscreen label'
-        % (len(inside), len(near), LIMIT), font=fs, fill=GREY)
-sides = sorted({x['text']['side'] for x in hits})
-where = 'all on the front silkscreen, none on the back' if sides == ['F'] else 'front and back silkscreen'
-dr.text((pad, 116), '(%s; hole = drilled diameter, measured against the glyph outlines). Red: ink the drill takes away.' % where,
-        font=fs, fill=GREY)
+if NONE:
+    dr.text((pad, 28), 'PicoGUS THT v1.3.2: no via hole at the silkscreen text', font=ft, fill=INK)
+    dr.text((pad, 84), 'No via hole is inside silkscreen ink or less than %.2f mm from it (front and back; reference designators, footprint and'
+            % LIMIT, font=fs, fill=GREY)
+    dr.text((pad, 116), 'board texts). The nearest are %.2f mm away: the %d holes within %.2f mm are on the map, the %d nearest in the close-ups.'
+            % (near[0]['dist'], len(near), NEAR2, len(panels)), font=fs, fill=GREY)
+else:
+    dr.text((pad, 28), 'PicoGUS THT v1.3.2: via holes in the silkscreen text', font=ft, fill=INK)
+    dr.text((pad, 84), '%d via holes are inside the ink of a reference designator and %d more are less than %.2f mm from a silkscreen label'
+            % (len(inside), len(near), LIMIT), font=fs, fill=GREY)
+    sides = sorted({x['text']['side'] for x in hits})
+    where = 'all on the front silkscreen, none on the back' if sides == ['F'] else 'front and back silkscreen'
+    dr.text((pad, 116), '(%s; hole = drilled diameter, measured against the glyph outlines). Red: ink the drill takes away.' % where,
+            font=fs, fill=GREY)
 
 
 def place(i, x, im, vw, X, Y):
@@ -211,13 +241,16 @@ def place(i, x, im, vw, X, Y):
 
 
 y = head
-dr.text((pad, y), 'Inside the ink (%d, all signal vias)' % len(inside), font=fh, fill=INK)
-y += 46
-yb = y
-for i, (x, im, vw) in enumerate(panels[:len(inside)]):
-    yb = max(yb, place(i, x, im, vw, pad + (i % ncol) * (TW + gap), y + (i // ncol) * (TH + 70)))
-y = yb + 40
-dr.text((pad, y), 'Closer than %.2f mm (%d)' % (LIMIT, len(near)), font=fh, fill=INK)
+if not NONE:
+    dr.text((pad, y), 'Inside the ink (%d, all signal vias)' % len(inside), font=fh, fill=INK)
+    y += 46
+    yb = y
+    for i, (x, im, vw) in enumerate(panels[:len(inside)]):
+        yb = max(yb, place(i, x, im, vw, pad + (i % ncol) * (TW + gap), y + (i // ncol) * (TH + 70)))
+    y = yb + 40
+    dr.text((pad, y), 'Closer than %.2f mm (%d)' % (LIMIT, len(near)), font=fh, fill=INK)
+else:
+    dr.text((pad, y), 'The %d nearest (none closer than %.2f mm)' % (len(panels), LIMIT), font=fh, fill=INK)
 y += 46
 y2 = y
 for k, (x, im, vw) in enumerate(panels[len(inside):]):
@@ -236,10 +269,16 @@ xx = swatch(dr, xx, ly, SILKC, 'silkscreen text', fsm) + 26
 dr.ellipse([xx + 6, ly, xx + 28, ly + 22], fill=VIAC); dr.ellipse([xx + 11, ly + 5, xx + 23, ly + 17], fill=WHITE, outline=RED, width=2)
 dr.text((xx + 44, ly + 11), 'via, drilled hole outlined red', font=fsm, fill=INK, anchor='lm')
 xx += 44 + dr.textlength('via, drilled hole outlined red', font=fsm) + 26
-xx = swatch(dr, xx, ly, RED, 'ink inside the hole', fsm) + 26
+if not NONE:
+    xx = swatch(dr, xx, ly, RED, 'ink inside the hole', fsm) + 26
 dr.ellipse([xx + 6, ly, xx + 28, ly + 22], outline=RED, width=3)
-dr.text((xx + 44, ly + 11), 'gap under %.2f mm' % LIMIT, font=fsm, fill=INK, anchor='lm')
-xx += 44 + dr.textlength('gap under %.2f mm' % LIMIT, font=fsm) + 26
+GAPTXT = 'nearest point' if NONE else 'gap under %.2f mm' % LIMIT
+dr.text((xx + 44, ly + 11), GAPTXT, font=fsm, fill=INK, anchor='lm')
+xx += 44 + dr.textlength(GAPTXT, font=fsm) + 26
+if NONE:
+    dr.ellipse([xx + 6, ly + 1, xx + 26, ly + 21], fill=(150, 150, 150), outline=WHITE)
+    dr.text((xx + 44, ly + 11), 'map: other holes within %.2f mm' % NEAR2, font=fsm, fill=INK, anchor='lm')
+    xx += 44 + dr.textlength('map: other holes within %.2f mm' % NEAR2, font=fsm) + 26
 xx = swatch(dr, xx, ly, (240, 200, 196), 'front copper', fsm) + 26
 xx = swatch(dr, xx, ly, (200, 214, 238), 'back copper', fsm) + 26
 xx = swatch(dr, xx, ly, (238, 218, 160), 'pad', fsm) + 26

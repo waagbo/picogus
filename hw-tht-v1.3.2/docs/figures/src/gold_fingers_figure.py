@@ -1,9 +1,11 @@
-# Usage: python3 gold_fingers_figure.py NOW.json BEFORE.json OUT.png
+# Usage: python3 gold_fingers_figure.py NOW.json OLD.json OUT.png [OLD_NAME]
 #   NOW.json    copper_dump.py output of the routed v1.3.2 board (PicoGUS-THT.kicad_pcb)
-#   BEFORE.json copper_dump.py output of the board before the final-review gold-finger fix
-#               (route2/fx-measure copy of PicoGUS-THT.kicad_pcb)
+#   OLD.json    copper_dump.py output of the layout to compare with, by default the 103.7 mm layout
+#               (git show 8dbb6c6:hw-tht-v1.3.2/PicoGUS-THT.kicad_{pcb,pro})
+#   OLD_NAME    its name in the figure (default 8dbb6c6)
 # Draws gold-fingers.png: the solder side (B.Cu) above J3's fingers, the per-finger mask openings, the opening
-# between the fingers, and the measured gaps from +12V / -12V / +5V copper to the finger copper, before and now.
+# between the fingers, the measured gaps from +12V / -12V / +5V copper to the finger copper and copper that sticks
+# out of a finger into the opening between the fingers, on the old layout and now.
 # Every number printed is measured here from the two dumps (the 0.30 mm rule is the README's).
 # Needs Pillow, numpy, shapely; figlib.py next to this script.
 import sys, os
@@ -12,6 +14,7 @@ from figlib import *
 from shapely.ops import polygonize
 
 NOW, BEF, OUT = sys.argv[1:4]
+OLDN = sys.argv[4] if len(sys.argv) > 4 else '8dbb6c6'
 POWER = ('+12V', '-12V', '+5V', '+3V3', '/VSYS')
 RULE = 0.30   # README: keep power copper at least 0.30 mm from the finger copper
 
@@ -106,8 +109,8 @@ def entry_points(b, box_):
 # ---------------- layout
 pad = 36; gap_ = 40; lg = 118          # lg: left gutter of the zoom rows (mask-band labels)
 SA = 78
-A = (170.5, 124.7, 184.5, 131.3)    # +-12V at B6..B10
-B = (117.0, 124.7, 125.4, 131.3)    # +5V at B29..B31
+A = (168.3, 124.7, 184.5, 131.3)    # +-12V at B5..B9, GND at B10, B11
+B = (117.0, 124.7, 127.9, 131.3)    # +5V at B28..B31
 wA = round((A[2] - A[0]) * SA); wB = round((B[2] - B[0]) * SA); hZ = round((A[3] - A[1]) * SA)
 W = lg + wA + gap_ + wB + pad
 OV = (116.0, 121.3, 197.8, 136.4)
@@ -122,7 +125,7 @@ H = y_r2 + hZ + 260
 can = Image.new('RGB', (W, H), (255, 255, 255))
 dr = ImageDraw.Draw(can)
 dr.text((pad, 26), 'PicoGUS THT v1.3.2: power copper next to the gold fingers', font=font(40, 'Bold'), fill=INK)
-dr.text((pad, 82), 'Solder side (B.Cu) above J3\'s B-row fingers, seen through the board from the component side (not mirrored).',
+dr.text((pad, 82), 'Solder side (B.Cu) above J3\'s B-row fingers, seen through the board from the component side (not mirrored), on %s and on v1.3.2.' % OLDN,
         font=font(24), fill=GREY)
 dr.text((pad, 114), 'Each finger has its own mask opening the size of the finger, so a track beside a finger top is separated from it only by solder mask.',
         font=font(24), fill=GREY)
@@ -148,7 +151,8 @@ dr.text((xo - 10, ao.P((OV[0], 132.0))[1]), 'J3', font=font(24, 'Bold'), fill=IN
 dr.text((xo - 10, ao.P((OV[0], 132.0))[1] + 26), 'B side', font=font(17), fill=GREY, anchor='rm')
 
 FIN_NAME = {'unconnected-(J3-UNUSED-Pad8)': '(0WS)', 'unconnected-(J3-DRQ2-Pad6)': '(DRQ2)',
-            'unconnected-(J3-OSC-Pad30)': '(OSC)', 'unconnected-(J3--5V-Pad5)': '(−5V)'}
+            'unconnected-(J3-OSC-Pad30)': '(OSC)', 'unconnected-(J3--5V-Pad5)': '(−5V)',
+            'unconnected-(J3-~{SMEMW}-Pad11)': '(SMEMW)', 'unconnected-(J3-ALE-Pad28)': '(ALE)'}
 
 def zoom(b, box_, x, y, title, before):
     p = draw_bcu(b, *box_, SA)
@@ -198,12 +202,12 @@ def gutter(a, x, y):
 
 # label offsets (px from the middle of the gap) for the gap boxes; width-label offsets per (before, net)
 LABEL_OFF = {('+12V', '8'): ('px', -76, -16), ('+12V', '7'): ('px', 46, -78), ('-12V', '6'): ('px', 66, -4),
-             ('+5V', '30'): ('px', -66, -4)}
+             ('+5V', '30'): ('px', -66, -4), ('+12V', '10'): ('px', -10, -70), ('+5V', '28'): ('px', 60, -40)}
 xA, xB = lg, lg + wA + gap_
-a1 = zoom(bef, A, xA, y_r1, 'Zoom 1, before the fix: ±12V at B6-B10', True)
-zoom(bef, B, xB, y_r1, 'Zoom 2, before the fix: +5V at B29-B31', True)
-a2 = zoom(now, A, xA, y_r2, 'Zoom 1, v1.3.2: ±12V at B6-B10', False)
-zoom(now, B, xB, y_r2, 'Zoom 2, v1.3.2: +5V at B29-B31', False)
+a1 = zoom(bef, A, xA, y_r1, 'Zoom 1, %s: ±12V and GND at B5-B11' % OLDN, True)
+zoom(bef, B, xB, y_r1, 'Zoom 2, %s: +5V at B28-B31' % OLDN, True)
+a2 = zoom(now, A, xA, y_r2, 'Zoom 1, v1.3.2: ±12V and GND at B5-B11', False)
+zoom(now, B, xB, y_r2, 'Zoom 2, v1.3.2: +5V at B28-B31', False)
 gutter(a1, xA, y_r1); gutter(a2, xA, y_r2)
 
 # legend
@@ -229,16 +233,30 @@ dr.ellipse([x, ly2, x + 22, ly2 + 22], outline=RED, width=3)
 dr.text((x + 32, ly2 + 11), 'copper sticking out of a finger into the opening', font=fs, fill=INK, anchor='lm')
 
 fz = font(21); vy = ly2 + 52
-def g(b, net, n): return b.gaps[(net, n)][0]
+def gl(b):
+    """the power-to-finger gaps under 0.45 mm, as text"""
+    xs_ = sorted(b.gaps.items(), key=lambda kv: kv[1][0])
+    return ', '.join('%s %.2f mm from B%s%s' % (net.replace('-12V', '−12V'), v[0], n,
+                     ' ' + FIN_NAME.get(b.fing[n]['net'], '(%s)' % b.fing[n]['net'])) for (net, n), v in xs_ if v[0] < 0.45) or 'none'
+def ex(b):
+    out = []
+    for q in b.exposed:
+        c = q.centroid
+        f = sorted(b.fing.items(), key=lambda kv: kv[1]['g']['B.Cu'].distance(q))[:2]
+        nets = {t['net'] for t in b.d['tracks'] if t['layer'] == 'B.Cu' and t['g'].intersects(q)}
+        if q.area >= 0.01:
+            out.append('%.2f mm² of %s copper between B%s and B%s' % (q.area, '/'.join(sorted(nets)), f[0][0], f[1][0]))
+    return out
+nb = sum(1 for v in now.gaps.values() if v[0] < RULE); ob = sum(1 for v in bef.gaps.values() if v[0] < RULE)
 lines = (
     'Why: between a finger top (y %.2f) and the opening between the fingers (y %.2f) only solder mask separates a track from the bare finger next to it.' % (now.finger_top, now.open_top),
-    'Kept rule: power copper at least 0.30 mm from finger copper. Before the fix: +12V %.2f / %.2f mm from B8 / B7, −12V %.2f mm from B6, +5V %.2f mm from B30.' % (
-        g(bef, '+12V', '8'), g(bef, '+12V', '7'), g(bef, '-12V', '6'), g(bef, '+5V', '30')),
-    'Now %.2f / %.2f / %.2f / %.2f mm: +12V moved 0.2 mm up, the last millimetres of −12V, +12V and +5V necked to 0.6 mm; B10\'s 1.0 mm GND entry bends inside its finger.' % (
-        g(now, '+12V', '8'), g(now, '+12V', '7'), g(now, '-12V', '6'), g(now, '+5V', '30')),
+    'Rule: power copper at least 0.30 mm from finger copper. Power copper within 0.45 mm of another net\'s finger on %s: %s;' % (OLDN, gl(bef)),
+    'on v1.3.2: %s (%d below 0.30 mm on v1.3.2, %d on %s).' % (gl(now), nb, ob, OLDN),
+    ('Copper sticking out of a finger into the opening (bare): ' + ('; '.join(ex(now)) or 'none') + ' on v1.3.2' + (', none on %s.' % OLDN if not ex(bef) else ', %s on %s.' % ('; '.join(ex(bef)), OLDN))),
 )
 for ln in lines:
     dr.text((pad, vy), ln, font=fz, fill=SUB); vy += 30
+    if dr.textlength(ln, font=fz) > W - 2 * pad: print('WARNING: footer line too long:', ln)
 can = can.crop((0, 0, W, vy + 22))
 can.save(OUT)
 print(can.size)

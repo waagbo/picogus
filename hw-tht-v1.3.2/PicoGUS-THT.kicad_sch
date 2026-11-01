@@ -9,7 +9,7 @@
 		(date "2026-10-28")
 		(rev "v1.3.2")
 		(comment 1 "Through-hole variant of PicoGUS v1.2 with Waveblaster header and USB host port")
-		(comment 2 "U3/U4/U9 on 300-mil DIP adapters; SMD: U8, U12 opt.")
+		(comment 2 "SMD: U3/U4 TSSOP-16, U9 TSSOP-20 (with test pads), U8 SOIC-8, U12 opt.")
 	)
 	(lib_symbols
 		(symbol "74FST3257DR2G_1"
@@ -20471,7 +20471,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-16_W7.62mm_TSSOP-16_Adapter"
+		(property "Footprint" "PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder_TestPads"
 			(at 90.805 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -20495,7 +20495,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "FET mux w/ 5V->3V3 level shift. TSSOP-16 only: soldered to a 300-mil TSSOP-16 to DIP-16 adapter board that goes into the DIP-16 footprint (soldered or socketed)"
+		(property "Description" "FET mux w/ 5V->3V3 level shift. TSSOP-16, soldered to the card, with one test pad per pin next to it"
 			(at 90.805 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -20545,17 +20545,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "Adapter" "Chip Quik (Proto-Advantage) PA0034C, TSSOP-16 to DIP-16 0.65 mm, 0.300 in rows, round pins fitted (DigiKey 315-PA0034C-ND); or SparkFun BOB-13994 with round machined pins"
-			(at 69.215 123.19 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -20769,7 +20758,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PiGUS library:DIP-16_W7.62mm_TSSOP-16_Adapter"
+		(property "Footprint" "PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder_TestPads"
 			(at 46.99 120.65 0)
 			(hide yes)
 			(show_name no)
@@ -20793,7 +20782,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "FET mux w/ 5V->3V3 level shift. TSSOP-16 only: soldered to a 300-mil TSSOP-16 to DIP-16 adapter board that goes into the DIP-16 footprint (soldered or socketed)"
+		(property "Description" "FET mux w/ 5V->3V3 level shift. TSSOP-16, soldered to the card, with one test pad per pin next to it"
 			(at 46.99 125.73 0)
 			(hide yes)
 			(show_name no)
@@ -20843,17 +20832,6 @@
 					(size 1.27 1.27)
 				)
 				(hide yes)
-			)
-		)
-		(property "Adapter" "Chip Quik (Proto-Advantage) PA0034C, TSSOP-16 to DIP-16 0.65 mm, 0.300 in rows, round pins fitted (DigiKey 315-PA0034C-ND); or SparkFun BOB-13994 with round machined pins"
-			(at 25.4 123.19 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -28161,7 +28139,7 @@
 		)
 		(uuid "c113b44a-3c4f-52d0-9f62-895240859500")
 	)
-	(text "THT board v1.3.2: the GY-PCM5102 module option\n(v1.2 I2S_DAC1/J4, v1.3.0/v1.3.1 J10) is gone:\nU9 on a TSSOP-20 to DIP-20 adapter is the DAC."
+	(text "THT board v1.3.2: the GY-PCM5102 module option\n(v1.2 I2S_DAC1/J4, v1.3.0/v1.3.1 J10) is gone:\nU9 (TSSOP-20, on the card) is the DAC."
 		(exclude_from_sim no)
 		(at 223.52 104.14 0)
 		(effects

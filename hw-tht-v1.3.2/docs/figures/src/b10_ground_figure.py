@@ -3,7 +3,8 @@
 #   OLD.json  copper_dump.py output of the 103.7 mm layout (git show 8dbb6c6:hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb)
 # Draws b10-ground-finger.png: the GND tracks from the ISA ground fingers B1, B10 and B31 (J3.1/.10/.31) to the
 # pours, their widths and lengths, the neighbours that keep B10's track narrow (with the clearance a 1.0 mm track
-# would leave), and B10 on 8dbb6c6 for comparison. Every number printed is measured here from the two dumps.
+# would leave), what blocks a straight route up from B10, and B10 on 8dbb6c6 for comparison. Every number printed is
+# measured here from the two dumps. (Rewritten for the re-routed board of 2026-11-01: B10's track is all on B.Cu.)
 # Needs Pillow, numpy, shapely; figlib.py next to this script.
 import sys, os, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -108,47 +109,49 @@ P = {n: trace(now, n) for n in ('1', '10', '31')}
 P_old = {n: trace(old, n) for n in ('1', '10', '31')}
 R = {n: runs(P[n][0]) for n in P}
 R_old = {n: runs(P_old[n][0]) for n in P_old}
-for tag, RR in (('v1.3.2', R), ('8dbb6c6', R_old)):
+for tag_, RR in (('v1.3.2', R), ('8dbb6c6', R_old)):
     for n, rr in RR.items():
-        print(tag, 'B%s:' % n, ' -> '.join('%s %.1f mm x %.2f mm' % (r['k'][0], r['k'][1], r['len']) for r in rr))
+        print(tag_, 'B%s:' % n, ' -> '.join('%s %.1f mm x %.2f mm' % (r['k'][0], r['k'][1], r['len']) for r in rr))
 
-# B10 (now): the narrow runs
+# B10 (now): the runs from the finger to the pour, their neighbours, and what a 1.0 mm track on the same path would leave
 r10 = R['10']
-rB = next(r for r in r10 if r['k'] == ('B.Cu', 0.6))
-rF = next(r for r in r10 if r['k'][0] == 'F.Cu')
-via10 = P['10'][1][0]
-lenF, touchF = touch_len(now, rF['segs'], rF['k'][1], 'F.Cu')
-in_finger = sum(r['len'] for r in r10 if r['k'] == ('B.Cu', 1.0))
-r31 = R['31']
-r31n = next(r for r in r31 if r['k'][1] < 1.0)
-len31, touch31 = touch_len(now, r31n['segs'], r31n['k'][1], 'B.Cu')
-r1 = R['1']
-# clearances now and with a 1.0 mm track on the same centre lines
-nbB = neighbours(now, rB['segs'], rB['k'][1], 'B.Cu')
-nbB1 = neighbours(now, rB['segs'], 1.0, 'B.Cu', lim=0.35)
-fsegs = []
-s = 0
-for a, c in rF['segs']:                      # the F.Cu run only up to where it touches the pour
-    L = math.dist(a, c)
-    if s + L >= lenF:
-        fsegs.append((a, (a[0] + (c[0] - a[0]) * (lenF - s) / L, a[1] + (c[1] - a[1]) * (lenF - s) / L))); break
-    fsegs.append((a, c)); s += L
-# clearances over the whole narrow run (up to and including the segment that touches the pour)
-nbF = neighbours(now, rF['segs'], rF['k'][1], 'F.Cu')
-nbF1 = neighbours(now, rF['segs'], 1.0, 'F.Cu', lim=0.35)
-nb31 = neighbours(now, r31n['segs'], r31n['k'][1], 'B.Cu')
-nb31_1 = neighbours(now, r31n['segs'], 1.0, 'B.Cu', lim=0.35)
-# IRQ2 is squeezed between the B10 track and the +5V run
-irq_seg = [t for t in now.d['tracks'] if t['layer'] == 'B.Cu' and t['net'] == 'IRQ2']
-p5_seg = [t for t in now.d['tracks'] if t['layer'] == 'B.Cu' and t['net'] == '+5V']
-win_irq = box(172.5, 126.0, 175.5, 128.6)
-irq_g = unary_union([t['g'] for t in irq_seg]).intersection(win_irq)
-p5_g = unary_union([t['g'] for t in p5_seg]).intersection(win_irq.buffer(1))
-irq_p5 = gap(irq_g, p5_g)
-for nm, nb in (('B.Cu 0.6', nbB), ('B.Cu at 1.0', nbB1), ('F.Cu 0.5', nbF), ('F.Cu at 1.0', nbF1), ('B31 0.5', nb31), ('B31 at 1.0', nb31_1)):
-    print(nm, sorted(((round(v[0], 3), k) for k, v in nb.items())))
-print('B10 F.Cu to pour %.2f mm, B31 to pour %.2f mm; IRQ2-+5V %.3f' % (lenF, len31, irq_p5[0]))
+lay10 = sorted({r['k'][0] for r in r10})
+in_finger = r10[0]['len'] if r10[0]['k'][1] == 1.0 else 0.0
+narrow = [r for r in r10 if r['k'][1] < 1.0 - 1e-6]
+NB = [(r, neighbours(now, r['segs'], r['k'][1], r['k'][0]), neighbours(now, r['segs'], 1.0, r['k'][0], lim=0.35)) for r in r10]
+for r, nb, nb1 in NB:
+    print('  B10 run %s %.1f mm x %.2f mm: nearest %s; at 1.0 mm: %s' % (r['k'][0], r['k'][1], r['len'],
+          sorted((round(v[0], 3), k) for k, v in nb.items())[:3], sorted((round(v[0], 3), k) for k, v in nb1.items())[:3]))
+last = r10[-1]
+touch_d, touch_pt = touch_len(now, last['segs'], last['k'][1], last['k'][0])
+total = sum(r['len'] for r in r10[:-1]) + touch_d
+# the neighbour that the narrow runs pass closest to
+close = min(((v[0], k, v) for r, nb, nb1 in NB if r['k'][1] < 1.0 for k, v in nb.items()), key=lambda x: x[0])
+close1 = min((v[0] for r, nb, nb1 in NB if r['k'][1] < 1.0 for k, v in nb1.items() if k == close[1]), default=None)
+# copper sticking out of B10 into the opening between the fingers
+ex10 = [t for t in now.d['tracks'] if t['layer'] == 'B.Cu' and t['net'] == 'GND']
+exg = unary_union([t['g'] for t in ex10]).difference(unary_union([p['g']['B.Cu'] for p in now.fing.values()]).buffer(0.002)).intersection(now.common_open)
+exg = [q for q in polys(exg) if q.area > 2e-4]
+# +12V next to B10 (its entry into B9)
+p12 = unary_union([t['g'] for t in now.d['tracks'] if t['layer'] == 'B.Cu' and t['net'] == '+12V'])
+g12 = gap(p12, now.fing['10']['g']['B.Cu'])
+# straight up from the finger centre: what is in the way of a 1.0 mm track
+f10 = now.fing['10']['g']['B.Cu'].bounds
+xc = (f10[0] + f10[2]) / 2
+y = f10[1]
+while y > f10[1] - 12 and not Point(xc, y).buffer(0.5).intersects(now.fill[('GND', 'B.Cu')]):
+    y -= 0.05
+straight = LineString([(xc, f10[1] + 0.8), (xc, y)]).buffer(0.5)
+block = sorted({('via ' if 'drill' in it else '') + it['net'] for it in [t for t in now.d['tracks'] if t['layer'] == 'B.Cu'] + now.d['vias']
+                if it['net'] != 'GND' and it['g'].intersects(straight)})
+print('B10 to the pour %.2f mm (%s); nearest to the narrow runs: %s %.3f (a 1.0 mm track: %s); +12V %.3f mm from B10; exposed %s; '
+      'straight up from the finger centre (to y %.1f) blocked by %s' % (total, '+'.join(lay10), close[1], close[0], close1, g12[0],
+                                                                       [round(q.area, 3) for q in exg], y, block))
+r31 = R['31']; r1 = R['1']
 
+
+GD = (20, 110, 65)       # dark green for GND labels
+NB_C = (60, 62, 70)
 def draw_layer(b, L, box_, S, path, extra_layer=None):
     p = Panel(*box_, S, SS=3)
     d = b.d
@@ -182,8 +185,6 @@ def draw_layer(b, L, box_, S, path, extra_layer=None):
     p.outline(b.outline, (60, 60, 60), width=2)
     return p
 
-GD = (20, 110, 65)       # dark green for GND labels
-NB = (60, 62, 70)
 
 def wlabel(a, pt, txt, dx, dy, col=GD, size=18):
     P0 = a.P(pt); X = (P0[0] + dx, P0[1] + dy)
@@ -203,107 +204,112 @@ def mid(segs):
 def pick(nb, kind, net):
     return next(v for k, v in nb.items() if k[0] == kind and (k[-1] == net or k[1] == net))
 
+
 # ---------------- layout
 pad = 36; gp = 36; S = 66
-BX = (169.8, 120.6, 180.0, 131.0)      # B10 now, both layers
-BO = (169.5, 120.6, 175.3, 131.0)      # B10 on 8dbb6c6
+H_MM = 10.4
+BX = (167.4, 120.6, 177.4, 131.0)       # B10 now
+ZX = (168.4, 126.4, 173.6, 130.75)       # B10 now, close-up of the narrow runs at B11
+BO = (169.5, 120.6, 175.3, 131.0)        # B10 on 8dbb6c6
+SZ = round((BX[3] - BX[1]) * S) / (ZX[3] - ZX[1])
 B1X = (193.1, 123.6, 197.5, 131.0)
 B31X = (116.3, 123.6, 121.4, 131.0)
-wB = round((BX[2] - BX[0]) * S); hB = round((BX[3] - BX[1]) * S); wO = round((BO[2] - BO[0]) * S)
+wB = round((BX[2] - BX[0]) * S); hB = round((BX[3] - BX[1]) * S); wZ = round((ZX[2] - ZX[0]) * SZ); wO = round((BO[2] - BO[0]) * S)
 w1 = round((B1X[2] - B1X[0]) * S); w31 = round((B31X[2] - B31X[0]) * S); h2 = round((B1X[3] - B1X[1]) * S)
-W = pad + wB + gp + wB + gp + wO + pad
+W = pad + wB + gp + wZ + gp + wO + pad
 head = 160
 y1 = head + 40
-cap_h = 118                              # captions under the row-1 panels
+cap_h = 150
 y2 = y1 + hB + cap_h + 70
 H = y2 + h2 + 300
 can = Image.new('RGB', (W, H), (255, 255, 255))
 dr = ImageDraw.Draw(can)
-dr.text((pad, 26), 'PicoGUS THT v1.3.2: why the B10 ground-finger track is narrower than B1\'s', font=font(40, 'Bold'), fill=INK)
-dr.text((pad, 82), 'The ISA ground fingers B1, B10 and B31 each have a track into a GND pour. No pour may come down to the fingers (no-fill strip),',
+dr.text((pad, 26), 'PicoGUS THT v1.3.2: the GND tracks from the ground fingers B1, B10 and B31', font=font(40, 'Bold'), fill=INK)
+dr.text((pad, 82), 'Each ISA ground finger has a track into a GND pour. No pour may come down to the fingers (no-fill strip), so each track crosses',
         font=font(24), fill=GREY)
-dr.text((pad, 114), 'so each track crosses the strip. At B10 the strip is crossed by IRQ2, +5V and ±12V on the solder side and by the data bus on the component side.',
+bn = {}
+for b_ in block:
+    bn.setdefault(b_.replace('via ', ''), []).append('via' if b_.startswith('via ') else 'track')
+btxt = ', '.join('%s%s' % (n_, ' (track and via)' if len(k_) > 1 else '') for n_, k_ in sorted(bn.items(), key=lambda kv: (-len(kv[1]), kv[0])))
+dr.text((pad, 114), 'the strip. Straight above B10, %s are in the way, so B10\'s track goes round to the left.' % btxt,
         font=font(24), fill=GREY)
+
 
 def tag(a, pt, txt, col, size=17):
     """net name on a white tag placed on its own track"""
     a.box_label(a.P(pt), txt, size=size, col=col, w='Bold', fill=(255, 255, 255))
 
+
 def caption(x, y, lines, width):
     for i, (txt, bold, col) in enumerate(lines):
         dr.text((x, y + i * 27), txt, font=font(19, 'Bold' if bold else 'Medium'), fill=col)
 
-# --- row 1: B10 now, B.Cu and F.Cu; B10 on 8dbb6c6
-xB_ = pad; xF_ = pad + wB + gp; xO_ = xF_ + wB + gp
-pB = draw_layer(now, 'B.Cu', BX, S, P['10'][0]); can.paste(pB.done(), (xB_, y1)); frame(dr, xB_, y1, wB, hB)
-heading(dr, (xB_, y1 - 8), 'B10, v1.3.2: solder side (B.Cu)', size=25)
-aB = Annot(can, pB, xB_, y1)
-pF = draw_layer(now, 'F.Cu', BX, S, P['10'][0]); can.paste(pF.done(), (xF_, y1)); frame(dr, xF_, y1, wB, hB)
-heading(dr, (xF_, y1 - 8), 'B10, v1.3.2: component side (F.Cu)', size=25)
-aF = Annot(can, pF, xF_, y1)
-pO = draw_layer(old, 'B.Cu', BO, S, P_old['10'][0], extra_layer=True); can.paste(pO.done(), (xO_, y1)); frame(dr, xO_, y1, wO, hB)
-heading(dr, (xO_, y1 - 8), 'B10 on 8dbb6c6', size=25)
-aO = Annot(can, pO, xO_, y1)
 
-def finger_tags(a, b, lay, names):
+def finger_tags(a, b, lay, names, yy=130.45):
     for num, txt in names:
         q = next(p for p in b.d['pads'] if p['ref'] == 'J3' and p['num'] == num)
         bb = q['g'][lay].bounds
         col = GD if q['net'] == 'GND' else NET_COL.get(q['net'], (90, 70, 20))
         if col == NET_COL.get('+12V'):
             col = (175, 85, 10)
-        tag(a, ((bb[0] + bb[2]) / 2, 130.45), txt, col, size=17)
+        tag(a, ((bb[0] + bb[2]) / 2, yy), txt, col, size=17)
 
-# B.Cu annotations
-finger_tags(aB, now, 'B.Cu', (('10', 'B10 GND'), ('9', 'B9 +12V'), ('8', 'B8')))
-r1in = [r for r in r10 if r['k'] == ('B.Cu', 1.0)]
-wlabel(aB, r1in[-1]['pts'][-2], '1.0 mm', -84, -14)
-wlabel(aB, (175.9, 127.3), '0.6 mm × %.1f mm' % rB['len'], 6, -94)
-tag(aB, (178.25, 127.3), 'via', GD)
-tag(aB, (170.55, 128.45), 'IRQ2', NB)
-tag(aB, (170.7, 127.2), '+5V', NET_COL['+5V'])
-tag(aB, (178.6, 128.3), '+12V', (175, 85, 10))
-tag(aB, (175.3, 124.2), '+3V3', NET_COL['+3V3'])
-g_irq = pick(nbB, 'trk', 'IRQ2'); g_b9 = next(v for k, v in nbB.items() if k[0] == 'pad' and k[1] == 'J3.9')
-aB.measure(g_irq[1], g_irq[2], '%.2f' % g_irq[0], at=('px', 44, 34), size=18)
-aB.measure(irq_p5[1], irq_p5[2], '%.2f' % irq_p5[0], at=('px', -44, -34), size=18)
-aB.measure(g_b9[1], g_b9[2], '%.2f' % g_b9[0], at=('px', 48, 18), size=18)
-c_irq = pick(nbB1, 'trk', 'IRQ2')[0]; c_b9 = next(v for k, v in nbB1.items() if k[0] == 'pad' and k[1] == 'J3.9')[0]
-c_12 = pick(nbB1, 'trk', '+12V')[0]
-yc = y1 + hB + 14
-caption(xB_, yc, [('0.6 mm for %.1f mm to a via in the no-fill strip, between' % rB['len'], False, SUB),
-                  ('IRQ2 (%.2f mm; IRQ2 is %.2f mm from +5V) and B9 (%.2f mm).' % (g_irq[0], irq_p5[0], g_b9[0]), False, SUB),
-                  ('A 1.0 mm track on the same path: %.2f mm to IRQ2,' % c_irq, True, RED),
-                  ('%.2f mm to B9, %.2f mm to the +12V track.' % (c_b9, c_12), True, RED)], wB)
 
-# F.Cu annotations
-finger_tags(aF, now, 'F.Cu', (('41', 'A10 I/OCHRDY'), ('40', 'A9 D0'), ('39', 'A8 D1')))
-wlabel(aF, mid(fsegs), '0.5 mm × %.1f mm' % lenF, 96, 4)
-tag(aF, (178.0, 127.25), 'via', GD)
-TP = aF.P(touchF)
+# --- row 1: B10 now (B.Cu), its narrow runs at B11, B10 on 8dbb6c6
+xB_ = pad; xZ_ = xB_ + wB + gp; xO_ = xZ_ + wZ + gp
+pB = draw_layer(now, 'B.Cu', BX, S, P['10'][0], extra_layer=True); can.paste(pB.done(), (xB_, y1)); frame(dr, xB_, y1, wB, hB)
+heading(dr, (xB_, y1 - 8), 'B10, v1.3.2: solder side (B.Cu), front runs dashed', size=25)
+aB = Annot(can, pB, xB_, y1)
+pZ = draw_layer(now, 'B.Cu', ZX, SZ, P['10'][0]); can.paste(pZ.done(), (xZ_, y1)); frame(dr, xZ_, y1, wZ, hB)
+heading(dr, (xZ_, y1 - 8), 'Close-up: round the top of B11', size=25)
+aZ = Annot(can, pZ, xZ_, y1)
+pO = draw_layer(old, 'B.Cu', BO, S, P_old['10'][0], extra_layer=True); can.paste(pO.done(), (xO_, y1)); frame(dr, xO_, y1, wO, hB)
+heading(dr, (xO_, y1 - 8), 'B10 on 8dbb6c6', size=25)
+aO = Annot(can, pO, xO_, y1)
+
+finger_tags(aB, now, 'B.Cu', (('11', 'B11'), ('10', 'B10 GND'), ('9', 'B9 +12V'), ('8', 'B8')))
+OFF = {0: (-70, 30), 1: (-70, 22), 2: (-120, 4), 3: (-90, -40), 4: (-80, 0), 5: (-80, -36)}
+for i, r in enumerate(r10):
+    if i == 0:
+        continue
+    m = mid(r['segs'])
+    dx, dy = OFF.get(i, (60, 0))
+    wlabel(aB, m, '%.1f mm' % r['k'][1] if r['len'] < 2 else '%.1f mm × %.1f mm' % (r['k'][1], r['len']), dx, dy, col=GD if r['k'][1] >= 1.0 else RED)
+TP = aB.P(touch_pt)
 dr.ellipse([TP[0] - 13, TP[1] - 13, TP[0] + 13, TP[1] + 13], outline=GD, width=3)
-X = (TP[0] + 70, TP[1] - 10)
+X = (TP[0] + 60, TP[1] - 4)
 dr.line([(TP[0] + 13, TP[1] - 2), (X[0] - 4, X[1])], fill=GD, width=2)
-for i, t in enumerate(('touches the', 'front pour')):
+for i, t in enumerate(('touches the', 'back pour')):
     dr.text((X[0], X[1] + (i - 0.5) * 22), t, font=font(18, 'Bold'), fill=GD, anchor='lm', stroke_width=3, stroke_fill=(255, 255, 255))
-g_d4 = pick(nbF, 'trk', 'D4'); g_d3 = pick(nbF, 'trk', 'D3')
-g_c1 = next(v for k, v in nbF.items() if k[0] == 'pad' and k[1] == 'C1.1')
-aF.measure(g_d4[1], g_d4[2], '%.2f' % g_d4[0], at=('px', 50, 6), size=18)
-aF.measure(g_d3[1], g_d3[2], '%.2f' % g_d3[0], at=('px', -50, 20), size=18)
-aF.measure(g_c1[1], g_c1[2], '%.2f' % g_c1[0], at=('px', -54, 26), size=18)
-tag(aF, (177.65, 126.15), 'D4', NB)
-tag(aF, (173.7, 126.4), 'D3', NB)
-tag(aF, (174.2, 127.6), 'D2', NB)
-tag(aF, (171.05, 124.45), 'C1 pad 1', NET_COL['+3V3'])
-tag(aF, (171.0, 122.0), '+3V3', NET_COL['+3V3'])
-c_d4 = pick(nbF1, 'trk', 'D4')[0]; c_c1 = next(v for k, v in nbF1.items() if k[0] == 'pad' and k[1] == 'C1.1')[0]
-c_d3 = pick(nbF1, 'trk', 'D3')[0]
-caption(xF_, yc, [('Then 0.5 mm for %.1f mm on the front until it touches the pour,' % lenF, False, SUB),
-                  ('between D4 (%.2f mm), C1 pad 1 (+3V3, %.2f mm) and D3 (%.2f mm).' % (g_d4[0], g_c1[0], g_d3[0]), False, SUB),
-                  ('A 1.0 mm track on the same path: %.2f mm to D4,' % c_d4, True, RED),
-                  ('%.2f mm to C1 pad 1, %.2f mm to D3.' % (c_c1, c_d3), True, RED)], wB)
+for net, pt in (('+12V', (173.6, 128.6)), ('IRQ2', (175.6, 126.2)), ('+3V3', (174.6, 124.45))):
+    tag(aB, pt, net, (175, 85, 10) if net == '+12V' else NET_COL.get(net, NB_C))
+yc = y1 + hB + 14
+_rt = ['%s %.1f × %.1f mm' % ('back' if r['k'][0] == 'B.Cu' else 'front', r['k'][1], r['len'] if r is not last else touch_d) for r in r10]
+_nchg = sum(1 for a_, b_ in zip(r10, r10[1:]) if a_['k'][0] != b_['k'][0])
+_cl = [' → '.join(_rt[i:i + 2]) + (' →' if i + 2 < len(_rt) else '') for i in range(0, len(_rt), 2)]
+_tail = '%.1f mm from the finger to the pour, %s.' % (total, 'all on the solder side' if _nchg == 0 else '%d layer change%s' % (_nchg, 's' if _nchg > 1 else ''))
+caption(xB_, yc, [(t_, False, SUB) for t_ in (['Width × length:'] + _cl + [_tail])], wB)
 
-# 8dbb6c6 annotations
+# close-up: the gaps to B11 and to +12V, the copper out of the finger
+finger_tags(aZ, now, 'B.Cu', (('11', 'B11 (SMEMW)'), ('10', 'B10 GND'), ('9', 'B9 +12V')), yy=130.35)
+for r, nb, nb1 in NB:
+    if r['k'][1] < 1.0 and ('pad', 'J3.11', now.fing['11']['net']) in nb:
+        v = nb[('pad', 'J3.11', now.fing['11']['net'])]
+        aZ.measure(v[1], v[2], '%.2f' % v[0], at=('px', -40 if r['k'][1] < 0.5 else -62, -46 if r['k'][1] < 0.5 else 30), size=18)
+aZ.measure(g12[1], g12[2], '%.2f' % g12[0], at=('px', 50, -36), size=18)
+for q in exg:
+    c = aZ.P((q.centroid.x, q.centroid.y))
+    dr.ellipse([c[0] - 24, c[1] - 24, c[0] + 24, c[1] + 24], outline=RED, width=3)
+_g11 = min(((v[0], r['k'][1]) for r, nb, nb1 in NB for k, v in nb.items() if k[0] == 'pad' and k[1] == 'J3.11'), default=(None, None))
+_cn = close[1][1] if close[1][0] in ('trk', 'via') else close[1][1].replace('J3.', 'finger ')
+_exa = sum(q.area for q in exg)
+caption(xZ_, yc, [('The %.1f mm run passes %.2f mm from B11 (not connected on' % (_g11[1], _g11[0]), False, SUB),
+                  ('this card); the narrow runs pass %s at %.2f mm,' % (_cn, close[0]), False, SUB),
+                  (('where a 1.0 mm track would overlap it.' if close1 == 0 else 'where a 1.0 mm track would leave %.2f mm.' % close1), True, RED),
+                  ('+12V passes %.2f mm from B10. ' % g12[0] + ('The entry stays inside B10\'s outline.' if _exa < 0.005 else
+                   'The entry sticks out of B10 (%.2f mm², red ring).' % _exa), False, SUB)], wZ)
+
+# 8dbb6c6
 ro = R_old['10']
 for r, (dx, dy) in zip(ro, ((56, 34), (70, 0), (64, 0))):
     txt = '%.1f mm%s' % (r['k'][1], ' (F.Cu)' if r['k'][0] == 'F.Cu' else '')
@@ -319,19 +325,15 @@ heading(dr, (x, y2 - 8), 'B1, v1.3.2 (B.Cu)', size=25)
 a1 = Annot(can, p1, x, y2)
 f1 = now.fing['1']['g']['B.Cu'].bounds
 a1.text(((f1[0] + f1[2]) / 2, 130.4), 'B1 GND', size=19, col=GD, w='Bold')
-wlabel(a1, (195.0, 127.4), '1.0 mm', -70, -40)
+wlabel(a1, mid(r1[0]['segs']), '%.1f mm' % r1[0]['k'][1], -70, -40)
 x += w1 + gp
 p31 = draw_layer(now, 'B.Cu', B31X, S, P['31'][0]); can.paste(p31.done(), (x, y2)); frame(dr, x, y2, w31, h2)
 heading(dr, (x, y2 - 8), 'B31, v1.3.2 (B.Cu)', size=25)
 a31 = Annot(can, p31, x, y2)
 f31 = now.fing['31']['g']['B.Cu'].bounds
 a31.text(((f31[0] + f31[2]) / 2, 130.4), 'B31 GND', size=19, col=GD, w='Bold')
-r31w = next(r for r in r31 if r['k'][1] == 1.0)
-wlabel(a31, mid(r31w['segs']), '1.0 mm', 70, 26)
-wlabel(a31, (r31n['pts'][0][0], (r31n['pts'][0][1] + touch31[1]) / 2), '0.5 mm', 74, -10)
-g_v = pick(nb31, 'via', '+5V')
-a31.measure(g_v[1], g_v[2], '%.2f' % g_v[0], at=('px', 30, -34), size=18)
-tag(a31, (120.6, 126.6), '+5V', NET_COL['+5V'])
+for i, r in enumerate(r31):
+    wlabel(a31, mid(r['segs']), '%.1f mm' % r['k'][1], 70, 26 - 36 * i)
 
 # summary table
 xs = x + w31 + 60
@@ -343,22 +345,24 @@ dr.text((cols[0], ty), 'finger', font=fb, fill=GREY); dr.text((cols[1], ty), 'v1
 dr.text((cols[2], ty), '8dbb6c6', font=fb, fill=GREY); ty += 34
 dr.line([xs, ty - 6, W - pad, ty - 6], fill=FRAME, width=1)
 
+
 def desc(n):
     rr = R[n]
+    lay = ' + '.join(sorted({r['k'][0] for r in rr}))
     if all(r['k'][1] == 1.0 for r in rr):
-        return ['1.0 mm all the way (B.Cu)']
-    if n == '10':
-        return ['1.0 mm inside the finger, then 0.6 mm',
-                'for %.1f mm (B.Cu) to a via in the no-fill' % rB['len'],
-                'strip, then 0.5 mm for %.1f mm (F.Cu)' % lenF,
-                'before it reaches the front pour']
-    return ['1.0 mm inside the finger, then 0.5 mm',
-            '(%.2f mm to a +5V via); reaches the' % g_v[0],
-            'back pour %.1f mm further on' % len31]
+        return ['1.0 mm all the way (%s)' % lay]
+    nchg = sum(1 for a_, b_ in zip(rr, rr[1:]) if a_['k'][0] != b_['k'][0])
+    return ['%s mm (%s),' % (' / '.join('%.1f' % r['k'][1] for r in rr), lay),
+            '%d layer change%s' % (nchg, '' if nchg == 1 else 's'),
+            'over %.1f mm to the pour; narrowest %.1f mm' % (total if n == '10' else sum(r['len'] for r in rr), min(r['k'][1] for r in rr))]
+
+
 def desc_old(n):
     ws = sorted({r['k'][1] for r in R_old[n][:3]})
     lay = ' + '.join(sorted({r['k'][0] for r in R_old[n]}))
     return ['%s mm to the pour (%s)' % ('/'.join('%.1f' % w for w in ws), lay)]
+
+
 for n in ('1', '10', '31'):
     a_ = desc(n); b_ = desc_old(n)
     dr.text((cols[0], ty), 'B%s' % n, font=fb, fill=GD)
@@ -373,26 +377,32 @@ for n in ('1', '10', '31'):
 ly = y2 + h2 + 30
 x = pad; fs = font(21)
 x = swatch(dr, x, ly, 'GND path finger → pour', fill=NET_COL['GND'], kind='line', fs=fs)
-x = swatch(dr, x, ly, 'path on the other layer (8dbb6c6)', fill=(150, 205, 170), outline=NET_COL['GND'], fs=fs)
+x = swatch(dr, x, ly, 'path on the other layer', fill=(150, 205, 170), outline=NET_COL['GND'], fs=fs)
 x = swatch(dr, x, ly, 'GND pour', fill=POUR, fs=fs)
 x = swatch(dr, x, ly, 'no-fill strip', fill=(246, 246, 246), outline=(150, 150, 150), fs=fs, hatch=(190, 190, 190))
 x = swatch(dr, x, ly, 'pad / finger', fill=PAD, fs=fs)
+x = swatch(dr, x, ly, 'opening between the fingers', fill=MASK_OPEN, fs=fs)
 ly2 = ly + 36; x = pad
 for net in ('+12V', '+5V', '+3V3'):
     x = swatch(dr, x, ly2, net, fill=NET_COL[net], kind='line', fs=fs) - 10
 x = swatch(dr, x, ly2, 'other nets', fill=SIG, kind='line', fs=fs)
 dr.rounded_rectangle([x, ly2 - 1, x + 56, ly2 + 23], radius=4, fill=(255, 255, 255), outline=RED, width=1)
 dr.text((x + 28, ly2 + 11), '0.21', font=font(16, 'Bold'), fill=RED, anchor='mm')
-dr.text((x + 66, ly2 + 11), 'clearance in mm (rule 0.20 mm)', font=fs, fill=INK, anchor='lm')
+dr.text((x + 66, ly2 + 11), 'clearance in mm', font=fs, fill=INK, anchor='lm')
+x += 66 + dr.textlength('clearance in mm', font=fs) + 36
+dr.ellipse([x, ly2, x + 22, ly2 + 22], outline=RED, width=3)
+dr.text((x + 32, ly2 + 11), 'copper out of the finger', font=fs, fill=INK, anchor='lm')
 
 vy = ly2 + 54; fz = font(21)
 lines = (
-    'Why accepted: B10 sits between the +12V finger B9 and a strip crossed by IRQ2 and the +5V run (solder side) and by D2-D4 (component side);',
-    'a 1.0 mm track there breaks the 0.20 mm clearance on both layers. B10 is one of three GND fingers: B1 has 1.0 mm all the way and B31 reaches',
-    'its pour after %.1f mm. 8dbb6c6 had 1.0 mm from all three (the README lists it under "worse").' % len31,
+    'B10\'s track is %.1f mm at its narrowest; it carries a share of the card\'s ground return with B1 (%s) and B31 (%s).'
+    % (min(r['k'][1] for r in narrow), desc('1')[0].split(' (')[0], desc('31')[0].split(' (')[0]),
+    '8dbb6c6 had 1.0 mm from all three, B10 with an F.Cu jumper between two vias. The +12V entry into B9 and the B10 copper in the opening are in the',
+    'gold-finger figure as well.',
 )
 for ln in lines:
     dr.text((pad, vy), ln, font=fz, fill=SUB); vy += 30
+    if dr.textlength(ln, font=fz) > W - 2 * pad: print('WARNING: footer line too long:', ln)
 can = can.crop((0, 0, W, vy + 22))
 can.save(OUT)
 print(can.size)

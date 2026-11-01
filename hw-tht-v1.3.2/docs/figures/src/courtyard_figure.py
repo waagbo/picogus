@@ -18,7 +18,8 @@ refs = sorted({o['a'] for o in ov} | {o['b'] for o in ov})
 fps = d['fps']
 xs = [p[0] for r in refs for c in fps[r]['crt'] for p in c]; ys = [p[1] for r in refs for c in fps[r]['crt'] for p in c]
 M = 1.2
-X0, X1, Y0, Y1 = min(xs) - M, max(xs) + M, min(ys) - M, max(ys) + M
+ML = 2.0   # left margin: the column's reference labels stand vertically at x 117.5, left of the courtyards
+X0, X1, Y0, Y1 = min(xs) - ML, max(xs) + M, min(ys) - M, max(ys) + M
 
 BG = (250, 250, 248); INK = (30, 32, 36); PAD = (214, 168, 40); FAB = (140, 140, 140)
 CRT = (30, 110, 220); RED = (229, 57, 53)

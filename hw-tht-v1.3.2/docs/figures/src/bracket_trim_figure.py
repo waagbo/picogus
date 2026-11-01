@@ -79,16 +79,26 @@ def edge_dist(d, ref, E):
 
 
 PARTS = ['H1', 'H2', 'J8', 'J5', 'U1', 'RV1', 'J11']
+JACKS = ('J5', 'J8')
+# the two 3.5 mm jacks swapped places on v1.3.2 (J5 MIDI out now above RV1, J8 line out below H1): each jack is
+# compared with the jack that sat in the same place on the old boards (its "slot"), not with its own old position
+SLOT = {r: r for r in PARTS}
+for r in JACKS:
+    SLOT[r] = min(JACKS, key=lambda o: abs(old['fps'][o]['pos'][1] - new['fps'][r]['pos'][1]))
+SWAPPED = any(SLOT[r] != r for r in JACKS)
 M = {}
 for r in PARTS:
-    xn, xo, x1 = new['fps'][r]['pos'][0], old['fps'][r]['pos'][0], o131['fps'][r]['pos'][0]
+    o = SLOT[r]
+    xn, xo, x1 = new['fps'][r]['pos'][0], old['fps'][o]['pos'][0], o131['fps'][o]['pos'][0]
     dn = edge_dist(new, r, EN)
     fx = [p[0] for g in new['fps'][r]['fab'] if g['side'] == 'F' for pl in g['pl'] for p in pl]
-    fxo = [p[0] for g in old['fps'][r]['fab'] if g['side'] == 'F' for pl in g['pl'] for p in pl]
+    fxo = [p[0] for g in old['fps'][o]['fab'] if g['side'] == 'F' for pl in g['pl'] for p in pl]
     M[r] = {'xn': xn, 'xo': xo, 'x131': x1, 'mv': xo - xn, 'mv131': x1 - xn, 'cu': dn[0], 'cu_pad': dn[1],
-            'front': max(fx) if fx else None, 'front_old': max(fxo) if fxo else None, 'y': new['fps'][r]['pos'][1]}
-    print('%-4s x %.3f -> %.3f (moved %.2f; vs v1.3.1 %.2f)  nearest copper to the new edge %.2f mm (pad %s)  body front x %s'
-          % (r, xo, xn, xo - xn, x1 - xn, dn[0], dn[1], '%.2f' % max(fx) if fx else '-'))
+            'front': max(fx) if fx else None, 'front_old': max(fxo) if fxo else None, 'y': new['fps'][r]['pos'][1],
+            'yo': old['fps'][o]['pos'][1], 'slot': o}
+    print('%-4s x %.3f -> %.3f (moved %.2f; vs v1.3.1 %.2f)  nearest copper to the new edge %.2f mm (pad %s)  body front x %s%s'
+          % (r, xo, xn, xo - xn, x1 - xn, dn[0], dn[1], '%.2f' % max(fx) if fx else '-',
+             '  [in the place of %s on 8dbb6c6: y %.2f -> %.2f]' % (o, old['fps'][o]['pos'][1], new['fps'][r]['pos'][1]) if o != r else ''))
 
 # bracket drawing: plate faces (long vertical lines) and tab ends
 vert = sorted({round(pl[0][0], 3) for e in new['drawings'] for pl in e['pl']
@@ -111,8 +121,10 @@ usb = M['U1']['front']; usb_o = M['U1']['front_old']
 print('Pico USB end x %.2f: %.2f mm past the edge line centre (was %.2f mm inside); slots end %.2f mm from the edge (was %.2f)'
       % (usb, usb - EN, EO - usb_o, slot_gap, slot_gap_o))
 noseJ8, noseJ5 = M['J8']['front'], M['J5']['front']
-print('J8 / J5 nose %.3f / %.3f mm behind the plate outer face (was %.3f / %.3f past it); J11 front %.2f mm behind the plate inner face'
+print('J8 / J5 nose %.3f / %.3f mm behind the plate outer face (the jack in the same place was %.3f / %.3f past it); J11 front %.2f mm behind the plate inner face'
       % (POUT - noseJ8, POUT - noseJ5, M['J8']['front_old'] - POUT, M['J5']['front_old'] - POUT, PIN - M['J11']['front']))
+# the upper and the lower jack (smaller / larger y)
+JU, JL = sorted(JACKS, key=lambda r: M[r]['y'])
 
 # ---------------------------------------------------------------- drawing helpers
 OLDC = (215, 70, 60)       # old outline / old positions
@@ -153,7 +165,7 @@ def draw_scene(v, S_, detail=1.0, parts=PARTS, labels_old=True):
         for ln in fab(new, r):
             v.outline(rot(ln), FABC, 1.3 * detail)
         if abs(M[r]['mv']) > 1e-3 and labels_old:
-            for num, g in copper(old, r):
+            for num, g in copper(old, M[r]['slot']):
                 v.outline(rot(g), OLDC, 1.3 * detail, dash=(5, 4))
         for num, g in copper(new, r):
             v.fill(rot(g), PAD)
@@ -197,7 +209,8 @@ def T(v, p):
 
 hy = M['H1']['y']
 zH, vH = zoom(209.4, 223.4, hy - 8.0, hy + 8.0, 30)
-zJ, vJ = zoom(211.4, 223.6, 42.1, 56.1, 34)
+jy = M[JU]['y']
+zJ, vJ = zoom(211.4, 223.6, jy - 6.9, jy + 7.1, 34)
 zU, vU = zoom(212.9, 223.5, 102.5, 115.3, 37)
 
 # H1: hole centres measured from the plate's inner face, old on the left, new on the right
@@ -219,9 +232,13 @@ CAP = {
           'face, was %.2f; moved %.2f mm. The bracket tab (blue) must' % (PIN - M['H1']['xo'], M['H1']['mv']),
           'reach %.2f mm further in than the old one (orange).' % (TO - TN),
           'Its %.1f mm pad is %.2f mm from the new edge.' % (2 * max(abs(g.bounds[2] - M['H1']['xn']) for n_, g in copper(new, 'H1')), M['H1']['cu'])],
-    'J': ['J8 moved %.2f mm in (J5 %.2f mm): the sleeve pads are %.2f mm' % (M['J8']['mv'], M['J5']['mv'], M['J8']['cu']),
-          'from the new edge. The jack noses now end %.2f / %.2f mm' % (POUT - noseJ8, POUT - noseJ5),
-          'behind the plate\'s outer face (were %.2f / %.2f mm past it).' % (M['J8']['front_old'] - POUT, M['J5']['front_old'] - POUT)],
+    'J': (['%s now sits where %s was, %.2f mm further in (%s, below, %.2f mm further in' % (JU, M[JU]['slot'], M[JU]['mv'], JL, M[JL]['mv']),
+           'than %s was there): the sleeve pads are %.2f / %.2f mm from the new edge.' % (M[JL]['slot'], M[JU]['cu'], M[JL]['cu'])]
+          if SWAPPED else
+          ['%s moved %.2f mm in (%s %.2f mm): the sleeve pads are %.2f mm' % (JU, M[JU]['mv'], JL, M[JL]['mv'], M[JU]['cu']),
+           'from the new edge.']) +
+         ['The jack noses (%s / %s) end %.2f / %.2f mm behind the plate\'s outer face' % (JU, JL, POUT - M[JU]['front'], POUT - M[JL]['front']),
+          '(the old ones %.2f / %.2f mm past it).' % (M[JU]['front_old'] - POUT, M[JL]['front_old'] - POUT)],
     'U': ['The Pico moved %.2f mm in for the trim (%.2f mm from v1.3.1).' % (M['U1']['mv'], M['U1']['mv131']),
           'Its USB end is %.2f mm past the edge line (was %.2f mm' % (usb - EN, EO - usb_o),
           'inside); the relief slots end %.2f mm from the edge and' % slot_gap,
@@ -251,16 +268,16 @@ can.paste(strip_im, (sx, y)); frame(dr, sx, y, strip_im)
 
 # part labels under the strip, with leader lines to the part
 LBL = {
-    'J8': ['J8 line out', '%.2f mm in, sleeve pad %.2f mm' % (M['J8']['mv'], M['J8']['cu'])],
+    'J8': ['J8 line out' + (' (was J5\'s place)' if SLOT['J8'] != 'J8' else ''), '%.2f mm in, sleeve pad %.2f mm' % (M['J8']['mv'], M['J8']['cu'])],
     'RV1': ['RV1 WT volume', 'stays, copper %.2f mm' % M['RV1']['cu']],
     'H1': ['H1 tab hole', '%.2f mm in, pad %.2f mm' % (M['H1']['mv'], M['H1']['cu'])],
-    'J5': ['J5 MIDI out', '%.2f mm in, sleeve pad %.2f mm' % (M['J5']['mv'], M['J5']['cu'])],
+    'J5': ['J5 MIDI out' + (' (was J8\'s place)' if SLOT['J5'] != 'J5' else ''), '%.2f mm in, sleeve pad %.2f mm' % (M['J5']['mv'], M['J5']['cu'])],
     'J11': ['J11 USB-A', 'stays, copper %.2f mm' % M['J11']['cu']],
     'U1': ['U1 Pico, USB end', '%.2f mm in (v1.3.1: %.2f), TP2/3 %.2f mm' % (M['U1']['mv'], M['U1']['mv131'], M['U1']['cu'])],
     'H2': ['H2 tab hole', '%.2f mm in, pad %.2f mm' % (M['H2']['mv'], M['H2']['cu'])],
 }
-ROW = {'J8': 0, 'RV1': 1, 'H1': 0, 'J5': 1, 'J11': 0, 'U1': 1, 'H2': 0}
-ANCH = {'J8': (49.1, 213.0), 'RV1': (61.4, 210.5), 'H1': (M['H1']['y'], 212.0), 'J5': (75.5, 213.0), 'J11': (92.5, 207.0),
+ROW = {JU: 0, 'RV1': 1, 'H1': 0, JL: 1, 'J11': 0, 'U1': 1, 'H2': 0}
+ANCH = {'J8': (M['J8']['y'], 213.0), 'RV1': (61.4, 210.5), 'H1': (M['H1']['y'], 212.0), 'J5': (M['J5']['y'], 213.0), 'J11': (92.5, 207.0),
         'U1': (108.9, 214.0), 'H2': (M['H2']['y'], 212.0)}
 ly0 = y + strip_im.size[1] + 18
 for r in PARTS:
@@ -281,7 +298,7 @@ y = ly0 + 2 * 62 + 34
 capend = 0
 fzc = font(20)
 xz = [pad, pad + zH.size[0] + gap, pad + zH.size[0] + gap + zJ.size[0] + gap]
-for xx_, ttl, im_, k in ((xz[0], 'Zoom: H1 and its bracket tab', zH, 'H'), (xz[1], 'Zoom: J8 at the bracket plate', zJ, 'J'),
+for xx_, ttl, im_, k in ((xz[0], 'Zoom: H1 and its bracket tab', zH, 'H'), (xz[1], 'Zoom: %s at the bracket plate' % JU, zJ, 'J'),
                           (xz[2], 'Zoom: the Pico\'s USB end', zU, 'U')):
     dr.text((xx_, y), ttl, font=fh, fill=INK)
     can.paste(im_, (xx_, y + 42)); frame(dr, xx_, y + 42, im_)
@@ -311,8 +328,9 @@ yt += 42
 for name, cx in cols:
     dr.text((xt + cx, yt), name, font=fTb, fill=INK)
 yt += 30
+TNAME = {'U1': 'U1 Pico (centre)', JU: '%s (upper jack)' % JU, JL: '%s (lower jack)' % JL}
 rows = [('Outline end', outline(o131).bounds[2], EO, EN, EO - EN)] + [
-    (LBL[r][0].replace(', USB end', ' (centre)').replace(' tab hole', '').replace(' line out', '').replace(' MIDI out', '').replace(' WT volume', '').replace(' USB-A', ''), M[r]['x131'], M[r]['xo'], M[r]['xn'], M[r]['mv']) for r in PARTS]
+    (TNAME.get(r, r), M[r]['x131'], M[r]['xo'], M[r]['xn'], M[r]['mv']) for r in ['H1', 'H2', JU, JL, 'U1', 'RV1', 'J11']]
 for nm_, x1_, xo, xn, mv in rows:
     dr.line([(xt, yt - 4), (xt + 500, yt - 4)], fill=(225, 225, 225))
     dr.text((xt, yt), nm_, font=fT, fill=INK)
@@ -322,7 +340,9 @@ for nm_, x1_, xo, xn, mv in rows:
     dr.text((xt + 430, yt), '%.2f' % mv if abs(mv) > 1e-3 else '–', font=fTb if abs(mv) > 1e-3 else fT, fill=RED if abs(mv) > 1e-3 else TXT2)
     yt += 28
 yt += 4
-for ln in ('moved = 8dbb6c6 to v1.3.2; U1 moved %.2f mm' % M['U1']['mv131'], 'from v1.3.1. Positions are footprint origins.'):
+for ln in (['moved = 8dbb6c6 to v1.3.2; U1 moved %.2f mm' % M['U1']['mv131'], 'from v1.3.1. Positions are footprint origins.']
+           + (['%s and %s swapped places: the old columns give the' % (JU, JL), 'jack that was in the same place (%s above, %s below).' % (M[JU]['slot'], M[JL]['slot'])]
+              if SWAPPED else [])):
     dr.text((xt, yt), ln, font=font(18), fill=TXT2); yt += 25
 ymax = max(yz, yt)
 
