@@ -8,9 +8,9 @@ the fine-pitch chips soldered straight to the card and a test pad on every one o
   probe, a meter or a scope (see [U3/U4 and U9 with a test pad per pin](#u3u4-and-u9-with-a-test-pad-per-pin)).
   The TSSOP-to-DIP adapter boards of the earlier v1.3.2 layout are gone, and so are their sockets.
 * **The GY-PCM5102 module option (J10) is gone.** The on-board DAC is always fitted.
-* **New placement** of the DAC block, the mixer and the jacks (2026-10-31): the DAC sits above the Pico with its
-  digital side facing it, the mixer above the DAC, MIDI OUT at the top of the bracket end and LINE OUT below WT VOL
-  (see [Placement](#placement)).
+* **New placement** of the DAC block, the mixer and the jacks (2026-10-31 / 2026-11-01): the DAC sits above U3/U4
+  with its analog side facing east toward the output filter and the mixer above it, MIDI OUT at the top of the
+  bracket end and LINE OUT below WT VOL (see [Placement](#placement)).
 * **C36** (U9 charge-pump decoupling) is a through-hole 0.1 µF disc, and all eight DAC decoupling discs sit on the
   side of U9 where their pins are (see [DAC decoupling](#dac-decoupling)).
 * **C8/C10** (U8 PSRAM decoupling) are the v1.3.1 through-hole discs, next to U8.
@@ -23,20 +23,15 @@ The main board is through-hole apart from **U3, U4, U9** (TSSOP, 0.65 mm pitch),
 1.27 mm pitch) and the optional **U12** (USBLC6-2SC6, SOT-23-6), all on the front. The rest of the circuit is
 v1.3.1's: USB-A host port, Waveblaster header, op-amp mixer.
 
-> **Placement iteration (2026-11-01), not routed.** `PicoGUS-THT.kicad_pcb` now holds a new hand placement with the
-> DAC block and the mixer rearranged and no tracks; DRC finds only the 12 accepted courtyard overlaps (and the
-> unrouted connections). Everything below, including the routing, metrics, figures, renders and the JLCPCB export,
-> describes the routed layout of commit 298e993 (`git show 298e993:hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb`).
->
-> **Status: routed; not built or tested yet.** The placement of 2026-10-31 is routed on two layers (2026-11-01).
+> **Status: routed; not built or tested yet.** The placement of 2026-11-01 is routed on two layers (2026-11-01).
 > The schematic's ERC is the same as v1.3.1's (280 warnings, 0 errors). DRC with schematic parity finds 0
 > unconnected items and, as errors, only the 12 accepted courtyard overlaps in the logic column, so
 > `hw-common/tools/jlcpcb.sh` exports with `FORCE=1`; `build/jlcpcb/` holds that export (not in git: the repository
-> ignores `build/`). A first route was checked by an independent review and re-routed for its findings. Compared
-> with the routed layout before it (DIP adapters, commit d5c4a85) it is better on I2S length, the DAC-to-mixer path
-> and the vias at silkscreen text, and worse on the ISA data-bus length, the DAC output, summing-node and decoupling
-> paths, which the new placement sets, and on the line-out ground error from a ground loop without a Waveblaster
-> (still under the DAC's noise floor at 10 mA of loop current): see [Layout status](#layout-status).
+> ignores `build/`). The first routed TSSOP layout (commit 298e993) was reviewed independently; this placement
+> shortens the DAC outputs and the mixer's summing nodes that review pointed at, and its route applies the review's
+> rules from the start. Compared with the routed DIP-adapter layout (commit d5c4a85) it is better on I2S, the
+> DAC-to-mixer path and the vias at silkscreen text, and worse on the ISA data-bus length, which the test pads set:
+> see [Layout status](#layout-status).
 
 Files:
 
@@ -74,7 +69,7 @@ board.
 |---|---|---|
 | Footprint | `PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder_TestPads` | `PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder_TestPads` |
 | Courtyard | 11.4 × 5.75 mm | 11.4 × 7.05 mm |
-| Position (centre) | U3 (150.22, 110.10), U4 (161.44, 110.12), both 90° (pin 1 at the bottom left) | (168.99, 83.42), 180° (pin 1 at the bottom right) |
+| Position (centre) | U3 (150.22, 110.10), U4 (161.44, 110.12), both 90° (pin 1 at the bottom left) | (156.10, 84.53), 180° (pin 1 at the bottom right) |
 
 * **Land pattern**: the TSSOP hand-solder pads (1.775 × 0.40 mm at ±3.01 mm from the centre, toes out to ±3.9 mm),
   long enough to put an iron on each pin.
@@ -86,7 +81,8 @@ board.
   between two pins shows up as a short between their pads.
 * **Routing**: an outer-column pin is routed from its test pad. An inner-column pin that is used gets a 0.2 mm
   escape stub straight on from its test pad, centred between the two outer pads, to 5.80 mm from the centre, and is
-  routed from the stub end (26 stubs on the board). The router cannot squeeze a track between two outer pads (0.6 mm
+  routed from the stub end (26 stubs; the two left unused are removed after routing, see
+  [Layout status](#layout-status)). The router cannot squeeze a track between two outer pads (0.6 mm
   gap) any other way, and the stubs keep the 0.2 mm clearance exactly as the pin-to-pad tracks do.
 * **Pin numbers stay the schematic's**: U9 is 1 CPVDD, 2 CAPP, 3 CPGND, 4 CAPM, 5 VNEG, 6 OUTL, 7 OUTR, 8 AVDD,
   9 AGND, 10 DEMP, 11 FLT, 12 SCK, 13 BCK, 14 DIN, 15 LRCK, 16 FMT, 17 XSMT, 18 LDOO, 19 DGND, 20 DVDD.
@@ -109,35 +105,35 @@ because U9's circuit uses them. U9, C12–C20, C36, FB3, R7 and R8 are always fi
 ### DAC decoupling
 
 C36 (U9 CPVDD decoupling) is the board's standard 0.1 µF 50 V X7R radial disc (Murata RDER71H104K0M1H03A, the 0.1 µF
-line of the BOM) instead of v1.3.1's 0603. The DAC's eight discs stand in two columns of three beside U9 and two
-single positions, symmetric about U9: on the right, beside pins 1–10 (charge pump, VNEG, outputs, AVDD), C13 (AVDD),
-C17 (VNEG), C16 (CAPP/CAPM) and C36 (CPVDD); on the left, beside pins 11–20 (I2S, LDOO, DVDD), C20 (output filter),
-C14 (+3V3), C18 (LDOO) and C15 (AVDD, 10 µF); C12 (DVDD) below U9 and C19 (output filter) above it.
+line of the BOM) instead of v1.3.1's 0603. U9 stands at 180° with its analog pins 1–10 facing east, toward the output
+filter and the mixer, and its digital pins 11–20 facing west. Each disc sits on the side of the pins it serves:
 
-* **Each disc on its own pin's side.** In the first hand placement of this layout the discs were on the opposite
-  side of U9 from their pins (CPVDD 10.5 mm, DVDD 10.7 mm from their discs). They were reassigned among the same
-  slots, keeping the look; distances from the chip pin to the nearest pad of its disc, straight line:
+* **East, beside pins 1–10**, in rows 3.0 mm apart: C15 (AVDD, 10 µF) and C13 (AVDD) at the top, the output
+  resistors R8/R7 level with pins 7/6, then C16 (CAPP/CAPM) and C17 (VNEG); the filter discs C20/C19 end the C13 and
+  C16 rows on the east.
+* **South, under pins 1–3**: C36 (CPVDD/CPGND), with C14 (+3V3) below it.
+* **West, beside pins 11–20**: C18 (LDOO) level with pins 17–19 and C12 (DVDD) below pin 20. FB3 (the AVDD bead)
+  runs along the top of the block from the +3V3 side in the west to its AVDD pad above C15.
 
-  | Disc | Pins | Before the reassignment | Now | DIP-adapter layout (d5c4a85) |
-  |---|---|---|---|---|
-  | C36 | CPVDD (1) / CPGND (3) | 10.5 / 15.6 mm | 9.7 / 5.6 mm | 2.7 / 9.2 mm |
-  | C16 | CAPP (2) / CAPM (4) | 10.0 / 4.8 mm | 9.5 / 4.6 mm | 3.2 / 3.2 mm |
-  | C17 | VNEG (5) | 6.1 mm | 9.6 mm | 6.6 mm |
-  | C13 | AVDD (8) / AGND (9) | 9.0 / 7.7 mm | 5.1 / 9.6 mm | 4.7 / 6.7 mm |
-  | C18 | LDOO (18) / DGND (19) | 5.0 / 9.9 mm | 4.5 / 9.5 mm | 3.5 / 9.1 mm |
-  | C12 | DVDD (20) / DGND (19) | 10.7 / 15.8 mm | 2.6 / 6.4 mm | 4.5 / 8.4 mm |
+Distances from the chip pin to the nearest pad of the part, straight line:
 
-* **C36 and C16 face the other way** (pad 1 outward, chosen for the look): C36's CPVDD pad is 9.7 mm from pin 1
-  where turning it would give 5.0 mm. C16 only joins CAPP and CAPM, so its direction does not matter.
-* **C17 turned 180°** during routing (pad 1, VNEG, now the outer pad like C13/C16/C36): on U9's right edge the pins
-  come out in the order OUTR (7), OUTL (6), VNEG (5); DAC_OUTL goes up to R7 above U9, and with C17's VNEG pad on
-  the inside VNEG had to cross DAC_OUTL's way to reach it. Now VNEG runs on the front under C17's body to its outer
-  pad, and DAC_OUTL drops to the back through a via next to its test pad (0.29 mm from C17's GND pad) and runs up
-  under C17 and C13 to R7. VNEG's disc is 9.6 mm from pin 5 in a straight line (6.6 mm on the DIP-adapter layout);
-  the run stays inside the DAC block, next to the analog pins only.
-* C18 was 0.13 mm out of line with its mirror partner C16 in the uploaded placement, so its courtyard touched
-  C15's; it is now in line with C16.
+| Part | Pins | DIP-adapter layout (d5c4a85) | First routed TSSOP layout (298e993) | Now |
+|---|---|---|---|---|
+| C36 | CPVDD (1) / CPGND (3) | 2.7 / 9.2 mm | 9.7 / 5.6 mm | 3.6 / 5.4 mm |
+| C16 | CAPP (2) / CAPM (4) | 3.2 / 3.2 mm | 9.5 / 4.6 mm | 9.7 / 5.5 mm |
+| C17 | VNEG (5) | 6.6 mm | 9.6 mm | 8.1 mm |
+| C13 | AVDD (8) / AGND (9) | 4.7 / 6.7 mm | 5.1 / 9.6 mm | 5.6 / 9.9 mm |
+| C15 | AVDD (8) | 7.3 mm | 12.4 mm | 7.8 mm |
+| C18 | LDOO (18) / DGND (19) | 3.5 / 9.1 mm | 4.5 / 9.5 mm | 4.0 / 9.0 mm |
+| C12 | DVDD (20) / DGND (19) | 4.5 / 8.4 mm | 2.6 / 6.4 mm | 5.4 / 3.8 mm |
+| R7 / R8 | OUTL (6) / OUTR (7) | 3.0 / 2.8 mm | 6.8 / 8.2 mm | 4.7 / 4.6 mm |
+| FB3 | AVDD (8) | 2.8 mm | 14.1 mm | 6.3 mm |
 
+* **C36 is the nearest disc to its pin** (3.6 mm from CPVDD), as the PCM510x datasheet asks for the charge-pump
+  supply. C16 (the flying capacitor between CAPP and CAPM) stays 9.7 mm from CAPP: it shares the east column with
+  the output resistors, which sit level with their pins.
+* C16 and C17 were 0.02 mm off the 3.0 mm row grid in the uploaded placement (y 88.60 / 91.60), so C16's courtyard
+  touched R7's by 0.015 mm; they are now at y 88.62 / 91.62, in line with C19.
 ### C8/C10: through-hole discs next to U8
 
 | Ref | Part | DigiKey | LCSC |
@@ -188,9 +184,9 @@ x positions](docs/figures/bracket-trim.png)
 
 ### Placement
 
-The board holds a hand arrangement on the 102 mm outline: the logic column and the Pico from 2026-10-28, and a new
-DAC, mixer and jack arrangement for the soldered TSSOPs from 2026-10-31, routed afterwards (see
-[Layout status](#layout-status)).
+The board holds a hand arrangement on the 102 mm outline: the logic column and the Pico from 2026-10-28, the jack
+arrangement for the soldered TSSOPs from 2026-10-31, and the DAC block and mixer as rearranged on 2026-11-01 after a
+first route, routed afterwards (see [Layout status](#layout-status)).
 
 * **Logic column at the left edge** (as on the earlier v1.3.2 layout). U10, U7, U6 and U5 (DIP-14, 90°, pin 1 at the
   left as on v1.3.1) are stacked in line with U2 at x 120.07, 12.05 mm apart (pin 1 at y 65.62 / 77.67 / 89.71 /
@@ -205,20 +201,23 @@ DAC, mixer and jack arrangement for the soldered TSSOPs from 2026-10-31, routed 
 * **U3/U4** (TSSOP-16 with test pads, 90°): U3 (D0–D3, A0–A3) at (150.22, 110.10) and U4 (D4–D7, A4–A7) at
   (161.44, 110.12), pin 1 at the bottom left. Their decoupling discs C3/C5 lie above them at y 102.29 (C3's +3V3 pad
   at x 147.88, 4.8 mm from U3's pin 16), R2 at (160.97, 99.01).
-* **DAC block, above the Pico**: U9 (TSSOP-20 with test pads) at (168.99, 83.42), 180°: pins 11–20 (I2S, LDOO,
-  DGND, DVDD) on its left, pins 1–10 (charge pump, VNEG, outputs, AVDD, AGND) on its right. The decoupling discs
-  stand in two columns beside it (see [DAC decoupling](#dac-decoupling)): C13, C17, C16, C36 at x 181.49 (y 79.42 /
-  82.42 / 85.42 / 88.42), C14, C18, C15 at x 161.47 (y 82.42 / 85.42 / 88.42). The output filter is in two rows above U9,
-  toward the mixer: C20 (161.47, 73.35), R8 (166.57, 76.35), R7 (171.28, 76.35), C19 (176.38, 73.35). C12 (DVDD) lies
-  below U9 at (171.49, 88.92) and FB3 (the AVDD bead) along the bottom at (175.32, 92.35), facing the Pico's top row
-  (y 100). The block is symmetric about U9's vertical centre line; `DAC` stands below it at (159.00, 91.00).
-* **Mixer, above the DAC**: U11 (DIP-8, 90°) at (165.69, 65.31), C28/C29 (±12VA) above and below it at x 166.50,
-  the feedback caps C30/C31 on its left at (157.69, 63.30 / 60.30), R23/R24 (±12V 10 Ω) at (174.27, 54.80) and
-  (164.07, 68.31), C32/C33 (47 µF) at x 178.01 (y 57.30 / 63.30), C22/C23 at (182.50, 61.50 / 54.50), and the
-  mixer resistors in two columns: R13, R11, R22, R10, R21 at x 189.43 (y 54.50 / 58.00 / 65.00 / 72.50 / 79.50) and
-  R20, R12, R19 at x 199.58 (y 61.50 / 69.00 / 76.00). `MIXER` at (160.27, 57.80).
+* **DAC block, above U3/U4 and the Pico's far end**: U9 (TSSOP-20 with test pads) at (156.10, 84.53), 180°: pins
+  11–20 (I2S, LDOO, DGND, DVDD) on its west side, pins 1–10 (charge pump, VNEG, outputs, AVDD, AGND) on its east side,
+  facing the output filter and the mixer. East of it, in rows 3.0 mm apart (see [DAC decoupling](#dac-decoupling)):
+  C15 (163.60, 76.53), C13 (168.60, 79.53), R8 (163.60, 82.60), R7 (163.62, 85.62), C16 (168.60, 88.62) and C17
+  (163.60, 91.62), with the filter discs C20 (170.70, 79.53) and C19 (170.70, 88.62) at the east end. C36 (161.00,
+  90.50) and C14 (156.00, 93.50) lie under U9's pins 1–3, C18 (149.10, 86.03) and C12 (153.60, 90.53) on its west
+  side, and FB3 (the AVDD bead) along the top at (148.60, 77.03). `DAC` stands at (146.11, 92.10).
+* **Mixer, above the DAC block**: U11 (DIP-8, 0°) at (173.00, 61.00), its feedback discs C30/C31 standing (90°) at
+  its two ends, (170.12, 65.08) and (183.50, 67.00); C28 (+12VA) above it at (180.62, 54.08) and C29 (−12VA) below at
+  (175.62, 75.08); R23/R24 (±12V 10 Ω) at (170.42, 57.50) / (170.42, 72.00); C32/C33 (47 µF) standing at x 184.62
+  (y 57.12 / 70.08). The mixer resistors stay in two columns: R13, R11, R22, R10, R21 at x 189.43 (y 54.50 / 58.00 /
+  65.00 / 72.50 / 79.50) and R20, R12, R19 at x 199.58 (y 61.50 / 69.00 / 76.00). `MIXER` at (171.12, 55.04).
+* **C22/C23** (the 10 µF bipolar Waveblaster coupling caps) stand at the top next to J9, (174.00, 40.00) and
+  (181.50, 40.00), −90°, with their references above them at y 38.00. C22's can is 0.48 mm outside a full-size
+  daughterboard's outline (x 170.32) at nominal size.
 * **Bracket end, top to bottom: MIDI OUT, WT VOL, LINE OUT.** J5 (MIDI out) at (217.00, 49.00) with its parts
-  R3 (176.64, 45.00), R4 (186.80, 49.00), FB1 (189.50, 45.00) and FB2 (189.50, 49.00) along the top; RV1 (WT VOL)
+  R3 (176.64, 46.50), R4 (186.80, 50.50), FB1 (189.50, 46.50) and FB2 (189.50, 50.50) along the top; RV1 (WT VOL)
   at (214.00, 61.40); J8 (line out) at (217.00, 75.50). The labels
   `MIDI OUT`, `WT VOL` and `LINE OUT` are left-aligned at x 204.0 (y 43.5 / 65.0 / 70.0).
 * **USB host corner**: U8 (SOIC-8) at (190.00, 92.47), 90°, with C8/C10 next to it (see
@@ -229,16 +228,19 @@ DAC, mixer and jack arrangement for the soldered TSSOPs from 2026-10-31, routed 
 * **Pico (U1)** at (192.88, 108.89), pin 1 (217.01, 100.00), and the bracket end (H1/H2, J11) as on the earlier
   v1.3.2 layout (see [102 mm board](#102-mm-board)).
 
-**Why this arrangement.** Four placements of the DAC, mixer and jacks were compared before routing, each with the
-DAC discs on their pins and the logic-column labels as above: A (the first hand placement, DAC block high in the
-middle), A2 (A with a DAC block turned 90°), C (that block in the middle with the mixer beside it) and D (this one).
-In A2 and C, U9's I2S pins face away from the Pico, and a trial route of the three I2S nets alone (with the DAC
-outputs kept clear) needed 232 and 238 mm; in A 171 mm; in D 122 mm. D also has the shortest DAC-to-mixer path
-(AUDIO_L+R 51 mm of ratsnest against 61–87 mm) and the shortest ratsnest overall (4842 mm against 4910–4974 mm).
-Its cost is distance to the digital side: the DAC block is 7.3 mm from the Pico and 5.1 mm from U8 (A: 20.2 /
-19.0 mm), so the routing keeps digital nets out of the block (see [Routing](#routing)).
+**Why this arrangement.** Four placements of the DAC, mixer and jacks were compared before the first route, each
+with the DAC discs on their pins and the logic-column labels as above: A (the first hand placement, DAC block high in
+the middle), A2 (A with a DAC block turned 90°), C (that block in the middle with the mixer beside it) and D. In A2
+and C, U9's I2S pins face away from the Pico, and a trial route of the three I2S nets alone (with the DAC outputs kept
+clear) needed 232 and 238 mm; in A 171 mm; in D 122 mm. D had the shortest DAC-to-mixer path and the shortest
+ratsnest overall and was routed first (commit 298e993). That route left the mixer's summing nodes 51 / 53 mm long
+and the DAC outputs 19 / 20 mm, because the output filter sat above U9 and the mixer inputs far from U11. The
+present arrangement keeps D's jacks and moves the DAC block 12.9 mm west with the output filter east of U9, between
+it and the mixer, and turns U11 so that its feedback discs sit on its pins. Against D, in ratsnest length: summing
+nodes 95.7 → 61.9 mm, DAC outputs 18.5 → 9.5 mm, mixer outputs 64.3 → 41.5 mm, AVDD and LDOO 26.5 → 15.6 mm; I2S
+113.6 → 123.5 mm and the Waveblaster path behind C22/C23 56.0 → 75.4 mm are longer; all nets but GND 4229 → 4169 mm.
 
-![Placements A, A2, C and D side by side: board outlines with the DAC area and the mixer area shaded, the I2S
+![The comparison before the first route (D became commit 298e993; the present arrangement grew out of it). Placements A, A2, C and D side by side: board outlines with the DAC area and the mixer area shaded, the I2S
 ratsnest, the audio-path ratsnest and the digital ratsnest that crosses the DAC area, and a table of the trial I2S
 route, I2S ratsnest, distances from the DAC area to the Pico and U8, digital ratsnest through the DAC and mixer areas,
 DAC-to-mixer and Waveblaster paths, mixer summing nodes, line out, ±12V, SPI and total ratsnest](docs/figures/placement-options.png)
@@ -246,17 +248,17 @@ DAC-to-mixer and Waveblaster paths, mixer summing nodes, line out, ±12V, SPI an
 | Part | Routed DIP-adapter layout (d5c4a85) | Now |
 |---|---|---|
 | U3 / U4 | DIP-16 adapter pin 1 (146.53, 106.42) / (157.74, 106.44), 0° | TSSOP-16 centre (150.22, 110.10) / (161.44, 110.12), 90° |
-| U9 | DIP-20 adapter pin 1 (146.00, 78.30), 90° | TSSOP-20 centre (168.99, 83.42), 180° |
-| U11 | (173.02, 51.10), 90° | (165.69, 65.31), 90° |
+| U9 | DIP-20 adapter pin 1 (146.00, 78.30), 90° | TSSOP-20 centre (156.10, 84.53), 180° |
+| U11 | (173.02, 51.10), 90° | (173.00, 61.00), 0° |
 | J5 (MIDI) / J8 (line out) | (217.00, 75.50) / (217.00, 49.10) | (217.00, 49.00) / (217.00, 75.50) |
 | U8 | (189.00, 93.90), 0° | (190.00, 92.47), 90° |
 | C8 / C10 | (191.50, 88.40) / (184.00, 88.40), 180° | (185.59, 90.00), −90° / (187.09, 87.00), 0° |
 | J1 | (120.00, 123.70) | (136.03, 124.91) |
-| FB3 | (164.10, 93.73), 90° | (175.32, 92.35), 180° |
+| FB3 | (164.10, 93.73), 90° | (148.60, 77.03), 0° |
 | C3 / C5 | (153.50, 103.28) / (164.69, 103.34), 180° | (147.88, 102.29) / (158.88, 102.29), 0° |
 
 Positions are footprint origins (pin 1 for the DIPs, the centre for the TSSOPs), in mm. 51 of the 88 footprints moved
-against the DIP-adapter layout; the logic column, U1, U2, the Waveblaster header and the bracket-end parts other
+against the DIP-adapter layout (29 against the first routed TSSOP layout, 298e993); the logic column, U1, U2, the Waveblaster header and the bracket-end parts other
 than J5/J8 did not.
 
 ### Silkscreen and back artwork
@@ -280,13 +282,14 @@ than J5/J8 did not.
   185.9–211.6, y 37.8–40.6, with `v1.3.2` right of it at (214.1, 40.0). Before, the logo stood vertically at the left
   edge (x 118.3–121.1, y 43.5–69.3) and `v1.3.2` at (120.5, 40.5). The pour under it is filled, so the logo shows
   copper.
-* Labels placed by hand (2026-10-31). `MIXER` (160.27, 57.80) and `DAC` (159.00, 91.00) are centred, 1.2 mm high
+* Labels placed by hand (2026-10-31; `MIXER`, `DAC` and C22/C23 on 2026-11-01). `MIXER` (171.12, 55.04) and `DAC`
+  (146.11, 92.10) are centred, 1.2 mm high
   like the bracket-side labels (`DAC` was vertical at (186.3, 74.5) on v1.3.1). `WAVEBLASTER` is 1.2 mm (was 0.8),
   centred at (143.65, 37.5). `MIDI OUT`, `WT VOL` and `LINE OUT` are left-aligned at x 204.0 (y 43.5 / 65.0 / 70.0),
   `UART` and `USB PWR` at x 208.2 (y 121.5 / 126.0), so `UART` no longer touches J6's outline. The references of the
   logic column (U10, U7, U6, U5, U2) stand vertically at the board edge (x 117.50), centred on each chip; the
   references of the discs sit in the middle of each disc. The references of C22, C23, C32, C33, C34, U8, U12 and J11
-  were placed by hand; U8's stands at (185.00, 88.00), nearer C10 than U8, and U12's is 0.08 mm from neighbouring silk.
+  were placed by hand (C22's and C23's above their cans at y 38.00); U8's stands at (185.00, 88.00), nearer C10 than U8, and U12's is 0.08 mm from neighbouring silk.
   `< REAR` moved 1.70 mm left with H1/H2, its arrow tip still in line with them.
 * **No via hole in any label**: the router counted every front and back silk text as a no-via area, so no via hole
   is within 0.10 mm of any text (the earlier routed layout had 13).
@@ -313,48 +316,53 @@ than J5/J8 did not.
 
 ## Layout status
 
-The placement of 2026-10-31 is routed on two layers (2026-11-01). A first route of it was reviewed independently
-from the analog/power and the digital/manufacturing side; this layout is the re-route that answers that review (see
-[Review](#review)). The comparison is with the routed DIP-adapter layout of commit d5c4a85 (same netlist apart from
-the U3/U4/U9 footprints), measured with the same scripts; that layout's README
-(`git show d5c4a85:hw-tht-v1.3.2/README.md`) compares it with 8dbb6c6 and v1.3.1.
+The placement of 2026-11-01 is routed on two layers (2026-11-01). It replaces a first routed TSSOP layout (commit
+298e993) whose route was reviewed independently from the analog/power and the digital/manufacturing side; the rules
+that review led to are applied to this route from the start (see [Review](#review)). The comparison is with that
+layout and with the routed DIP-adapter layout of commit d5c4a85 (same netlist apart from the U3/U4/U9 footprints),
+measured with the same scripts; d5c4a85's README (`git show d5c4a85:hw-tht-v1.3.2/README.md`) compares it with
+8dbb6c6 and v1.3.1.
 
 ### Routing
 
-* **Test-pad fan-out first**: the 52 pin-to-test-pad tracks and the 26 escape stubs (see
+* **Test-pad fan-out first**: the 52 pin-to-test-pad tracks and 26 escape stubs (see
   [U3/U4 and U9 with a test pad per pin](#u3u4-and-u9-with-a-test-pad-per-pin)) are fixed copper; the router lands
-  on the outer test pads and the stub ends. All 26 stubs carry a net.
-* **Grid router** (negotiated-congestion rip-up and re-route, as for the earlier layouts), then polished, a GND pass
-  (pours on both layers, stitching vias) and clean-up steps, each kept only if DRC stayed clean: redundant vias,
-  GND finger tracks, stitching along the copper logo, thermal stubs, power widened up to 0.8 mm where it fits, vias
-  moved off other-net pads, acute pad entries squared, power entries necked beside the gold fingers.
+  on the outer test pads and the stub ends. The stubs of U9's CPGND (3) and AGND (9) ended up unused and were
+  removed (24 remain); both pins reach ground through the front pour around U9.
+* **U9's east side by hand.** On U9's analog side the pins come out OUTR, OUTL, VNEG, CAPM, CPGND, CAPP from the
+  top, while their parts stand in a column 2.4 mm east of the test pads (R8, R7, C16, C17) with room for one track
+  between the two. On one layer DAC_OUTL, VNEG, CAPM and CAPP have to cross, and the grid router could not place a
+  via that close to the test pads. These four nets are routed by hand: DAC_OUTL on the front to R7; VNEG through a
+  via just past its stub and on the back under the test pads to C17; CAPM on the front between R7 and a CAPP via to
+  C16; CAPP through that via and on the back to C16's far pad. All at least 0.207 mm from other copper.
+* **Grid router** (negotiated-congestion rip-up and re-route, as for the earlier layouts) for everything else, then
+  polished, a GND pass (pours on both layers, stitching vias) and clean-up steps, each kept only if DRC stayed clean:
+  redundant vias, GND finger tracks, stitching along the copper logo, thermal stubs, power widened up to 0.8 mm where
+  it fits, vias moved off other-net pads, acute pad entries squared, power entries necked beside the gold fingers.
 * **DAC block kept clear.** Digital, I2S and USB nets pay a cost within 1 mm of the audio copper, the DAC outputs and
-  the DAC's analog nets (AVDD, VNEG, CAPP/CAPM, LDOO), and may not enter the analog half of the block (right of U9 and
-  the output-filter rows above it). −12V, +5V and ~RI/OCHRDY may not enter the DAC block at all, +5V also not the
-  mixer. **No track but GND runs on the front under U9**: AVDD crosses under the chip on the back (as the review
-  suggested), I2S and ~RDACK go round it, so the front pour under the chip is one piece; 4 GND vias tie that pour
-  and U9's ground pins to the back pour (3 under the body).
+  the DAC's analog nets (AVDD, VNEG, CAPP/CAPM, LDOO), and may not enter the block's analog half (east of U9, up to
+  the output-filter discs) or the area under U9. −12V, +12V, ~RI/OCHRDY and +5V may not enter the DAC block at all,
+  +5V also not the mixer. No track but GND runs on the front under U9, so the front pour under the chip is one piece;
+  4 GND vias (3 under the body) tie it to the back pour.
 * **I2S may change layers** (via cost lowered): DIN and BCK leave U9 in the opposite order to the Pico's pins, so one
   of them has to cross the other.
-* **Labels are no-via areas**: no via hole is within 0.10 mm of any silk text, front or back (the nearest is
-  0.14 mm from C20's reference).
+* **Labels are no-via areas**: no via hole is within 0.10 mm of any silk text, front or back.
 * Design rules unchanged (the `.kicad_pro` is v1.3.1's): 0.2 mm clearance, 0.3 mm copper to edge, 0.25 mm default
   track and 0.7/0.35 mm vias, `pwr` 0.4 mm and `GND` 0.5 mm with 0.8/0.4 mm vias, `audio` with 0.6 mm clearance.
   The 0.2 mm test-pad tracks and stubs, the centred 0.2 mm necks of +5V, +3V3 and ±12V between Pico and U2 pins and
   short jogs at pads are narrower than their class.
-* 5587 mm of track and 450 vias: 214 GND, 29 power, 207 signal (784 plated holes with the THT pads).
+* 5494 mm of track and 422 vias: 205 GND, 26 power, 191 signal (756 plated holes with the THT pads).
 * DRC with schematic parity: 0 unconnected items, and as errors only the 12 accepted courtyard overlaps below, so
   `jlcpcb.sh` needs `FORCE=1`. Warnings: 3 `lib_footprint_mismatch` (J3, J11, RV1; expected, see
-  [Kept from v1.3.1](#kept-from-v131)), 19 `silk_edge_clearance`, 7 `starved_thermal` (J9's GND pins 7, 11, 15 and
-  25 and the Pico's GND pins 8 and 33 have one spoke on the front, where signal tracks pass 0.22–0.36 mm away; on
-  the back J9's four pins and pin 33 have two or three spokes into the main pour, pin 8 is joined by a 0.5 mm GND
-  track; the Pico module also ties its GND pins together) and 83 schematic-parity field warnings (footprints without
-  the symbols' Manufacturer/MPN fields, J3's BOM flag).
+  [Kept from v1.3.1](#kept-from-v131)), 19 `silk_edge_clearance`, 8 `starved_thermal` and 83 schematic-parity field
+  warnings (footprints without the symbols' Manufacturer/MPN fields, J3's BOM flag). The starved thermals are J9's
+  GND pins 7, 11, 15 and 25, U7 pin 10 and U2 pin 10 (GND) and the Pico's GND pin 33 on both its pads: each has one
+  spoke on the side where signal tracks pass close, and joins the pours with two or three spokes on the other side or
+  through 0.5 mm GND tracks.
 
-  ![The 7 starved thermal reliefs: J9 pins 7, 11, 15 and 25 and Pico pins 8 and 33 (pin 33 also on its castellation
-  pad), each with one spoke on the front where 0.22-0.36 mm signal gaps leave no room for a second; on the back J9's
-  pins and Pico pin 33 join the main pour with two or three spokes and Pico pin 8 by a 0.5 mm GND
-  track](docs/figures/starved-thermals.png)
+  ![The 8 starved thermal reliefs: J9 pins 7, 11, 15 and 25, U7 pin 10, U2 pin 10 and Pico pin 33
+  (also on its castellation pad), each with one spoke where signal tracks pass close, and how each joins the GND
+  pours on the other side](docs/figures/starved-thermals.png)
 
 * **Courtyard overlaps (accepted), all in the logic column**: each decoupling disc's courtyard overlaps those of the
   DIPs above and below it by 0.33–0.34 mm (C21/U10, C6/U10, C6/U7, C9/U7, C9/U6, C7/U6, C7/U5, C4/U5, C4/U2), and
@@ -368,123 +376,108 @@ the U3/U4/U9 footprints), measured with the same scripts; that layout's README
 
 ### Review
 
-The review of the first route (and the figure checks made with it) found, and this layout fixes:
+The first routed TSSOP layout (298e993) was reviewed independently; its findings shaped this route's rules:
 
-* **U9's front ground was cut up.** AVDD, BCK, LRCK, DAC_OUTL and ~RDACK ran on the front under the chip, between its
-  ground pins and the pour. Now nothing but GND runs on the front under U9 (AVDD on the back), and 4 GND vias (3
-  under the body) join the front pour there to the back pour.
-* **+5V ran through the mixer and the DAC block**, a second +5V path in parallel with the ground return under the
-  analog parts. +5V is now kept out of both (0 mm² of +5V copper in the DAC block and mixer area).
-* **−12V ran through the DAC block.** It is now kept out of it (0 mm²), with ~RI/OCHRDY.
-* **Digital next to the DAC's analog nets** (an intermediate re-route had LRCK 0.23 mm from AVDD). No digital
-  copper is now within 1.0 mm of the DAC's analog nets (AVDD, VNEG, CAPP/CAPM, LDOO) on the front; on the back, one ~RDACK via is
-  0.60 mm from AVDD's track (0.35 mm of ~RDACK track within 1 mm of it). On the front no digital track or via is
-  within 5 mm of U9 pins 1–10, and none within 1 mm of any audio net on either side.
-* **Gold fingers**: +12V passed 0.29 mm from B10 (GND) and, after the re-route, −12V 0.24 mm from B8 (unused here, 0WS
-  on AT boards); they are now 0.44 / 0.34 mm away. B10's 1.0 mm GND entry stuck out of the finger outline into the
-  opening between the fingers; it is now 0.8 mm, 0.7 mm inside the finger, and no copper sticks out of any finger
-  into the opening. No power copper is within 0.30 mm of an other-net
-  finger (signal tracks pass the finger tops at 0.24 mm, as before).
+* **U9's front ground**: AVDD, I2S, DAC_OUTL and ~RDACK ran under the chip there. Here nothing but GND runs on the
+  front under U9, and 4 GND vias (3 under the body) tie that pour to the back. A 0.8 mm +3V3 track (DVDD pin 20 to
+  CPVDD pin 1 and C36) runs along the chip's south edge, 0.12 mm outside its body.
+* **Supplies through the analog area**: +5V is kept out of the DAC block and the mixer, −12V and +12V out of the DAC
+  block (0 mm² of +5V and +12V there; −12V touches the block's edge with 0.017 mm²).
+* **Digital next to the DAC's analog nets**: none within 1 mm of AVDD, VNEG, CAPP/CAPM or LDOO; the nearest is LRCK
+  1.33 mm from LDOO on its way to U9's west pins. The nearest digital copper to U9's pins 1–10 is an RA9 via 3.6 mm
+  away. No digital track or via is within 1 mm of any audio net.
+* **Gold fingers**: no power copper within 0.30 mm of an other-net finger (the nearest power entries are 0.40 mm or
+  more away), and no copper sticks out of a finger into the opening between the fingers.
 
   ![Solder side above J3's B-row fingers on 8dbb6c6 and on v1.3.2: an overview of B1-B31 and the no-fill strip,
   then close-ups of B5-B11 (±12V) and B28-B31 (+5V). Each finger is its own mask opening and only mask lies between
-  a finger top (y 128.97) and the opening between the fingers (y 129.60). On v1.3.2 +12V is 0.44 mm from B10 and
-  −12V 0.34 mm from B8; on 8dbb6c6 +5V passed 0.29 mm from B30](docs/figures/gold-fingers.png)
+  a finger top (y 128.97) and the opening between the fingers (y 129.60)](docs/figures/gold-fingers.png)
 
-  B10's own GND track has no straight way up (+12V, −12V and IRQ2 cross above it): it runs 11.7 mm (0.8 mm, then
-  0.5 mm, three layer changes) before it reaches a pour, where 8dbb6c6 had 1.0 mm all the way. B1 and B31, the
-  other two ground fingers, run 1.0 mm straight into the pour.
+  ![The GND tracks from the ground fingers B1, B10 and B31 on v1.3.2: B10's track 1.0 mm, then 0.5 mm
+  for 2.6 mm past C1's +3V3 pad (0.22 mm) to the back pour, 6.6 mm in all; B1 and B31 1.0 mm straight into the pour;
+  B10 on 8dbb6c6 for comparison](docs/figures/b10-ground-finger.png)
 
-  ![The GND tracks from the ground fingers B1, B10 and B31: B10's path round the top of B11 (0.8 mm, then 0.5 mm,
-  11.7 mm to the pour with three layer changes, 0.24 mm from B11 and 0.22 mm from +12V), B1 and B31 1.0 mm straight
-  into the pour, and B10 on 8dbb6c6](docs/figures/b10-ground-finger.png)
+* **Mixer summing nodes and DAC outputs**: long on 298e993 (51 / 53 mm and 19 / 20 mm), set by that placement. The
+  present placement shortens them (see [Placement](#placement)); routed they are 44.4 / 28.6 mm and 5.8 / 4.9 mm.
 
-Not changed, as the placement sets them (see [Known weaker points](#known-weaker-points-accepted)): the long mixer
-summing nodes and DAC output runs.
+### Compared with the earlier routed layouts
 
-### Compared with the DIP-adapter layout (d5c4a85)
+| | DIP adapters (d5c4a85) | first TSSOP layout (298e993) | v1.3.2 now |
+|---|---|---|---|
+| DRC errors / unconnected (schematic parity) | 12 / 0 | 12 / 0 | 12 / 0 (the accepted courtyard overlaps) |
+| starved_thermal warnings | 6 | 7 | 8 |
+| Track / vias (GND / power / signal) | 5504 mm / 445 (194 / 32 / 219) | 5587 mm / 450 (214 / 29 / 207) | 5494 mm / 422 (205 / 26 / 191) |
+| ISA D0–D7 length / vias | 283 mm / 21 | 407 mm / 26 | 350 mm / 18 |
+| I2S length / vias | 261 mm / 6 | 187 mm / 16 | 186 mm / 5 |
+| USB D+ / D− length | 51.3 / 43.8 mm | 48.1 / 45.6 mm | 46.3 / 46.2 mm |
+| +12V / −12V length (vias) | 125 (0) / 159 (5) mm | 146 (6) / 139 (4) mm | 153 (5) / 142 (4) mm |
+| DAC_OUTL / DAC_OUTR (U9 to R7/R8) | 3.3 / 3.0 mm | 18.9 / 19.9 mm | 5.8 / 4.9 mm |
+| AUDIO_L / AUDIO_R (filter to mixer) | 44.0 / 59.2 mm | 11.4 / 43.7 mm | 24.8 / 34.2 mm |
+| Mixer summing nodes U11.2 / U11.6 | 14.6 / 36.1 mm | 51.3 / 52.5 mm | 44.4 / 28.6 mm |
+| Digital tracks and vias within 1 mm of audio copper | none | none | none |
+| Other-net track within 1 mm of audio copper, same layer | 11.4 mm | 21.5 mm | 22.3 mm (17 mm of it U9's own nets at its pins) |
+| Supply copper in the DAC block: +5V / −12V / +12V | – | 0 / 0 / 2.9 mm² | 0 / 0.02 / 0 mm² |
+| Line-out ground error per ampere of loop current from J8's sleeve to the fingers, worst channel: no Waveblaster / Waveblaster at full volume | 285 / 466 µV/A | 1019 / 292 µV/A | 868 / 334 µV/A |
+| same, loop current to the bracket (H1/H2) | 313 / 223 µV/A | 466 / 253 µV/A | 437 / 280 µV/A |
+| Line-out ground error at 500 mA of USB-host load, worst channel: no Waveblaster / at full volume | 128 / 133 µV | 269 / 258 µV | 211 / 26 µV |
+| Power copper within 0.30 mm of an other-net gold finger | none | none | none |
+| Vias < 0.5 / < 1.0 mm from a gold finger | 0 / 0 | 0 / 1 | 0 / 1 |
+| Vias < 0.30 / < 0.25 mm from an other-net pad | 0 / 0 | 3 / 1 | 2 / 1 |
+| Via holes < 0.10 mm from silk text (inside the ink) | 7 (4) | 0 (0) | 0 (0) |
 
-| | d5c4a85 (DIP adapters) | v1.3.2 (soldered TSSOPs with test pads) |
-|---|---|---|
-| DRC errors / unconnected (schematic parity) | 12 / 0 | 12 / 0 (the accepted courtyard overlaps) |
-| starved_thermal warnings | 6 | 7 |
-| Track / vias (GND / power / signal) | 5504 mm / 445 (194 / 32 / 219) | 5587 mm / 450 (214 / 29 / 207) |
-| ISA D0–D7 length / vias | 283 mm / 21 | 407 mm / 26 |
-| I2S length / vias | 261 mm / 6 | 187 mm / 16 |
-| USB D+ / D− length | 51.3 / 43.8 mm | 48.1 / 45.6 mm |
-| +12V / −12V length (vias) | 125 (0) / 159 (5) mm | 146 (6) / 139 (4) mm |
-| AUDIO_L / AUDIO_R (DAC filter to mixer) | 44.0 / 59.2 mm | 11.4 / 43.7 mm |
-| DAC_OUTL / DAC_OUTR (U9 to the filter resistors) | 3.3 / 3.0 mm | 18.9 / 19.9 mm |
-| Mixer summing nodes U11.2 / U11.6 | 14.6 / 36.1 mm | 51.3 / 52.5 mm (1 via) |
-| Digital tracks and vias within 1 mm of audio copper | none | none |
-| Other-net track within 1 mm of audio copper, same layer | 11.4 mm (±12V, VNEG) | 21.5 mm (U9's own nets, +5V, −12V; see below) |
-| Non-GND copper on the front under U9 | — (U9 on an adapter) | none |
-| Line-out ground error per ampere of loop current from J8's sleeve to the fingers, worst channel: no Waveblaster / Waveblaster at full volume | 285 / 466 µV/A | 1019 / 292 µV/A |
-| same, loop current to the bracket (H1/H2) | 313 / 223 µV/A | 466 / 253 µV/A |
-| Line-out ground error at 500 mA of USB-host load, worst channel: no Waveblaster / at full volume | 128 / 133 µV | 269 / 258 µV |
-| Power copper within 0.30 mm of an other-net gold finger | none | none |
-| Vias < 0.5 / < 1.0 mm from a gold finger | 0 / 0 | 0 / 1 |
-| Vias < 0.30 / < 0.25 mm from an other-net pad | 0 / 0 | 3 / 1 |
-| Via holes < 0.10 mm from silk text (inside the ink) | 7 (4) | 0 (0) |
+All columns come from the same scripts. The line-out rows come from the DC copper model described in d5c4a85's README
+(refilled pours, 0.1 mm grid, the Pico's GND pins tied; `e = (Vref − Vsleeve) + 0.977·(Vref − V(U9.9)) + 2·(Vref − Vwt)`).
+The figures compare v1.3.2 with 8dbb6c6, the 103.7 mm layout that README compared against.
 
-Both columns come from the same scripts. The line-out rows come from the DC copper model described in d5c4a85's
-README (refilled pours, 0.1 mm grid, the Pico's GND pins tied; `e = (Vref − Vsleeve) + 0.977·(Vref − V(U9.9)) + 2·(Vref − Vwt)`).
-The figures below compare this layout with 8dbb6c6, the 103.7 mm layout that README compared against.
-
-**Better** than d5c4a85: I2S length, the DAC-to-mixer runs (AUDIO_L/R), no via at any silk text, a solid front
-ground under the DAC chip, USB D+. **Worse**, mostly set by the placement: the ISA data bus (U3/U4 moved for the
-test pads), I2S vias, the DAC output runs and the mixer summing nodes (the output filter and the mixer inputs sit
-further from U9 and U11), other-net copper beside audio copper, three vias nearer an other-net pad, B10's ground
-track, and the line-out ground error without a Waveblaster (1019 against 285 µV/A for a loop to the fingers; with
-a Waveblaster at full volume it is lower, 292 against 466).
+**Better** than 298e993: the DAC outputs, the summing nodes and AUDIO_R, I2S vias, the ISA data bus, fewer vias
+overall, +12V kept out of the DAC block, the line-out ground error without a Waveblaster (868 against 1019 µV/A for a loop to the
+fingers) and from USB load (211 against 269 µV). **Worse**: AUDIO_L (the filter sits east of U9, the mixer input to
+the north-east), +12V length, the line-out ground error with a Waveblaster at full volume (334 against 292 µV/A to the
+fingers, 280 against 253 to the bracket). Against d5c4a85 the ISA data bus is still longer, the DAC outputs and summing
+nodes slightly longer, as the placement sets them, and so is the line-out ground error from a loop through the
+line-out cable (868 against 285 µV/A without a Waveblaster).
 
 ### Known weaker points (accepted)
 
-* **Mixer summing nodes**: U11's inverting inputs (U11.2 → R10/R12/R19/C30, U11.6 → R11/R13/R20/C31) are 51.3 and
-  52.5 mm long (d5c4a85 14.6 / 36.1 mm): the mixer's input resistors sit at the DAC filter and the Waveblaster
-  header, not at U11. They run on the front over the back pour (U11.6 with one via) and away from digital nets.
-* **DAC outputs**: DAC_OUTL/R run 18.9 / 19.9 mm from U9 to R7/R8 above it (d5c4a85 3.3 / 3.0 mm). DAC_OUTL drops to
-  the back next to its test pad and runs 1.3 mm under VNEG on the other layer before turning up under C17 and C13.
-  U9's line drivers are low-impedance; the 470 Ω / 2.2 nF filter follows.
-* **Audio beside other copper** (21.5 mm within 1 mm, same layer): U9's own VNEG, AVDD and CAPM tracks beside
-  DAC_OUTL/R where they leave the neighbouring pins (11.8 mm, 0.20–0.92 mm), +5V beside WT_L along the Waveblaster
-  header's corner (7.4 mm, 0.88 mm), and −12V at the top left (2.3 mm, 0.62 mm; d5c4a85 2.8 mm).
-* **ISA data bus**: D0–D7 are 407 mm with 26 vias (d5c4a85 283 mm / 21; D3 86 mm with 6 vias), as U3/U4 moved to
+* **Hand-routed corner east of U9**: the VNEG via is 0.216 mm from R7's DAC_OUTL pad (DRC minimum 0.20 mm), and
+  CAPM passes R7's pad at 0.207 mm. Inspect that corner after soldering R7.
+* **Audio beside other copper** (22.3 mm within 1 mm, same layer): U9's own AVDD, CAPM, VNEG and CAPP beside
+  DAC_OUTL/R where they leave the neighbouring pins (17 mm, from 0.10 mm at the test pads), −12V along R24 (its own
+  feed resistor into the mixer; 2.7 mm at 0.68 mm) and at the top left (2.3 mm, 0.62 mm, as on d5c4a85).
+* **ISA data bus**: D0–D7 are 350 mm with 18 vias (d5c4a85 283 mm / 21; D2 69 mm with 6 vias), as U3/U4 moved to
   make room for their test pads. Irrelevant at ISA speed.
-* **I2S**: 187 mm with 16 vias (d5c4a85 261 mm / 6): shorter, but the BCK/DIN crossing and the walk round U9 cost
-  vias. None crosses an audio net; the nearest I2S copper is 5.0 mm from U9 pins 1–10.
-
-  ![BCK, DIN and LRCK from the Pico to the DAC U9, both copper layers, with U9's analog pins 1-10, the
-  CAPP/CAPM/VNEG/AVDD copper and the audio-class copper inside a 1 mm keep-away. v1.3.2: 187.5 mm and 16 vias,
-  5.04 mm from U9 pins 1-10, only ~RDACK (0.60 mm, at AVDD) inside the keep-away. 8dbb6c6: 235.5 mm and 1 via; LRCK
-  passes U9 pin 1 at 0.33 mm](docs/figures/i2s-around-dac.png)
-
-* **Digital along the bottom of the DAC block**: ~RDACK, RESET, RUN, RA8, UART_TX and +12V cross the block's bottom
-  strip (y 90–94), below U9's digital side and the supply parts (FB3, C15, C12); ~RDACK has two vias there, one
-  0.60 mm from AVDD on the back. AD2 touches the block's left edge.
-* **Vias near other-net pads**: three vias are 0.23–0.29 mm from an other-net pad (D2 at Pico pin 43, A6 at U2 pin
-  14, DAC_OUTL at C17's GND pad); DRC's minimum is 0.20 mm and the clean-up step found no free spot within 0.6 mm.
-* **U9's ground-strapped pins** (CPGND, AGND, DEMP, FLT, SCK, FMT, DGND) reach a GND via 1.4–3.6 mm away, through
-  the front pour that now surrounds the chip.
+* **Digital in the DAC block's digital half**: besides I2S, ~RIOW, ~RIOR, I/OCHRDY and RA9 cross the block west and
+  south of U9 (the side of its digital pins and of C12/C14/C18), at least 3.6 mm from pins 1–10.
+* **Vias near other-net pads**: besides the VNEG via above, an RA9 via is 0.266 mm from the Pico's pin 18 (GND).
+* **U9's ground pins** (CPGND, AGND, DEMP, FLT, SCK, FMT, DGND) reach a GND via 0.8–4.5 mm away (CPGND the farthest),
+  through the front pour that surrounds the chip.
 * **Line-out ground loop**: per ampere of loop current from J8's sleeve to the fingers, the ground error at the
-  jack is 1019 µV (right channel, no Waveblaster, RV1 turned down; d5c4a85 285 µV), and 466 µV to the bracket
-  (d5c4a85 313 µV). With 10 mA of loop current that is 10.2 µV through the fingers and 4.7 µV through the bracket:
-  below −100 dBV, under the DAC's noise floor (about 21 µV) and 100–300× less than the drop along the cable shield
-  itself. With a Waveblaster at full volume it is lower than on d5c4a85 (292 against 466 µV/A). The bracket path
-  only exists with a metal bracket screwed to the chassis; a 3D-printed bracket carries no loop current. 500 mA of
-  USB-host load adds 269 µV at the worst channel (d5c4a85 128 µV).
+  jack is 868 µV (left channel, no Waveblaster, RV1 turned down; d5c4a85 285 µV, 298e993 1019 µV), and 437 µV to
+  the bracket. With 10 mA of loop current that is 8.7 µV through the fingers and 4.4 µV through the bracket: below
+  −100 dBV, under the DAC's noise floor (about 21 µV) and 100–300× less than the drop along the cable shield itself.
+  The bracket path only exists with a metal bracket screwed to the chassis; a 3D-printed bracket carries no loop
+  current. 500 mA of USB-host load adds 211 µV at the worst channel (d5c4a85 128 µV).
 
   ![Line-out ground loop: ground-potential maps of the board for 1 A from J8's sleeve to the bracket tab holes H1/H2
   and to the ISA GND fingers, with U11.3/U11.5 and U9.9 marked; the worst-channel line-out ground error against
-  8dbb6c6 (fingers 1019 / 292 against 410 / 715 µV/A, bracket 466 / 253 against 185 / 166 µV/A, 500 mA USB load
-  269 / 258 against 226 / 314 µV); and at 10 mA of loop current, 4.7-10.2 µV next to the DAC's 21 µV noise floor and
+  8dbb6c6 (fingers 868 / 334 against 410 / 715 µV/A, bracket 437 / 280 against 185 / 166 µV/A, 500 mA USB load
+  211 / 26 against 226 / 314 µV); and at 10 mA of loop current, 4.4-8.7 µV next to the DAC's 21 µV noise floor and
   1-3 mV across a cable shield](docs/figures/groundloop.png)
 
+* **B10's GND track**: 1.0 mm for 4.0 mm, then 0.5 mm for 2.6 mm (past C1's +3V3 pad at 0.22 mm) before it reaches
+  the back pour, 6.6 mm in all; B1 and B31, the other two ground fingers, run 1.0 mm straight into the pour.
 * **Silk**: no via hole touches any text. U8's reference stands nearer C10 than U8 and U12's is 0.08 mm from
   neighbouring silk (both placed by hand, left as placed).
 
-  ![Via holes near silkscreen text: none is within 0.10 mm of any text on either side; the six nearest are 0.14 to
-  0.20 mm away (C20, U9's pin-number text, U10, `< REAR`, C25, F1)](docs/figures/silk-vias.png)
+  ![Via holes near silkscreen text: none is within 0.10 mm of any text on either side; the six nearest
+  are 0.15 to 0.17 mm away (U10, `< REAR`, U11, U9's pin-number text, `DMA`, F1)](docs/figures/silk-vias.png)
+
+* **I2S around the DAC**, for reference:
+
+  ![BCK, DIN and LRCK from the Pico to the DAC U9 on v1.3.2 and on 8dbb6c6, both copper layers, with
+  U9's analog pins 1-10, the CAPP/CAPM/VNEG/AVDD copper and the audio-class copper inside a 1 mm keep-away. v1.3.2:
+  185.7 mm and 5 vias to U9's west pins, 5.04 mm from pins 1-10, no digital copper inside the keep-away; close-ups
+  of U9 and of the hand-routed corner east of it. 8dbb6c6: 235.5 mm and 1 via; LRCK passes U9 pin 1 at 0.33 mm](docs/figures/i2s-around-dac.png)
 
 ### Before ordering and building
 
@@ -523,25 +516,17 @@ and U9 are soldered TSSOPs and U8/U12 SMD parts: they are never socketed.
 
 * **RV1** stays in the middle of the bracket end (at the top, its M7 bushing would be 0.4 mm above the PC's slot
   opening); v1.3.2 puts J5 (MIDI out) above it and J8 (line out) below it. **J11 at x 208.64** (at x 210 its flange
-  stood 1.26 mm into the bracket plate). **C32** (47 µF, 11 mm tall) stays out from under the daughterboard, now at
-  (178.01, 57.30). C1's can is about 0.4 mm from a full-size daughterboard's maximum outline at nominal size,
-  0.16 mm at maximum can size (v1.3.1: 0.68 / 0.43 mm; C1 moved 0.27 mm with the Pico row).
+  stood 1.26 mm into the bracket plate). **C32/C33** (47 µF, 11 mm tall) stay out from under the daughterboard, now at
+  x 184.62, and so do C22/C23 (10 µF, 11 mm) at the top next to J9 (C22's can 0.48 mm outside its outline). C1's can
+  is about 0.4 mm from a full-size daughterboard's maximum outline at nominal size, 0.16 mm at maximum can size
+  (v1.3.1: 0.68 / 0.43 mm; C1 moved 0.27 mm with the Pico row).
 * No copper inside the gold-finger area: a no-fill rule area covers the strip above the fingers, and **J3's mask
   opening between the fingers starts 0.63 mm lower (y 129.6) than the finger tops**. Each finger also has its own
   mask opening, the size of the finger (from y 128.97, no mask expansion), so a track beside a finger top is
   covered only by the mask between them. Keep power copper at least 0.30 mm from the finger copper (this layout:
-  0.31 mm, +5V next to B30 (OSC); ±12V 0.34 mm or more). The ISA GND fingers B1, B10 and B31 each have a back-side
-  track into the pour, but only B1's is 1.0 mm all the way. B10's and B31's are 1.0 mm only inside the finger: B31's
-  leaves it at 0.5 mm next to a +5V via and reaches the back pour 0.5 mm further on; B10's leaves it at 0.6 mm next
-  to the +12V finger, runs 4.7 mm to a via in the no-fill strip and then about 5 mm at 0.5 mm on the front before it
-  reaches the front pour (8dbb6c6: 1.0 mm tracks from all three).
-
-  ![The GND tracks from the ground fingers B1, B10 and B31 to the pours. B10 on the solder side: 1.0 mm inside the
-  finger, then 0.6 mm for 4.7 mm between IRQ2 (0.21 mm) and the +12V finger B9 (0.39 mm) to a via in the no-fill
-  strip; on the component side 0.5 mm for 5.0 mm between D4 (0.22 mm), C1 pad 1 and D3 before it touches the front
-  pour. A 1.0 mm track on the same path would leave 0.01 mm to IRQ2 and 0.00 mm to D4. B1 is 1.0 mm all the way, B31
-  reaches its pour 0.5 mm after the finger; on 8dbb6c6 B10 had 1.0 mm on both layers](docs/figures/b10-ground-finger.png)
-
+  0.42 mm or more, −12V next to B6 (DRQ2); signal tracks pass the finger tops at 0.24 mm). The ISA GND fingers B1,
+  B10 and B31 each have a back-side track into the pour: B1's and B31's are 1.0 mm straight into it, B10's is 1.0 mm
+  for 4.0 mm and then 0.5 mm for 2.6 mm (see [Known weaker points](#known-weaker-points-accepted)).
 * **Don't run "Update footprint from library"** on J3 (the mask edit), J11 (the shield padstack below) or RV1 (the
   library footprint has a stray Edge.Cuts line that breaks the outline). DRC lists these three as
   `lib_footprint_mismatch` warnings; that is expected. J5, J8, RV1 and F1 also carry 3D models from `hw-common/parts`
@@ -559,7 +544,7 @@ and U9 are soldered TSSOPs and U8/U12 SMD parts: they are never socketed.
   the flat Pico's test pads (TP4–TP6, Pico 2 TP7) and its TP1–TP3 USB area.
 * U12's GND (pin 2) has a GND via 1.30 mm from the pin (the DIP-adapter layout: 1.26 mm); keep one there.
 * A `JLCJLCJLCJLC` order-number placeholder sits on B.Fab next to the Pico (not plotted). No via hole touches its
-  box (the nearest, a RESET via, is 0.48 mm below it). If an order ever uses "Specify a location", check the box for
+  box (the nearest, a GND via, is 0.45 mm below it). If an order ever uses "Specify a location", check the box for
   via holes again after any routing change.
 
 ## Unchanged from v1.3.1
@@ -755,8 +740,8 @@ C22 = 10 µF bipolar · RV1A = 10k log (CW end from C22, CCW end to GND, wiper t
   Here AVDD has its own rail behind ferrite bead FB3 (the same part as FB1/FB2), with C13 (0.1 µF) and C15 (10 µF) at
   the pin. DVDD and CPVDD stay on the plain 3.3 V, as on v1.2/v1.3.0. Since rev B the charge-pump supply CPVDD (pin 1)
   has its own 0.1 µF, C36, so its current loop pin 1 → C36 → pin 3 (CPGND) is short: 1.9 + 0.6 mm on rev B; on v1.3.2,
-  a THT disc in the right-hand column of the DAC block (its +3V3 pad 9.7 mm from pin 1 and its GND pad 5.6 mm from
-  pin 3 in a straight line; see [DAC decoupling](#dac-decoupling)) (before rev B it was
+  a THT disc right under pins 1–3 (its +3V3 pad 3.6 mm from pin 1 and its GND pad 5.4 mm from pin 3 in a
+  straight line; see [DAC decoupling](#dac-decoupling)) (before rev B it was
   about 24 mm of track to C4 and back through the pour). TI's layout guide and PicoGUS 2.0 put this cap right at the
   pin. CPVDD stays on +3V3, as on v1.2/v1.3.0, and TI's 10 µF bulk cap at CPVDD is not fitted locally (the nearest
   bulk is C1). The bead drops only millivolts at the DAC's ~10 mA.
@@ -808,8 +793,8 @@ with the bracket tab holes H1/H2. All are mirrored on B.SilkS so they read corre
 * **Layout for audio quality:** every decoupling cap sits next to its chip's supply pin. FB3 sits next to C13/C15.
   The ±12 V filter (R23/R24, C32/C33) sits above U11. The DAC is turned so that its outputs, the output RC filter
   (R7/R8, C19/C20) and the mixer op-amp form one short path to the line-out jack, away from the Pico and the ISA
-  logic (v1.3.2: U9 at 180° above the Pico, its pins 1–10 on the right and the output filter in two rows above it,
-  toward the mixer).
+  logic (v1.3.2: U9 at 180° above U3/U4, its pins 1–10 on the east side, facing the output filter and the
+  mixer).
 
 ## Card dimensions (ISA 8-bit)
 
@@ -856,7 +841,7 @@ The script stops if DRC (including the schematic-parity check) finds errors. On 
 accepted courtyard overlaps (see [Layout status](#layout-status)), which are errors in this project's rules, so
 export with `FORCE=1` after checking that the report lists nothing else. `build/jlcpcb/` holds the export of the
 routed board made that way (2026-11-01; not in git: the repository ignores `build/` and `*.zip`, so a clone has to
-run the script): outline to x 218.29 (102.0 mm), 450 vias, 784 plated holes. It writes:
+run the script): outline to x 218.29 (102.0 mm), 422 vias, 756 plated holes. It writes:
 
 * `PicoGUS-THT-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
   and the Excellon drill files (PTH and NPTH separate, mm).

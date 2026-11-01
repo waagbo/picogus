@@ -7,7 +7,8 @@
 # 1-10 (and their test pads) and its CAPP/CAPM/VNEG/AVDD copper with a 1 mm keep-away, on v1.3.2 and on 8dbb6c6, every
 # digital track and via inside the keep-away (red), and two close-ups of v1.3.2: U9 with its I2S pins, and the place
 # where digital copper comes nearest the AVDD copper. Every number printed is measured here.
-# (Rewritten for the re-routed board of 2026-11-01: U9 turned 180 degrees above the Pico, I2S pins facing it.)
+# (Rewritten for the re-routed board of 2026-11-01: U9 turned 180 degrees above U3/U4, I2S on its west pins;
+#  windows moved for the final placement of 2026-11-01.)
 # Needs Pillow, numpy, shapely; figlib.py next to this script.
 import sys, os, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -196,11 +197,11 @@ red_len_old = sum(v[2] for v in old.per.values())
 # ---------------- layout
 pad = 36; gp = 32; S = 18.5
 Y0, Y1 = 67.0, 121.0
-NB_ = (146.8, Y0, 188.0, Y1)
+NB_ = (138.0, Y0, 190.0, Y1)
 OB_ = (148.5, Y0, 194.0, Y1)
 wN = round((NB_[2] - NB_[0]) * S); wO = round((OB_[2] - OB_[0]) * S); hP = round((Y1 - Y0) * S)
-Z1 = (160.6, 77.6, 177.0, 89.4); SZ1 = 27.5          # v1.3.2: U9
-Z2 = (155.4, 87.6, 166.4, 96.4); SZ2 = 41.0          # v1.3.2: digital copper at FB3's AVDD pad
+Z1 = (147.0, 78.7, 163.4, 90.5); SZ1 = 27.5          # v1.3.2: U9
+Z2 = (158.6, 82.0, 169.6, 92.0); SZ2 = 41.0          # v1.3.2: U9's analog pins (east), hand-routed corner
 wZ = max(round((Z1[2] - Z1[0]) * SZ1), round((Z2[2] - Z2[0]) * SZ2))
 hZ1 = round((Z1[3] - Z1[1]) * SZ1); hZ2 = round((Z2[3] - Z2[1]) * SZ2)
 W = pad + wN + gp + wO + gp + wZ + pad
@@ -232,7 +233,7 @@ def overlay_red(a, b):
 
 
 xN = pad; xO = xN + wN + gp; xZ = xO + wO + gp
-aN = panel(now, NB_, xN, wN, 'v1.3.2 (102 mm), U9 above the Pico')
+aN = panel(now, NB_, xN, wN, 'v1.3.2 (102 mm), U9 above U3/U4')
 aO = panel(old, OB_, xO, wO, '8dbb6c6 (103.7 mm)')
 overlay_red(aN, now)
 overlay_red(aO, old)
@@ -279,7 +280,7 @@ aO.box_label(aO.P((159.7, 87.0)), 'LRCK', size=17, col=I2S_EDGE, w='Bold')
 fb3 = [p for p in now.d['pads'] if p['ref'] == 'FB3']
 if fb3:
     pa = next((p for p in fb3 if p['net'] in ANA), fb3[0])
-    aN.leader_text(pa['pos'], (-20, 40), 'FB3 AVDD pad', size=16, col=(0, 110, 110), anchor='rm')
+    aN.leader_text(pa['pos'], (34, -30), 'FB3 AVDD pad', size=16, col=(0, 110, 110), anchor='lm')
 
 
 def stats(x, y, lines):
@@ -308,7 +309,7 @@ an_net = sens_class(now, next(t['g'] for t in now.d['tracks'] if t['net'] == nn_
                               and t['g'].distance(Point(nn_['analog'][1])) < 1e-3), nn_['analog'][4])[1]
 txt = ('Nearest I2S copper: %.2f mm to U9 pins 1-10, %.2f mm to audio copper, %.2f mm to the DAC\'s analog copper (%s to %s).'
        % (nn_['u9'][0], nn_['audio'][0], nn_['analog'][0], nn_['analog'][3], an_net))
-red_txt = 'Digital copper inside the keep-away, all of it at %s: %s mm.' % (' / '.join(classes), lst)
+red_txt = ('Digital copper inside the keep-away, all of it at %s: %s mm.' % (' / '.join(classes), lst)) if now.per else 'No digital copper inside the keep-away.'
 L_ = [('I2S: %.1f mm of track, %d vias' % (now.i2s_len, len(now.i2s_vias)), True, INK)]
 L_ += [(ln, False, SUB) for ln in wrap(txt, font(20), wN - 4)]
 L_ += [(ln, False, RED) for ln in wrap(red_txt, font(20), wN - 4)]
@@ -331,7 +332,7 @@ def zoom(box_, SZ, y, title):
 
 
 zy1 = y1
-a1 = zoom(Z1, SZ1, zy1, 'v1.3.2: U9, I2S on the left pins')
+a1 = zoom(Z1, SZ1, zy1, 'v1.3.2: U9, I2S on the west pins')
 n = now.near['u9']
 a1.measure(n[1], n[2], '%.2f mm' % n[0], at=('px', 0, -26), size=17)
 u9 = now.d['fps']['U9']['pos']
@@ -358,7 +359,7 @@ for k, v in order_:
         if best and box(*Z1).contains(Point(best[1])):
             a1.measure(best[1], best[2], '%s %.2f (B.Cu)' % (k, best[0]), at=('px', 10, 64), size=15)
 zy2 = zy1 + hZ1 + 150
-a2 = zoom(Z2, SZ2, zy2, 'v1.3.2: digital copper at the AVDD copper')
+a2 = zoom(Z2, SZ2, zy2, 'v1.3.2: digital copper at the AVDD copper' if red_len_now > 0 else 'v1.3.2: U9 pins 1-10 and their discs')
 win2 = box(*Z2)
 OFFZ = {'RESET': ('px', 96, -6), '~RDACK': ('px', 86, -50), 'BCK': ('px', -76, -34), 'LRCK': ('px', -84, 34), '~RIOW': ('px', 70, 52)}
 shown = []
@@ -380,7 +381,9 @@ for i, (k, (d_, pa_, pb_)) in enumerate(shown):
     print('  close-up 2: %s %.3f at %s -> %s' % (k, d_, [round(c, 2) for c in pa_], [round(c, 2) for c in pb_]))
     a2.measure(pa_, pb_, '%s %.2f' % (k, d_), at=OFFZ.get(k, ('px', 0, -40)), size=15)
 yy_ = zy2 + hZ2 + 12
-for ln in wrap('At FB3\'s AVDD pad and the AVDD track from it: %s. AVDD is the DAC\'s filtered analog supply.' % ', '.join('%s %.2f mm' % (k, b_[0]) for k, b_ in shown), font(19), wZ):
+cap2 = ('At FB3\'s AVDD pad and the AVDD track from it: %s. AVDD is the DAC\'s filtered analog supply.' % ', '.join('%s %.2f mm' % (k, b_[0]) for k, b_ in shown)
+        if shown else 'East of U9: DAC_OUTL, VNEG, CAPM and CAPP to R7, C17 and C16 (routed by hand, two vias). No digital copper is inside the keep-away anywhere on v1.3.2.')
+for ln in wrap(cap2, font(19), wZ):
     dr.text((xZ, yy_), ln, font=font(19), fill=SUB); yy_ += 26
 
 # legend
@@ -404,11 +407,12 @@ x = swatch(dr, x, ly3, 'other pads', fill=CTX_PAD, fs=fs)
 
 vy = ly3 + 52; fz = font(21)
 lines = (
-    'With U9 turned so that its I2S pins face the Pico, I2S is %.1f mm with %d vias (8dbb6c6: %.1f mm, %d via) and stays %.2f mm or more from pins 1-10 and %.2f mm'
+    'With U9 at 180° above U3/U4 (I2S on its west pins), I2S is %.1f mm with %d vias (8dbb6c6: %.1f mm, %d via) and stays %.2f mm or more from pins 1-10 and %.2f mm'
     % (now.i2s_len, len(now.i2s_vias), old.i2s_len, len(old.i2s_vias), now.near['u9'][0], now.near['audio'][0]),
-    'or more from audio copper; %s. Inside the keep-away there is only digital copper next to AVDD: %.1f mm of'
-    % ('no I2S track crosses an audio net on the other layer' if not now.cross else '%d I2S tracks cross an audio net on the other layer' % len(now.cross), red_len_now),
-    'track (8dbb6c6: %s). The GND pours are not drawn.' % ', '.join('%.2f mm of %s next to %s' % (v[2], k, 'U9 pin 1' if v[1] == 'U9 pins 1-10' else v[1] + ' copper')
+    'or more from audio copper; %s. %s'
+    % ('no I2S track crosses an audio net on the other layer' if not now.cross else '%d I2S tracks cross an audio net on the other layer' % len(now.cross),
+       ('Inside the keep-away there is only digital copper next to AVDD: %.1f mm of' % red_len_now) if red_len_now > 0 else 'No digital copper is inside the keep-away:'),
+    ('track (8dbb6c6: %s). The GND pours are not drawn.' if red_len_now > 0 else '8dbb6c6 had %s. The GND pours are not drawn.') % ', '.join('%.2f mm of %s next to %s' % (v[2], k, 'U9 pin 1' if v[1] == 'U9 pins 1-10' else v[1] + ' copper')
                                                                     for k, v in sorted(old.per.items(), key=lambda kv: -kv[1][2])),
 )
 for ln in lines:

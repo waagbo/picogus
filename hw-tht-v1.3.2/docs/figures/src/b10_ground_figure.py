@@ -210,6 +210,9 @@ pad = 36; gp = 36; S = 66
 H_MM = 10.4
 BX = (167.4, 120.6, 177.4, 131.0)       # B10 now
 ZX = (168.4, 126.4, 173.6, 130.75)       # B10 now, close-up of the narrow runs at B11
+_at11 = any(k[0] == 'pad' and k[1] == 'J3.11' for r, nb, nb1 in NB if r['k'][1] < 1.0 for k in nb)
+if not _at11:                            # the narrow run is elsewhere: centre the close-up on its nearest approach
+    _c = close[2][1]; ZX = (_c[0] - 2.6, _c[1] - 2.175, _c[0] + 2.6, _c[1] + 2.175)
 BO = (169.5, 120.6, 175.3, 131.0)        # B10 on 8dbb6c6
 SZ = round((BX[3] - BX[1]) * S) / (ZX[3] - ZX[1])
 B1X = (193.1, 123.6, 197.5, 131.0)
@@ -231,7 +234,7 @@ bn = {}
 for b_ in block:
     bn.setdefault(b_.replace('via ', ''), []).append('via' if b_.startswith('via ') else 'track')
 btxt = ', '.join('%s%s' % (n_, ' (track and via)' if len(k_) > 1 else '') for n_, k_ in sorted(bn.items(), key=lambda kv: (-len(kv[1]), kv[0])))
-dr.text((pad, 114), 'the strip. Straight above B10, %s are in the way, so B10\'s track goes round to the left.' % btxt,
+dr.text((pad, 114), 'the strip. Straight above B10, %s are in the way, so B10\'s track goes round them.' % btxt,
         font=font(24), fill=GREY)
 
 
@@ -261,7 +264,7 @@ pB = draw_layer(now, 'B.Cu', BX, S, P['10'][0], extra_layer=True); can.paste(pB.
 heading(dr, (xB_, y1 - 8), 'B10, v1.3.2: solder side (B.Cu), front runs dashed', size=25)
 aB = Annot(can, pB, xB_, y1)
 pZ = draw_layer(now, 'B.Cu', ZX, SZ, P['10'][0]); can.paste(pZ.done(), (xZ_, y1)); frame(dr, xZ_, y1, wZ, hB)
-heading(dr, (xZ_, y1 - 8), 'Close-up: round the top of B11', size=25)
+heading(dr, (xZ_, y1 - 8), 'Close-up: round the top of B11' if _at11 else 'Close-up: the narrow run', size=25)
 aZ = Annot(can, pZ, xZ_, y1)
 pO = draw_layer(old, 'B.Cu', BO, S, P_old['10'][0], extra_layer=True); can.paste(pO.done(), (xO_, y1)); frame(dr, xO_, y1, wO, hB)
 heading(dr, (xO_, y1 - 8), 'B10 on 8dbb6c6', size=25)
@@ -303,8 +306,10 @@ for q in exg:
 _g11 = min(((v[0], r['k'][1]) for r, nb, nb1 in NB for k, v in nb.items() if k[0] == 'pad' and k[1] == 'J3.11'), default=(None, None))
 _cn = close[1][1] if close[1][0] in ('trk', 'via') else close[1][1].replace('J3.', 'finger ')
 _exa = sum(q.area for q in exg)
-caption(xZ_, yc, [('The %.1f mm run passes %.2f mm from B11 (not connected on' % (_g11[1], _g11[0]), False, SUB),
-                  ('this card); the narrow runs pass %s at %.2f mm,' % (_cn, close[0]), False, SUB),
+_l1 = [('The %.1f mm run passes %.2f mm from B11 (not connected on' % (_g11[1], _g11[0]), False, SUB),
+       ('this card); the narrow runs pass %s at %.2f mm,' % (_cn, close[0]), False, SUB)] if _g11[0] is not None else \
+      [('The narrow runs pass %s at %.2f mm,' % (_cn, close[0]), False, SUB)]
+caption(xZ_, yc, _l1 + [
                   (('where a 1.0 mm track would overlap it.' if close1 == 0 else 'where a 1.0 mm track would leave %.2f mm.' % close1), True, RED),
                   ('+12V passes %.2f mm from B10. ' % g12[0] + ('The entry stays inside B10\'s outline.' if _exa < 0.005 else
                    'The entry sticks out of B10 (%.2f mm², red ring).' % _exa), False, SUB)], wZ)
