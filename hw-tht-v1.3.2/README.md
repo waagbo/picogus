@@ -23,6 +23,11 @@ The main board is through-hole apart from **U3, U4, U9** (TSSOP, 0.65 mm pitch),
 1.27 mm pitch) and the optional **U12** (USBLC6-2SC6, SOT-23-6), all on the front. The rest of the circuit is
 v1.3.1's: USB-A host port, Waveblaster header, op-amp mixer.
 
+> **Placement iteration (2026-11-01), not routed.** `PicoGUS-THT.kicad_pcb` now holds a new hand placement with the
+> DAC block and the mixer rearranged and no tracks; DRC finds only the 12 accepted courtyard overlaps (and the
+> unrouted connections). Everything below, including the routing, metrics, figures, renders and the JLCPCB export,
+> describes the routed layout of commit 298e993 (`git show 298e993:hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb`).
+>
 > **Status: routed; not built or tested yet.** The placement of 2026-10-31 is routed on two layers (2026-11-01).
 > The schematic's ERC is the same as v1.3.1's (280 warnings, 0 errors). DRC with schematic parity finds 0
 > unconnected items and, as errors, only the 12 accepted courtyard overlaps in the logic column, so
