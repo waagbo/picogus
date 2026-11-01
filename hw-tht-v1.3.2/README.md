@@ -1,4 +1,4 @@
-# PicoGUS THT (through-hole) v1.3.2 (work in progress) – based on PicoGUS v1.2
+# PicoGUS THT (through-hole) v1.3.2 – based on PicoGUS v1.2
 
 Board revision **v1.3.2**: the [v1.3.1 (rev B) THT board](../hw-tht-v1.3.1/README.md) on a 102 mm outline, with
 the fine-pitch chips soldered straight to the card and a test pad on every one of their pins.
@@ -23,7 +23,8 @@ The main board is through-hole apart from **U3, U4, U9** (TSSOP, 0.65 mm pitch),
 1.27 mm pitch) and the optional **U12** (USBLC6-2SC6, SOT-23-6), all on the front. The rest of the circuit is
 v1.3.1's: USB-A host port, Waveblaster header, op-amp mixer.
 
-> **Status: routed; not built or tested yet.** The placement of 2026-11-01 is routed on two layers (2026-11-01).
+> **Status: v1.3.2, ready to order (tag `hw-tht-v1.3.2`); not built or tested yet.** The placement of 2026-11-01 is
+> routed on two layers (2026-11-01).
 > The schematic's ERC is the same as v1.3.1's (280 warnings, 0 errors). DRC with schematic parity finds 0
 > unconnected items and, as errors, only the 12 accepted courtyard overlaps in the logic column, so
 > `hw-common/tools/jlcpcb.sh` exports with `FORCE=1`; `build/jlcpcb/` holds that export (not in git: the repository
