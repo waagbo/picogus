@@ -63,12 +63,12 @@ Reference designators are v2.0's; new ones are D3, R19, R20 and C46.
 | 0402/0603/0805/1206 R/C, CP_Elec_4x5.4, SOD-323, 0603 LED, 1206 PTC, 0805 beads, TL3305 switch, JST-SH debug | axial resistors and beads, radial MLCC discs and electrolytics, DO-41, 3 mm LED, radial PTC, 6 mm tactile switch, 1x3 header | Through hole |
 | C11 47 µF (+3V3) | C11 10 µF | MCP1826S: at most 22 µF on its output |
 | C38 100 µF ceramic | C38 100 µF electrolytic | Through hole |
-| Card outline 102.87 × 96.74 mm, v2.0 bracket | **THT v1.3.2's outline** (102.0 × 99.95 mm) and bracket: J5 (USB-A, now v1.3.2's **Molex 67643**), J9 (line out), J7 (MIDI out), H1/H2 and the ISA fingers at v1.3.2's positions | Reuses the v1.3.2 bracket; the 102 mm card is v1.3.2's cheaper JLCPCB size. The bracket's volume-pot hole is unused (v2.1's Waveblaster volume is digital) |
+| Card outline 102.87 × 96.74 mm, v2.0 bracket | **THT v1.3.2's outline** (102.0 × 99.95 mm) and bracket: J7 (MIDI out, top), J9 (line out) and J5 (USB-A, now v1.3.2's **Molex 67643**), H1/H2 and the ISA fingers at v1.3.2's positions | Reuses the v1.3.2 bracket; the 102 mm card is v1.3.2's cheaper JLCPCB size. The bracket's volume-pot hole is unused (v2.1's Waveblaster volume is digital) |
 | 4 layers: In1 GND + AGND, In2 +3V3 + AVDD | 4 layers: In1.Cu GND plane, In2.Cu +3V3 plane; AGND/AVDD islands under the audio section to be drawn once the placement is settled | As v2.0 |
 | `+3.3V` power symbols | `+3V3` | The RP2040 sheet joined the two names; without it they would have split |
 
-Unchanged: J1 (ISA, now at v1.3.2's position), J3 (IRQ/DMA, same position), J7 (MIDI out), J8
-(Waveblaster), J9 (line out), H1/H2, the card outline and every GPIO assignment except GPIO0–3 (PSRAM, now free).
+Unchanged references: J1 (ISA), J3 (IRQ/DMA), J7 (MIDI out), J8 (Waveblaster), J9 (line out), H1/H2, and every
+GPIO assignment except GPIO0–3 (PSRAM, now free). Board positions: see [Layout status](#layout-status).
 
 ## Parts with no through-hole version
 
@@ -234,39 +234,56 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
 ## Mechanical
 
 * **Outline**: THT v1.3.2's (101.90 × 99.85 mm at the line centres, 102.0 × 99.95 mm over the lines), without its
-  Pico micro-USB relief slots. J5 (USB-A, Molex 67643, x 208.64), J9 (line out) and J7 (MIDI out) at (217.00, 49.10)
-  / (217.00, 75.50), the bracket tab holes H1/H2 (x 214.70) and the ISA fingers are at v1.3.2's positions, so the
-  [v1.3.2 bracket](../hw-tht-v1.3.2/README.md#bracket) fits (its drawing is on User.Drawings). Its volume-pot hole stays
-  unused. J8 (Waveblaster, with the two daughterboard standoff holes) and J3 (IRQ/DMA) are where they were on v2.0.
-* **Under the Waveblaster daughterboard** (the area left of x ≈ 167 mm, about 11 mm high): only low parts. The
-  logic DIPs, the SMD chips (U1, U2, U10), the DAC's passives, axial resistors and disc capacitors. The module, U9
-  (TO-220), the electrolytics, the film capacitors, F1 and the user-facing headers and switch are all outside that area.
+  Pico micro-USB relief slots.
+* **Bracket end as on THT v1.3.2's final layout (commit 258c8f8)**, top to bottom: J7 MIDI OUT at (217.00, 49.00),
+  J9 LINE OUT at (217.00, 75.50) and J5 USB-A (Molex 67643) at (208.64, 92.50), with the bracket tab holes H1/H2 at
+  x 214.70 and the ISA fingers in v1.3.2's places, so the [v1.3.2 bracket](../hw-tht-v1.3.2/README.md#bracket) fits
+  (its drawing is on User.Drawings). Its WT VOL hole between the two jacks stays unused: v2.1's Waveblaster volume is
+  digital, and U13 with its output capacitors sits behind that hole, where v1.3.2 has RV1.
+* **J6 (USB-C) at the bracket end**, centred at y 108.89, where v1.3.2 has the Pico's micro-USB. It faces the
+  bracket with the footprint's PCB-edge line on the board edge, so its front is 2.5 mm past the edge (x 220.80), 0.9
+  mm behind the inner face of the bracket drawing's plate. As on v1.3.2, the bracket has no hole there (v1.3.2's
+  README: a USB plug cannot enter the slot opening at that height), so J6 is for programming and powering the card on
+  the bench with the bracket off. In the PC, update the firmware with `pgusinit`.
+* **J8 (Waveblaster)** with pin 1 where v1.3.2 has it, (158.89, 39.63), and v2.0's two daughterboard standoff holes
+  (6.35 mm right of pin 1, at y 39.63 and 118.37). **J3 (IRQ/DMA)** at v1.3.2's position, pin 1 (136.03, 124.91).
+* **Under the Waveblaster daughterboard** (a full-size board's outline ends at x 170.32 and y 121.9): only low parts.
+  These are the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32 and the disc capacitors. The
+  module, U9 (TO-220), the electrolytics, the film capacitors, F1, the LED and the user-facing headers and switch are
+  all outside that area.
 
 ## Layout status
 
-**Placed, not routed (2026-10-31), for review: the placement will change before routing.** DRC with schematic
-parity: no parity issues; the only errors are the 11 accepted courtyard overlaps of the logic column, and the
-unconnected items are the unrouted nets. The only warnings are connector
-silkscreen lines past the bracket edge (J5, J6, J7, J9 hang over it, as on v1.3.2).
+**Placed, not routed (2026-11-03), for review: the placement will change before routing.** It follows the grouping of
+THT v1.3.2's final, routed layout (commit 258c8f8): every group the two boards share sits at v1.3.2's coordinates, and
+the parts only v2.1 has fill the gaps. DRC with schematic parity: no parity issues. The only errors are the 11 accepted
+courtyard overlaps of the logic column, and the unconnected items are the unrouted nets. The only warnings are 16
+connector silkscreen lines past the bracket edge (J5, J6, J7 and J9 hang over it, as on v1.3.2).
 
-* **Fixed by the bracket and the slot**: the outline, J1 (ISA fingers), J5, J7, J9 and H1/H2 at v1.3.2's positions
-  (see [Mechanical](#mechanical)).
-* **Logic column as on THT v1.3.2**: the five logic DIPs turned 90° in a column along the left edge, pin 1 at
-  x 120.07 and y 65.62 / 77.67 / 89.71 / 101.76 / 113.81 (v1.3.2's coordinates): U6 74AHCT126, U4 74AHC00 (AEN,
-  DACK), U5 74AHC00 (RUN, BUSOE), U3 74AHC14 and the DIP-20 U7 74AHC244 at the bottom next to J3. Each chip's 0.1 µF
-  disc sits above its VCC pin (C46, C5, C6, C4, C7), and the pull resistors R1 (RESET), R18 (DACK) and R5 (BUSOE)
-  stand at x 138.6. As on v1.3.2, the discs and the resistor column overlap the neighbouring courtyards: these **11
-  courtyard overlaps are accepted** (DRC errors), so `jlcpcb.sh` will need `FORCE=1`. The ferrites FB3/FB4 stand
-  upright where U6 was, the DAC's AVDD capacitors C15/C17 sit beside its analog row, and U1/U2 moved 3 mm right (their test pads clear the DIP-20).
-* **Moved for the v1.3.2 bracket parts**: the mixer op-amp U11 sits between J9 and H1 with R27/R28 beside it and
-  C28/C29 below; R25 and C26 moved up; MIDI out FB1/R2 sit left of J7, FB2 left of J5; F1, C1 and R3 under J5.
-  U10 and U13 are the SMD chips at the centres of the old DIP adapters.
+![THT v1.3.2 (258c8f8) and v2.1 side by side, parts coloured by group](docs/figures/placement-groups.png)
+
+| Group | v2.1 parts | Where (as on v1.3.2 unless noted) |
+|---|---|---|
+| Logic column | U6, U4, U5, U3 (DIP-14), U7 (DIP-20), C46, C5, C6, C4, C7, R1, R18, R5 | Left edge, pin 1 at x 120.07, y 65.62 / 77.67 / 89.71 / 101.76 / 113.81; discs above each VCC pin; resistors at x 138.60 |
+| Bus switches | U1, U2 (TSSOP-16, test pads), C2, C3 | v1.3.2's U3/U4 at 90°, **0.9 mm higher** (U2 clears the lower Waveblaster standoff hole): (150.22, 109.20) / (161.44, 109.22); C2/C3 0.4 mm higher at y 101.89 |
+| DAC block | U10 (TSSOP-20, test pads), C14–C22, R10, R11, FB4 | U10 at (156.10, 84.53), 180°: I2S/DVDD/LDOO on the west side, analog pins east, facing the output filter and the mixer. C16 (CPVDD) and C15 (AVDD) in the slots of v1.3.2's C36 and C13 |
+| Mixer | U11, R21–R30, C24–C29 | U11 at (173.00, 61.00), 0°, feedback discs on its pins, ±12 V filters around it; the resistor columns at x 189.43 / 199.58 |
+| Waveblaster audio + volume | R31/R32, C39/C40, U13, C41/C42, C23 | R31/R32 next to the header's audio pins (v1.3.2's R14/R15); C39/C40 where v1.3.2 has C22/C23; U13 with C41/C42 and C23 in RV1's slot behind the WT VOL hole, next to R21/R22 |
+| MIDI out | R2, R3, FB1, FB2, J7 | Along the top edge to J7, as v1.3.2's R3/R4/FB1/FB2 |
+| USB-A | J5, F1 | J5 as before; F1 standing left of it, where v1.3.2 has its F1 |
+| Module | U12 (Core2350B) | Where v1.3.2 has the Pico: (187.96, 107.14), 0°, courtyard 175.0–201.0 × 94.1–120.1. Bus pins face U1/U2, I2S and the ISA-side signals face the fingers, USB/SWD/RUN/BOOTSEL/VSYS face up |
+| Above the module | U9 (LDO), C12, C13, C38, SW1, J10 | U9's VSYS pin over the module's VSYS pin; C38 (AVDD bulk) at the DAC block's east end; BOOTSEL and RUN within reach of their pins |
+| USB-C column | J6, R19, R20, D2, J2 | Between the module and the bracket: CC resistors and the VBUS diode next to J6, SWD header below them |
+| Bottom strip | C1, D3, J4, R13, D1, C10, C11, R4, C45 | As v1.3.2: C1 (+5V bulk) at v1.3.2's C2, D3 (ISA +5V to VSYS) over the +5V finger at v1.3.2's D1, J4 (UART) at v1.3.2's J6; LED, RUN pull-up/capacitor left of the module |
+| Ground star | FB3 (GND to AGND) | In the free area under the daughterboard above the DAC block |
+
+* **R21–R32 (mixer) are now on 10.16 mm pitch** like every other resistor on the card (they were 7.62 mm), so the
+  mixer columns are v1.3.2's to the coordinate. Schematic and BOM updated.
+* **References**: the parts at v1.3.2's coordinates carry v1.3.2's hand-placed references (shown or hidden as there).
 * **Planes**: In1.Cu GND and In2.Cu +3V3 over the whole card; the AGND/AVDD islands come back once the placement is
   settled (see [Audio](#audio)).
-* **Silkscreen**: front labels (Jost), the title in the strip along the top edge; on the back, the title, copyright,
-  licence, project URL and thanks behind U1/U2.
+* **Silkscreen**: `MIDI OUT` above J7 as on v1.3.2, `LINE OUT` beside J9, the title in the top-right corner where
+  v1.3.2 has its copper logo; on the back, the title, copyright, licence, project URL and thanks in the free area
+  under the daughterboard.
 * An earlier draft on the v2.0 outline was routed (commit `1028cb0`); its routing rules (nothing between the gold
   fingers, digital tracks off the analog islands) carry over.
-
-The placement keeps everything taller than about 10 mm (module on sockets, U9, electrolytics, film capacitors, F1, the
-headers and switch) out of the Waveblaster daughterboard area.
