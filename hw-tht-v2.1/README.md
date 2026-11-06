@@ -266,8 +266,9 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
   mm behind the inner face of the bracket drawing's plate. As on v1.3.2, the bracket has no hole there (v1.3.2's
   README: a USB plug cannot enter the slot opening at that height), so J6 is for programming and powering the card on
   the bench with the bracket off. In the PC, update the firmware with `pgusinit`.
-* **J8 (Waveblaster)** with pin 1 where v1.3.2 has it, (158.89, 39.63), and v2.0's two daughterboard standoff holes
-  (6.35 mm right of pin 1, at y 39.63 and 118.37). **J3 (IRQ/DMA)** at v1.3.2's position, pin 1 (136.03, 124.91).
+* **J8 (Waveblaster)** with pin 1 where v1.3.2 has it, (158.89, 39.63), and like v1.3.2 without daughterboard
+  standoff holes (`Wavetable_NoMountingHoles`; v2.0 had two, 6.35 mm right of pin 1): the daughterboard is held by
+  its header. **J3 (IRQ/DMA)** at v1.3.2's position, pin 1 (136.03, 124.91).
 * **Under the Waveblaster daughterboard** (a full-size board's outline ends at x 170.32 and y 121.9): only low parts.
   These are the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32 and the disc capacitors. The
   module, U9 (TO-220), the electrolytics, the film capacitors, F1, the LED and the user-facing headers and switch are
@@ -286,7 +287,7 @@ connector silkscreen lines past the bracket edge (J5, J6, J7 and J9 hang over it
 | Group | v2.1 parts | Where (as on v1.3.2 unless noted) |
 |---|---|---|
 | Logic column | U6, U4, U5, U3 (DIP-14), U7 (DIP-20), C46, C5, C6, C4, C7, R1, R18, R5 | Left edge, pin 1 at x 120.07, y 65.62 / 77.67 / 89.71 / 101.76 / 113.81; discs above each VCC pin; resistors at x 138.60 |
-| Bus switches | U1, U2 (TSSOP-16, test pads), C2, C3 | v1.3.2's U3/U4 at 90°, **0.9 mm higher** (U2 clears the lower Waveblaster standoff hole): (150.22, 109.20) / (161.44, 109.22); C2/C3 0.4 mm higher at y 101.89 |
+| Bus switches | U1, U2 (TSSOP-16, test pads), C2, C3 | v1.3.2's U3/U4 at 90°, at v1.3.2's coordinates: (150.22, 110.10) / (161.44, 110.12); C2/C3 at y 102.29 |
 | DAC block | U10 (TSSOP-20, test pads), C14–C22, R10, R11, FB4 | U10 at (156.10, 84.53), 180°: I2S/DVDD/LDOO on the west side, analog pins east, facing the output filter and the mixer. C16 (CPVDD) and C15 (AVDD) in the slots of v1.3.2's C36 and C13 |
 | Mixer | U11, R21–R30, C24–C29 | U11 at (173.00, 61.00), 0°, feedback discs on its pins, ±12 V filters around it; the resistor columns at x 189.43 / 199.58 |
 | Waveblaster audio + volume | R31/R32, C39/C40, U13, C41/C42, C23 | R31/R32 next to the header's audio pins (v1.3.2's R14/R15); C39/C40 where v1.3.2 has C22/C23; U13 with C41/C42 and C23 in RV1's slot behind the WT VOL hole, next to R21/R22 |
