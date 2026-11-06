@@ -28,8 +28,9 @@ Files:
 | `mixer.kicad_sch` | Line-out mixer: NE5532 inverting summing amplifier (from THT v1.3), ±12 V filters, Waveblaster input pull-downs |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
 | `BOM-THT.csv` | BOM with a **THT status** column (THT / THT but a different part than v2.0 / no THT version exists / module), the v2.0 part each line replaces, manufacturer, MPN, DigiKey and LCSC numbers, a digikey.no link, alternatives and digikey.no prices; then the kit items (module sockets and headers, jumpers), the optional IC sockets and the v2.0 parts that are gone |
-| `BOM-THT-digikey-upload.csv` | DigiKey cart/BOM upload with the references as Customer Reference (see [Cost](#cost)) |
+| `BOM-THT-digikey-upload.csv` | DigiKey cart/BOM upload (see [Cost](#cost)). Customer Reference `PicoGUS-THT-2.1.x: <references>` on every line, so the bags of a mixed order say which board they are for; at most 48 characters (DigiKey prints "Character Limit Exceeded" instead of a longer one), so the 15 × 0.1 µF line reads `C2-7,14-16,20,…` |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`) | Optional: every IC socketed, with socket and part heights against the Waveblaster daughterboard. The same parts are the optional socket lines of `BOM-THT.csv` |
+| `tools/digikey_upload.py` | Writes both DigiKey upload files from `BOM-THT.csv` (`python3 tools/digikey_upload.py [cards]`; more than one card gives `-<n>x` files) |
 | `tools/gen_core2350b.py` | Generates the Core2350B footprint and 3D model in `hw-common` and checks the pin map |
 | `PicoGUS-THT-top.png`, `PicoGUS-THT-bottom.png` | 3D renders |
 
