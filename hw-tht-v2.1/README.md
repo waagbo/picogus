@@ -303,8 +303,20 @@ connector silkscreen lines past the bracket edge (J5, J6, J7 and J9 hang over it
 * **References**: the parts at v1.3.2's coordinates carry v1.3.2's hand-placed references (shown or hidden as there).
 * **Planes**: In1.Cu GND and In2.Cu +3V3 over the whole card; the AGND/AVDD islands come back once the placement is
   settled (see [Audio](#audio)).
-* **Silkscreen**: `MIDI OUT` above J7 as on v1.3.2, `LINE OUT` beside J9, the title in the top-right corner where
-  v1.3.2 has its copper logo; on the back, the title, copyright, licence, project URL and thanks in the free area
-  under the daughterboard.
+* **PicoGUS logo in copper, as on v1.3.2**: v1.3.2's eight solder-mask openings (the letters) with copper letters
+  0.15 mm larger under them, so the letters show bare metal with no fab-registration edge, and a rule area that keeps
+  tracks and vias off them. It sits along the top edge as on v1.3.2 but 2 mm further right (x 187.9–213.6, y
+  37.8–40.6): v1.3.2's spot would put the "P" under C40's film capacitor. `v2.1` stands right of it as `v1.3.2` does
+  (Jost 1.2 mm). The silkscreen title is gone. v1.3.2's logo shows the front GND pour through the openings; v2.1 has
+  no front pour yet, so if one is added when routing, the copper letters can go and the pour shows through instead.
+* **Silkscreen labels** (Jost, embedded in the board file as on v1.3.2): `MIXER` and `DAC` at v1.3.2's positions (the
+  two blocks are at v1.3.2's coordinates), `WT VOL` beside U13 (the digital Waveblaster volume, behind the bracket's
+  unused WT VOL hole), `MIDI OUT` above J7 as on v1.3.2, `LINE OUT` beside J9; on the back, the title, copyright,
+  licence, project URL and thanks in the free area under the daughterboard.
+* **Groups, as on v1.3.2**, so a block moves as one: `74AHCT126 (U6)`, `74AHC00 (U4)`, `74AHC00 (U5)`,
+  `74AHC14 (U3)` (with the column resistors R1/R18/R5), `74AHC244 (U7)`, `ISA bus switches (U1, U2)`,
+  `Waveblaster header (J8)`, `DAC (U10)`, `Mixer + line out (U11, J9)`, `WT volume (U13)`, `MIDI out (J7)`,
+  `USB host (J5)`, `USB-C (J6)`, `Core2350B + power (U12)`, `IRQ/DMA jumpers (J3)`, `PicoGUS logo` and the bracket
+  drawing; each group holds its labels. Only H1, H2 and the ISA fingers (J1) are outside a group.
 * An earlier draft on the v2.0 outline was routed (commit `1028cb0`); its routing rules (nothing between the gold
   fingers, digital tracks off the analog islands) carry over.
