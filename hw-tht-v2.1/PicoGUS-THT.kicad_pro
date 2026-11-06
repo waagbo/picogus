@@ -719,6 +719,34 @@
       {
         "netclass": "usb",
         "pattern": "Net-(J6-CC2)"
+      },
+      {
+        "netclass": "pwr",
+        "pattern": "/Mixer/+12VA"
+      },
+      {
+        "netclass": "pwr",
+        "pattern": "/Mixer/-12VA"
+      },
+      {
+        "netclass": "audio",
+        "pattern": "/Mixer/LINE_*"
+      },
+      {
+        "netclass": "audio",
+        "pattern": "/Mixer/WTVOL_*"
+      },
+      {
+        "netclass": "audio",
+        "pattern": "Net-(U11*"
+      },
+      {
+        "netclass": "audio",
+        "pattern": "Net-(C24-Pad2)"
+      },
+      {
+        "netclass": "audio",
+        "pattern": "Net-(C25-Pad2)"
       }
     ]
   },

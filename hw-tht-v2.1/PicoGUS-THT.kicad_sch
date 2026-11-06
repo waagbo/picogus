@@ -12830,7 +12830,7 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
 				(at 0 5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -14594,7 +14594,7 @@
 		)
 		(uuid "81056044-a3bb-479b-82e5-9edd5f864370")
 	)
-	(text "U12 module power: VSYS feeds the module's VBUS pin and its own\nLDO (ME6217, 3V3_EN pulled up on the module) powers the module.\nThe module 3V3 pin is not connected: U9 powers the card logic,\nDAC and PSRAM. GPIO30-47 are not used (GPIO39: module LED,\nGPIO47: module PSRAM CS on Core2350B1/B2)."
+	(text "U12 module power: VSYS feeds the module's VBUS pin and its own\nLDO (ME6217, 3V3_EN pulled up on the module) powers the module.\nThe module 3V3 pin is not connected: U9 powers the card logic,\nDAC (AVDD through FB4) and U13. GPIO30-47 are not used (GPIO39: module LED,\nGPIO47: module PSRAM CS on Core2350B1/B2)."
 		(exclude_from_sim no)
 		(at 335.28 162.56 0)
 		(effects
@@ -14818,12 +14818,6 @@
 		(uuid "4b210183-38f5-453b-885c-b4290cdb6402")
 	)
 	(junction
-		(at 274.32 168.91)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "55a9124c-2067-41ab-a9bb-ac2ce137797d")
-	)
-	(junction
 		(at 310.515 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -14962,12 +14956,6 @@
 		(uuid "9e8f88ce-bb26-4d03-bec5-e58c388a0566")
 	)
 	(junction
-		(at 254.635 158.115)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a190a4f8-a0f8-4be7-ae27-bafed3fda5d4")
-	)
-	(junction
 		(at 364.49 149.86)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -15092,12 +15080,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f89c4bb2-32dd-45f0-8eb8-a7fd2187600f")
-	)
-	(junction
-		(at 271.78 161.29)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f9cd32f2-9882-4751-9ddb-c3f6dc20372e")
 	)
 	(junction
 		(at 310.515 87.63)
@@ -15456,16 +15438,6 @@
 			(type default)
 		)
 		(uuid "08bc77c6-55ca-433f-831b-2ac90ba593b4")
-	)
-	(wire
-		(pts
-			(xy 254.635 158.115) (xy 256.54 158.115)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "08cb5fda-918d-4c05-b311-2b1b49930952")
 	)
 	(wire
 		(pts
@@ -16569,16 +16541,6 @@
 	)
 	(wire
 		(pts
-			(xy 271.78 161.29) (xy 271.78 168.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "97ab408b-cd7d-4e85-bf04-58b659b03a3e")
-	)
-	(wire
-		(pts
 			(xy 393.7 187.96) (xy 403.86 187.96)
 		)
 		(stroke
@@ -16656,16 +16618,6 @@
 			(type default)
 		)
 		(uuid "9eb86f17-5324-49c8-b1de-1d7d56a980c7")
-	)
-	(wire
-		(pts
-			(xy 254.635 161.29) (xy 254.635 158.115)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a1d20353-79d3-459e-ab47-c170f607aaea")
 	)
 	(wire
 		(pts
@@ -17146,16 +17098,6 @@
 			(type default)
 		)
 		(uuid "ee11c685-7ac1-4161-bb7c-f2633d88ba17")
-	)
-	(wire
-		(pts
-			(xy 254.635 161.29) (xy 271.78 161.29)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "eefd3436-9deb-4812-b56d-08842877cb5b")
 	)
 	(wire
 		(pts
@@ -25220,8 +25162,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x02_Pin")
-		(at 271.78 173.99 90)
+		(lib_id "Switch:SW_Push")
+		(at 271.78 173.99 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -25231,7 +25173,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5c1d16e7-a09a-4cec-8c3d-1356b01955e1")
-		(property "Reference" "J10"
+		(property "Reference" "SW2"
 			(at 275.59 172.085 90)
 			(hide yes)
 			(show_name no)
@@ -25254,7 +25196,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+		(property "Footprint" "Button_Switch_THT:SW_PUSH_6mm"
 			(at 271.78 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -25276,7 +25218,7 @@
 				)
 			)
 		)
-		(property "Description" "1x2 header (reset button)"
+		(property "Description" "6x6 mm tactile switch (RUN: resets the module; with BOOTSEL held, USB bootloader)"
 			(at 271.78 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -25287,7 +25229,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Sullins"
+		(property "Manufacturer" "TE Connectivity"
 			(at 271.78 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -25298,7 +25240,7 @@
 				)
 			)
 		)
-		(property "MPN" "PREC040SAAN-RC"
+		(property "MPN" "1825910-6"
 			(at 271.78 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -25309,7 +25251,7 @@
 				)
 			)
 		)
-		(property "DigiKey" "S1012EC-40-ND"
+		(property "DigiKey" "450-1650-ND"
 			(at 271.78 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -25320,7 +25262,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2337 (BOOMELE 2.54-1*40P)"
+		(property "LCSC" "C428628"
 			(at 271.78 173.99 0)
 			(hide yes)
 			(show_name no)
@@ -25340,7 +25282,7 @@
 		(instances
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "J10")
+					(reference "SW2")
 					(unit 1)
 				)
 			)
@@ -28534,7 +28476,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
 			(at 262.89 95.25 0)
 			(hide yes)
 			(show_name no)
@@ -30109,7 +30051,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 254.635 154.305 0)
+		(at 254.635 161.925 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -30119,7 +30061,7 @@
 		(dnp no)
 		(uuid "a63eb797-f899-49ec-ab71-75f34ee3e7df")
 		(property "Reference" "R4"
-			(at 250.825 150.495 0)
+			(at 250.825 158.115 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30131,7 +30073,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 250.825 153.035 0)
+			(at 250.825 160.655 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -30142,7 +30084,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal"
-			(at 252.857 154.305 90)
+			(at 252.857 161.925 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30153,7 +30095,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 254.635 154.305 0)
+			(at 254.635 161.925 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30164,7 +30106,7 @@
 			)
 		)
 		(property "Description" "1k 1/4W 1% metal film"
-			(at 254.635 154.305 0)
+			(at 254.635 161.925 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30175,7 +30117,7 @@
 			)
 		)
 		(property "Manufacturer" "Yageo"
-			(at 254.635 154.305 0)
+			(at 254.635 161.925 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30186,7 +30128,7 @@
 			)
 		)
 		(property "MPN" "MFR-25FBF52-1K"
-			(at 254.635 154.305 0)
+			(at 254.635 161.925 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30197,7 +30139,7 @@
 			)
 		)
 		(property "DigiKey" "1.00KXBK-ND"
-			(at 254.635 154.305 0)
+			(at 254.635 161.925 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -30208,7 +30150,7 @@
 			)
 		)
 		(property "LCSC" "C57435 (UNI-ROYAL MFR0W4F1001A50)"
-			(at 254.635 154.305 0)
+			(at 254.635 161.925 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -31170,83 +31112,6 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(reference "U3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3V3")
-		(at 254.635 150.495 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "b99dabfc-546d-4705-badf-d12990726da3")
-		(property "Reference" "#PWR038"
-			(at 254.635 154.305 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 252.095 146.685 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 254.635 150.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 254.635 150.495 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 254.635 150.495 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "12cb08f5-c5db-41a7-81fe-a5effbc30608")
-		)
-		(instances
-			(project "PicoGUS-THT"
-				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
-					(reference "#PWR038")
 					(unit 1)
 				)
 			)
@@ -37974,6 +37839,145 @@
 			(project "PicoGUS-THT"
 				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
 					(page "2")
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 254.635 165.735) (xy 256.54 165.735)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ef89089-9b35-47d1-86b3-0623dcba5938")
+	)
+	(wire
+		(pts
+			(xy 256.54 165.735) (xy 271.78 165.735)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9245c1f5-78fb-423b-8e05-ea75f9bd92d2")
+	)
+	(wire
+		(pts
+			(xy 256.54 158.115) (xy 256.54 165.735)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7b4b3a84-e6c1-43a1-9771-dcf29123276b")
+	)
+	(wire
+		(pts
+			(xy 271.78 161.29) (xy 271.78 165.735)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ab449175-8e25-4c58-b662-aa4646214788")
+	)
+	(wire
+		(pts
+			(xy 271.78 165.735) (xy 271.78 168.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df30d739-8495-40c0-bc93-d26ae5283e31")
+	)
+	(junction
+		(at 256.54 165.735)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "72f9cd13-2afb-4fd3-a49f-21fa65ad98c6")
+	)
+	(junction
+		(at 271.78 165.735)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "611812cb-378b-4580-94ac-a10e51120b6b")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 271.78 179.07 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ad0c74b0-785b-491a-9950-264d1ee2a99e")
+		(property "Reference" "#PWR0101"
+			(at 271.78 172.974 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 271.78 183.642 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 271.78 179.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 271.78 179.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 271.78 179.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c3072206-c7a7-46d8-a168-14f3019059d5")
+		)
+		(instances
+			(project "PicoGUS-THT"
+				(path "/8fb4b197-630e-4faa-9892-8ecaeb71c13b"
+					(reference "#PWR0101")
+					(unit 1)
 				)
 			)
 		)
