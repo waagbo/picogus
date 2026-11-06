@@ -30,7 +30,9 @@ Files:
 | `BOM-THT.csv` | BOM with a **THT status** column (THT / THT but a different part than v2.0 / no THT version exists / module), the v2.0 part each line replaces, manufacturer, MPN, DigiKey and LCSC numbers, a digikey.no link, alternatives and digikey.no prices; then the kit items (module sockets and headers, jumpers), the optional IC sockets and the v2.0 parts that are gone |
 | `BOM-THT-digikey-upload.csv` | DigiKey cart/BOM upload (see [Cost](#cost)). Customer Reference `PicoGUS-THT-2.1.x: <references>` on every line, so the bags of a mixed order say which board they are for; at most 48 characters (DigiKey prints "Character Limit Exceeded" instead of a longer one), so the 15 × 0.1 µF line reads `C2-7,14-16,20,…` |
 | `BOM-THT-sockets.csv` (+ `-digikey-upload`) | Optional: every IC socketed, with socket and part heights against the Waveblaster daughterboard. The same parts are the optional socket lines of `BOM-THT.csv` |
+| `BOM-THT-lcsc.csv`, `BOM-THT-lcsc-upload.csv`, `BOM-THT-sockets-lcsc-upload.csv` | The whole card from LCSC (see [Cost](#cost)): every BOM line with the LCSC part, order quantity (LCSC minimums), stock and price on the day and what to buy elsewhere; the uploads for LCSC's BOM tool, same customer references as the DigiKey ones |
 | `tools/digikey_upload.py` | Writes both DigiKey upload files from `BOM-THT.csv` (`python3 tools/digikey_upload.py [cards]`; more than one card gives `-<n>x` files) |
+| `tools/lcsc_bom.py` | Writes the three LCSC files from `BOM-THT.csv` with LCSC's live stock and prices (`python3 tools/lcsc_bom.py [cards]`) |
 | `tools/gen_core2350b.py` | Generates the Core2350B footprint and 3D model in `hw-common` and checks the pin map |
 | `PicoGUS-THT-top.png`, `PicoGUS-THT-bottom.png` | 3D renders |
 
@@ -103,6 +105,24 @@ digikey.no prices of 2026-10-30, for one board, in NOK; shipping not included. P
 * J5 is now v1.3.2's Molex 67643 (DK WM4993-ND, 16.58 NOK, price of 2026-10-31), so it is in the DigiKey order.
 * **C39–C42** (2.2 µF film, 61 NOK) are on backorder at DigiKey until about April 2027: see the LCSC film part or the
   bipolar electrolytic in [Audio](#audio).
+
+**LCSC instead** (lcsc.com prices and stock of 2026-11-06, US$, shipping not included; `BOM-THT-lcsc.csv` has every
+line):
+
+| | US$ |
+|---|---|
+| LCSC order, `BOM-THT-lcsc-upload.csv` (40 lines, quantities raised to LCSC's minimums) | 50.93 |
+| Optional IC sockets, `BOM-THT-sockets-lcsc-upload.csv` | 7.24 |
+
+* **Not at LCSC**: U3 SN74AHC14N, U6 SN74AHCT126N and U9 MCP1826S-3302E/AB (none in stock, and no LCSC part fits
+  without a design change: the 74HC14 does not take 5 V inputs at 3.3 V, the 125 has the opposite enable, the
+  LM2940 clones want a larger output capacitor with ESR): buy them at DigiKey (296-4550-5-ND, 296-4659-5-ND,
+  MCP1826S-3302E/AB-ND, about 30 NOK). The Core2350B2 comes from Waveshare.
+* **Different parts from the BOM** (all in the `Note` column): U7 is TI's SN74LVC244AN (same pinout, 5 V-tolerant
+  inputs at 3.3 V like the AHC244, stronger outputs), J7/J9 the XKB clones of the CUI jacks (as on THT v1.3.2),
+  C21/C22 Dersonic C0G discs, R27/R28 and R31/R32 the taped Yageo MFR-25, and the generic headers, sockets,
+  ferrites, film and electrolytic capacitors named in `BOM-THT.csv`.
+* U4/U5 (SN74AHC00N): 60 in stock at LCSC on the day, at US$1.46 each.
 
 ## Audio
 
