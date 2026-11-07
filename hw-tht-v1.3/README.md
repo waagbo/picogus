@@ -264,7 +264,7 @@ than J5/J8 did not.
 
 ### Silkscreen and back artwork
 
-* Front `v1.3.2`, back `PicoGUS v1.3.2`.
+* Front `v1.3.2`, back `PicoGUS THT 1.3.2` (THT added on 2026-11-07, so the back names the board).
 * **Label font: Jost, embedded in the board file.** The 21 board labels (`WAVEBLASTER`, `MIXER`, `DAC`, `v1.3.2`,
   `LINE OUT`, `WT VOL`, `MIDI OUT`, `UART`, `USB PWR`, `IRQ`/`DMA` and their numbers, `< REAR`) use Jost Medium and
   Bold ([indestructible-type/Jost](https://github.com/indestructible-type/Jost), SIL Open Font License 1.1; the
@@ -762,7 +762,7 @@ out 0.3 mm around every pad and hole (silkscreen never lands on copper). **v1.3.
 is to be UV printed on the back instead (the routed v1.3.2 layout, commit 8dbb6c6, had it re-placed at 52.8 ×
 27.0 mm; see [Silkscreen and back artwork](#silkscreen-and-back-artwork)).
 
-The version and licence block sits between the Pico's pin rows, one text per line. Its link line reads
+The version and licence block sits between the Pico's pin rows, one text per line, starting with `PicoGUS THT 1.3.2`. Its link line reads
 `https://github.com/waagbo/picogus-tht`, the home of this board, as agreed with polpo (v1.3.1 linked
 github.com/polpo/picogus); its letters are 0.78 mm wide, like the thanks line, so it clears the via holes. The
 block ends with the thanks and the dedication: *Thanks to polpo and all the PicoGUS contributors. This revision is dedicated to my wonderful family, Mila

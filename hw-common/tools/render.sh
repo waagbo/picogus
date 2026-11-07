@@ -23,8 +23,9 @@ for spec in $RENDERS; do
     case $view in front) side=top ;; back) side=bottom ;; *) echo "bad view: $spec" >&2; exit 1 ;; esac
     work="$tmp/$colour"
     if [ ! -d "$work" ]; then
-        mkdir -p "$work" && cp -r "$dir/." "$work/"
-        rm -rf "$work/build"
+        mkdir -p "$work"
+        # the project folder without build/ (exports there can change while this runs)
+        tar -C "$dir" --exclude=./build -cf - . | tar -C "$work" -xf -
         python3 -I - "$work/$base" "$colour" <<'EOF'
 import re, sys
 path, colour = sys.argv[1], sys.argv[2].capitalize()
