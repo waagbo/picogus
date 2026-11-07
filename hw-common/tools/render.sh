@@ -26,6 +26,10 @@ for spec in $RENDERS; do
         mkdir -p "$work"
         # the project folder without build/ (exports there can change while this runs)
         tar -C "$dir" --exclude=./build -cf - . | tar -C "$work" -xf -
+        # relative links such as parts -> ../hw-common/parts (the 3D models) would point outside the copy
+        for l in "$work"/*; do
+            if [ -L "$l" ]; then ln -sfn "$(realpath "$dir/$(basename "$l")")" "$l"; fi
+        done
         python3 -I - "$work/$base" "$colour" <<'EOF'
 import re, sys
 path, colour = sys.argv[1], sys.argv[2].capitalize()

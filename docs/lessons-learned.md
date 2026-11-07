@@ -96,6 +96,9 @@ silkscreen. Each round found real faults. Apply these from the start on the next
     classes only, and pours that break the audio 0.6 mm clearance.
   - Saving a board without its project file wrote the default rules over ours once (2e34b45).
   - Some tools rewrite the project file, so diff it before committing.
+- **The 3D models of the jacks, the pot and F1 live in `hw-common/parts`**, which the board folder links as `parts`
+  (`${KIPRJMOD}/parts/...`). A copy of the board folder (for a render or a review) must keep that link pointing at
+  the real folder, or those parts silently vanish from the 3D view; `hw-common/tools/render.sh` re-points it.
 - **Copying sheets between projects**: give the new items their own UUIDs. Reused UUIDs mixed up ERC markers.
 - **KiCad 10 draws an empty pin name `~` literally.** Use `""` instead.
 - **Check `Edge.Cuts` after every hand-edited upload.** The 6.35 mm step next to the ISA fingers (x 197.41) was
