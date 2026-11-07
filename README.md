@@ -3,7 +3,7 @@
 <img src="picogus-logo.svg" width="500" alt="PicoGUS">
 
 PicoGUS is a Raspberry Pi Pico based ISA sound card for DOS and Win9x retro computers.
-The brilliant firmware makes it a highly versatile clone card that provides near perfect emulation of the major sound cards from that era.
+It is a highly versatile clone card that provides near perfect emulation of the Gravis Ultrasound, Sound Blaster-series, AdLib, Tandy 3-voice and CMS/Game Blaster.
 
 Additional features like CD-ROM (Panasonic MKE), MPU-401 and USB game controllers build further on the cards versatility and the wavetable header will further extend the capacity with a card like [X2GS from Serdaco](https://serdashop.com/products/x2gs-te) to get the original Roland magic or even a [WavetablePi](https://github.com/scrapcomputing/WavetablePiHoriz) for the ultimate all-in-one experience for MS-DOS games. 
 
@@ -11,26 +11,35 @@ Additional features like CD-ROM (Panasonic MKE), MPU-401 and USB game controller
 It provides versions with as many Through-Hole components as possible and adding convenience where possible.
 The design goal is to make the project be easier to solder by hand as well as giving it a higher level of retro asthetics.
 
-The designs still have some SMD components as they do not have THT equivalents. The only TSSOP package is the two *SN74CB3T3257PWR* level shifters (U3/U4). They do however feature a redesigned footprint to help with debugging.
+PicoGUS THT exists in multiple variants based on different PicoGUS revisions. Each variant is found in their separate folder (or branch if still experimental). The different *hw* designs feature additional documentation including ready to order BOM CSVs in their respective *docs* folders.
 
+The designs still have some TSSOP SMD chips as they do not have THT equivalents, namely the two *SN74CB3T3257PWR* level shifters (U3/U4) as well as the PCM510xA DAC. PicoGUS THT features a redesigned footprint to ease debugging in case something goes wrong.
 
+**Note!** The hardware revisions are intentionally kept aligned with the *major* revision as the original PicoGUS boards. This is done to indicate hardware feature compatibility and to prevent confusion in case of any future major revisions of the original PicoGUS design.
 
-**Version 1.3** is an extension of the PicoGUS 1.2 design implementing the v1.3 features from the *hw-hand386* branch.
-The addition of a *Wavetable* header and a full size USB-A connector accessible from the back gives the 1.2 design some sought after upgrades.
+### Version 1.3
+This version is an extension of the PicoGUS 1.2 design while implementing the *wavetable header* with manual volume control from the *hw-hand386* branch. Together with the addition of a full size USB-A connector accessible from the computers backside this card is now a real competitor to the v2.0 SMD design.
 
-The board has also been resized to optimize for component placement and JCLPCB pricing.<br/>
-The initial design idea has been built and tested. The release version v1.3.2 is still pending build/test.
+In addition, the THT boards have also been slightly resized to optimize for component placement and JCLPCB-pricing. Progress wise, the initial design idea has been built and tested. The release version v1.3.2 is still pending build/test.
+
+Assembly should be *EASY to MEDIUM* with the appropriate quality tools and consumables and a good project for beginners that want a little more challenge. Here is a list of recommended supplies with some personal recommendations:
+* [Low Temperature Solder Paste](https://www.digikey.com/en/products/detail/chip-quik-inc/NC191LTA10/13531404) for easy soldering of SMD components.
+* [Flux](https://www.digikey.com/en/products/detail/chip-quik-inc/NC191-2CC6/11480375) as it makes solder behave like magic when you need it the most.
+* [Solder Wick](https://www.digikey.com/en/products/detail/chemtronics/SW14035/5177685) as it will help you when flux can't. Remember to **NEVER** pull a stuck wick.
+* [Soldering Iron with J-Tip (Alientek T90B)](https://www.aliexpress.com/item/1005010015046346.html) will make the SMD components a breeze to solder. 
+* [Tweezers](https://www.aliexpress.com/item/1005007298021096.html) for handling the SMD components.
+* Digital Microscope of decent quality from AliExpress is very useful for visual inspection of SMD chips.
+* Multimeter with good continuity tester.
+
+### Version 2.1
+This is an experimental extension of the PicoGUS 2.0 SMD design, made possible using a Waveshare Core2350B board to free enough I/O ports for the 2.0 feature set. This is still in the design phase.
 <br/>
 
-**Version 2.1** is an experimental extension of the PicoGUS 2.0 SMD design, made possible using a Waveshare Core2350B board to free enough I/O ports for the 2.0 feature set. This is still in the design phase.
-<br/>
-
-**Experimental Software Features** that adds upon community ideas:
+### Experimental Software Features
+We have added experimental features that adds upon community ideas on top of the original software. The features are submitted as Pull Requests to the original PicoGUS repository as well but there is no guarantee that they will ever be included in the official software releases:
 * DFS drive support inspired by PicoMEM so the USB drive can be accessed from MS-DOS.
 
 <br/>
-
-
 
 
 **A big thank you to [Ian Scott (polpo)](https://github.com/polpo/) for the PicoGUS design and his contributions to the retro community.**<br/>**May his work set an example for future open-source hardware projects.**
