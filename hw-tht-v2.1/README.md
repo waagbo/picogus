@@ -280,12 +280,11 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
   its header. **J3 (IRQ/DMA)** at v1.3.2's position, pin 1 (136.03, 124.91).
 * **Under the Waveblaster daughterboard** (a full-size board's outline ends at x 170.32 and y 121.9; its underside
   is about 11 mm above the card): the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32, the
-  disc capacitors, U9 lying down and D3. **Two parts are too tall for a full-size daughterboard:**
-  * **C38** (100 µF, 5 × 11 mm can, at (144.5, 61.0)) stands fully under it. Fit a 5 × 7 mm 100 µF 16 V can (for
-    example JIERR ERA16V100M5X7, LCSC C49256789) or lay C38 on its side.
-  * **C39** (2.2 µF film, about 11–13 mm tall, at (169.0, 40.7)) reaches 3 mm into the outline. Small daughterboards
-    (DreamBlaster S2, X2) do not reach it. For a full-size one, move C39 right, or fit the 5 mm bipolar electrolytic
-    the footprint also takes (Rubycon 50NXA2R2MEFC5X11) and lay it on its side.
+  disc capacitors, U9 lying down and D3. C38 (AVDD bulk, 5 × 11 mm) was under it and has moved out (see [Layout
+  status](#layout-status)). **One part is too tall for a full-size daughterboard: C39** (2.2 µF film, about 11–13 mm
+  tall, at (169.0, 40.7)) reaches 3 mm into the outline. Small daughterboards (DreamBlaster S2, X2) do not reach it.
+  For a full-size one, move C39 right, or fit the 5 mm bipolar electrolytic the footprint also takes (Rubycon
+  50NXA2R2MEFC5X11) and lay it on its side.
 
 ## Layout status
 
@@ -313,7 +312,12 @@ over it, as on v1.3.2).
 * **Changes to the user's placement**: R4 in series on RUN and the RUN button SW2 next to BOOTSEL SW1 (J10's 1×2
   header is gone; see [Power](#power)); U9 lying down, tab down; `v2.1.0` at (211.82, 40.58) with the copper logo
   moved with it; H1/H2 without silkscreen; on the back, the title, copyright, licence, project URL and thanks in one
-  framed group behind U1/U2.
+  framed group behind U1/U2. **C38 moved out from under the Waveblaster daughterboard** (its 5 × 11 mm can was
+  taller than the daughterboard's 11 mm clearance) to (184.75, 77.0), between the mixer and RUN, still on the
+  AVDD/AGND islands: its pads go straight into the In2 AVDD and In1 AGND islands, so it needs no tracks. For the
+  audio this is the same capacitor: it is the AVDD reservoir behind FB4, and at audio frequencies the island planes
+  join it to the DAC with milliohms, while C17 (10 µF) and C15/C16 (0.1 µF) stay at U10's pins for the local
+  decoupling. C38 is now in the `Mixer + line out` group; the C29 label moved above C29, as C28's is.
 * **Labels to look at** (visible references over a neighbour's courtyard): C23 under J9's body and U13 under C41
   (both hidden once the parts are fitted), J6 over D2, F1 over SW1, D1 over R13, C16 over C14.
 * **PicoGUS logo in copper, as on v1.3.2**: the eight solder-mask openings (the letters) with copper letters 0.15 mm
