@@ -100,7 +100,8 @@ typedef struct {
     uint8_t erased[FW_NUM_SECTORS / 8];
 } fw_state_t;
 
-#define SYX_MAX 1000
+// longest sysex message accepted: keeps the time other MIDI data waits short
+#define SYX_MAX 512
 typedef struct {
     uint8_t msg[SYX_MAX];
     uint32_t len;
@@ -185,6 +186,7 @@ static void fw_process_block(void) {
         // runs from RAM, so the running sound card keeps working.
         fw.flash_touched = true;
         flash_range_erase(sector * FLASH_SECTOR_SIZE, FLASH_SECTOR_SIZE);
+        web_xip_cache_off();
         fw.erased[sector / 8] |= (uint8_t)(1u << (sector % 8));
     }
     // The flash routines must not read the data from the XIP block (where the
@@ -192,6 +194,7 @@ static void fw_process_block(void) {
     uint8_t page[FLASH_PAGE_SIZE];
     memcpy(page, b->data, FLASH_PAGE_SIZE);
     flash_range_program(offset, page, FLASH_PAGE_SIZE);
+    web_xip_cache_off();
     ++fw.written;
 }
 
@@ -238,7 +241,9 @@ void web_fw_finish(http_conn_t *c) {
 }
 
 void web_fw_abort(http_conn_t *c) {
-    (void)c;
+    if (owner != c) {
+        return;     // another request, refused while this upload ran
+    }
     fw_fail("upload interrupted");
     owner = NULL;
 }
@@ -361,7 +366,9 @@ void web_syx_finish(http_conn_t *c) {
 }
 
 void web_syx_abort(http_conn_t *c) {
-    (void)c;
+    if (owner != c) {
+        return;
+    }
     upload_fail("upload interrupted");
     owner = NULL;
 }

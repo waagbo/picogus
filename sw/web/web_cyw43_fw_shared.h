@@ -15,4 +15,6 @@
 
 #define CYW43_WIFI_FW_LEN (PICOGUS_CYW43_WIFI_FW_LEN)
 #define CYW43_CLM_LEN (PICOGUS_CYW43_CLM_LEN)
-static const uintptr_t fw_data = XIP_BASE + PICOGUS_CYW43_FW_OFFSET;
+// read through the cache-bypassing alias: the XIP cache memory holds the web
+// server's buffers (see web_xip_sram.h)
+static const uintptr_t fw_data = XIP_NOCACHE_NOALLOC_BASE + PICOGUS_CYW43_FW_OFFSET;

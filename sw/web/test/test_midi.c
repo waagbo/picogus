@@ -19,10 +19,17 @@ void uart_write_blocking(uart_inst_t *u, const uint8_t *src, size_t len) { (void
 void uart_tx_wait_blocking(uart_inst_t *u) { (void)u; }
 bool uart_is_writable(uart_inst_t *u) { (void)u; return true; }
 
+// simulated execution context and MPU-401 mode
+static unsigned core = 1, exception = 0;
+static bool intelligent;
+unsigned get_core_num(void) { return core; }
+unsigned __get_current_exception(void) { return exception; }
+bool MPU401_IsIntelligent(void) { return intelligent; }
+
 static void host(const uint8_t *b, size_t n) { for (size_t i = 0; i < n; ++i) MIDI_RawOutByte(b[i]); }
 // run the core 1 loop for ms milliseconds, at MIDI wire speed (~3 bytes/ms)
 static void run(int ms) { for (int i = 0; i < ms * 3; ++i) { test_now_us += 333; send_midi_bytes(1); } }
-static void reset(void) { MIDI_Init(false, false); run(50); wire_len = 0; }
+static void reset(void) { MIDI_Init(false, false); run(1000); wire_len = 0; }
 
 static bool wire_is(const uint8_t *want, size_t n) {
     if (wire_len == n && !memcmp(wire, want, n)) return true;
@@ -93,6 +100,39 @@ int main(void) {
     CHECK(MIDI_Inject(big, sizeof(big)), "big inject");
     CHECK(!MIDI_Inject(big, sizeof(big)), "second big inject refused");
     CHECK(MIDI_InjectFree() == 1023 - sizeof(big), "free space %u", MIDI_InjectFree());
+
+    // MPU-401 intelligent mode: injected messages wait
+    reset();
+    intelligent = true;
+    CHECK(MIDI_Inject(note, 3), "inject");
+    run(20);
+    CHECK(wire_len == 0 && MIDI_InjectHeld(), "held in intelligent mode (%zu)", wire_len);
+    intelligent = false;
+    run(5);
+    CHECK(wire_is(note, 3), "sent after leaving intelligent mode");
+
+    // intelligent mode flushing MIDI out from core 0 (or an interrupt) while an
+    // injected sysex is being sent: the rest of it is dropped, nobody waits
+    reset();
+    static const uint8_t longsx[] = {0xF0, 0x41, 0x10, 0x16, 0x12, 1, 2, 3, 4, 5, 6, 7, 8, 0xF7};
+    CHECK(MIDI_Inject(longsx, sizeof(longsx)), "inject");
+    CHECK(MIDI_Inject(note, 3), "inject note after it");
+    for (int i = 0; i < 4; ++i) { test_now_us += 333; send_midi_bytes(1); }
+    CHECK(wire_len == 4, "4 sysex bytes out (%zu)", wire_len);
+    static const uint8_t hnote[] = {0x80, 0x3C, 0x00};
+    host(hnote, 3);
+    core = 0;
+    for (int i = 0; i < 3; ++i) { test_now_us += 333; send_midi_bytes(1); }
+    core = 1;
+    {
+        static const uint8_t want[] = {0xF0, 0x41, 0x10, 0x16, 0x80, 0x3C, 0x00};
+        CHECK(wire_is(want, sizeof(want)), "core 0 sends host data right away");
+    }
+    run(50);
+    {
+        static const uint8_t want[] = {0xF0, 0x41, 0x10, 0x16, 0x80, 0x3C, 0x00, 0x90, 0x3C, 0x7F};
+        CHECK(wire_is(want, sizeof(want)), "rest of the cut sysex dropped, next message intact");
+    }
 
     printf("%s: %d failure(s)\n", failures ? "FAILED" : "OK", failures);
     return failures ? 1 : 0;

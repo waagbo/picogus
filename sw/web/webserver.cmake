@@ -2,7 +2,7 @@
 # Included from the top level CMakeLists.txt; see web/README.md.
 
 set(PICOGUS_WEB_DIR ${CMAKE_CURRENT_LIST_DIR})
-# mDNS (http://picogus.local/) costs ~9KB of RAM, which Sound Blaster mode needs
+# mDNS (http://picogus.local/) costs ~12KB of RAM, which Sound Blaster mode needs
 # for CD images made of many track files. Off by default: the address is shown
 # by "pgusinit /wifistatus", and the card registers itself as "picogus" via DHCP.
 option(WEB_MDNS "Answer mDNS queries for picogus.local in the web server" OFF)

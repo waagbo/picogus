@@ -286,6 +286,7 @@ void json_status(Json &j) {
     j.kv("savePending", picogus_save_pending());
 #ifdef SOUND_MPU
     j.kv("midiFree", (int32_t)MIDI_InjectFree());
+    j.kv("midiHeld", MIDI_InjectHeld());
 #endif
 
     j.open("upload", '{');
@@ -321,7 +322,8 @@ void send_ok(http_conn_t *c) {
 // ---- handlers ----------------------------------------------------------------
 
 void h_index(http_conn_t *c) {
-    http_send_static(c, "text/html; charset=utf-8", web_index_html_gz, web_index_html_gz_len, true);
+    http_send_static(c, "text/html; charset=utf-8",
+                     (const uint8_t *)web_flash_uncached(web_index_html_gz), web_index_html_gz_len, true);
 }
 
 void h_status(http_conn_t *c) {
@@ -457,7 +459,8 @@ void h_cd_list(http_conn_t *c) {
     // Listing reads the USB drive, which happens in cdrom_tasks() in the
     // core 1 loop (as for pgusinit /cdlist). Start it and let the UI poll.
     if (!cd_listing) {
-        if (cdrom.image_status == CD_STATUS_BUSY) {
+        // not while pgusinit /cdlist or a load is using the list
+        if (cdrom.image_status != CD_STATUS_IDLE && cdrom.image_status != CD_STATUS_ERROR) {
             http_send_error(c, 409, "busy");
             return;
         }

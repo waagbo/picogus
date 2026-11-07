@@ -48,6 +48,9 @@ void *web_xip_alloc(size_t size) {
     return p;
 }
 
+void web_xip_cache_off(void) {}
+const void *web_flash_uncached(const void *p) { return p; }
+
 static int flash_lock_depth;
 void web_flash_acquire_blocking(void) { ++flash_lock_depth; }
 bool web_flash_try_acquire(void) { ++flash_lock_depth; return true; }
@@ -125,6 +128,7 @@ bool MIDI_Inject(const uint8_t *msg, uint32_t len) {
     return true;
 }
 uint32_t MIDI_InjectFree(void) { return (uint32_t)(sizeof(midi_queue) - midi_queued); }
+bool MIDI_InjectHeld(void) { return false; }
 static void midi_drain(uint32_t n) {
     if (n > midi_queued) n = midi_queued;
     memcpy(midi_out + midi_out_len, midi_queue, n);

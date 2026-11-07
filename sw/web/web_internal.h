@@ -54,6 +54,10 @@ void web_flash_release(void);
 // Zeroed memory from the web server's part of the XIP cache SRAM (see
 // web_xip_sram.h). Only during startup; NULL when out of space.
 void *web_xip_alloc(size_t size);
+// The boot ROM's flash routines turn the XIP cache on: call after each one
+void web_xip_cache_off(void);
+// Flash address -> its alias that bypasses the XIP cache (other pointers unchanged)
+const void *web_flash_uncached(const void *p);
 
 // ---- web_http.c ------------------------------------------------------------
 

@@ -39,6 +39,7 @@
 
 #ifdef WEBSERVER
 #include "web/web.h"
+#include "hardware/structs/xip_ctrl.h"
 #endif
 
 board_type_t BOARD_TYPE;
@@ -584,7 +585,10 @@ bool picogus_save_pending(void) {
 }
 
 void picogus_load_defaults(void) {
+    // Keep the WiFi network, or saving the defaults would cut off the web UI
+    auto wifi = settings.WiFi;
     getDefaultSettings(&settings);
+    settings.WiFi = wifi;
     processSettings();
 }
 #endif
@@ -1102,6 +1106,9 @@ __force_inline void handle_iow(void) {
         saveSettings(&settings);
         queueSaveSettings = false;
 #ifdef WEBSERVER
+        // The boot ROM's flash routines turn the XIP cache back on. Its memory
+        // holds the web server's buffers: turn it off before core 1 runs again.
+        hw_clear_bits(&xip_ctrl_hw->ctrl, XIP_CTRL_EN_BITS);
         web_flash_unlock();
 #endif
     }

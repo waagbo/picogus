@@ -639,6 +639,13 @@ __force_inline static void UpdateConductor(void) {
     mpu.state.req_mask|=(1<<9);
 }
 
+#ifdef WEBSERVER
+/* For MIDI from the web UI, which waits while intelligent mode is in use */
+bool MPU401_IsIntelligent(void) {
+    return mpu.mode == M_INTELLIGENT;
+}
+#endif
+
 uint32_t MPU401_EventHandler(Bitu val) {
     /* SOFTMPU */
     /* putchar('.'); */

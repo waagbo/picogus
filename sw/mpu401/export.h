@@ -50,6 +50,8 @@ void MIDI_RawOutByte(Bit8u data);
 /* Queue complete MIDI message(s) from the web UI. All or nothing. */
 bool MIDI_Inject(const uint8_t *msg, uint32_t len);
 uint32_t MIDI_InjectFree(void);
+/* true while MIDI from the web UI waits (MPU-401 intelligent mode) */
+bool MIDI_InjectHeld(void);
 #endif
 
 #ifdef __cplusplus

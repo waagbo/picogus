@@ -63,6 +63,7 @@ struct http_conn {
     bool have_request_line;
     bool skip_line;             // dropping the rest of an over-long header line
     bool responded;
+    bool began;                 // the route's begin() accepted the request
     bool discard;               // dropping the body, then answering with err_status
     int16_t err_status;
     const char *err_msg;
@@ -170,7 +171,7 @@ static void conn_free(http_conn_t *c, bool abort_pcb) {
     if (c->state == CONN_FREE) {
         return;
     }
-    if (c->route && c->route->abort && !c->responded) {
+    if (c->route && c->route->abort && c->began && !c->responded) {
         c->route->abort(c);
     }
     if (c->pending) {
@@ -376,6 +377,7 @@ static void headers_complete(http_conn_t *c) {
             fail_request(c, status, status == 409 ? "busy" : "rejected");
             return;
         }
+        c->began = true;
     }
     c->state = CONN_BODY;
     c->body_received = 0;

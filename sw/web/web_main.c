@@ -52,7 +52,10 @@ extern Settings settings;
 // own startup (USB enumeration, DSP init...) is finished first.
 #define WEB_START_DELAY_US      (500 * 1000)
 #define WEB_LINK_CHECK_US       (1000 * 1000)
+// Joining a network blocks for several milliseconds: retry rarely, backing off
+// from 20s to ~5 minutes while the network is unreachable
 #define WEB_RECONNECT_US        (20 * 1000 * 1000)
+#define WEB_RECONNECT_MAX_SHIFT 4
 #define WEB_RSSI_REFRESH_US     (5 * 1000 * 1000)
 #define WEB_STATS_WINDOW_US     (10 * 1000 * 1000)
 
@@ -80,6 +83,7 @@ static spin_lock_t *flash_lock;
 // WiFi state (core 1)
 static int last_link = CYW43_LINK_DOWN;
 static uint32_t last_connect_us;
+static uint8_t reconnect_shift;
 static uint32_t last_link_check_us;
 static int32_t rssi;
 static uint32_t last_rssi_us;
@@ -149,6 +153,18 @@ unsigned int web_rand(void) {
 }
 
 // ---- XIP cache SRAM ----------------------------------------------------------
+
+void web_xip_cache_off(void) {
+    hw_clear_bits(&xip_ctrl_hw->ctrl, XIP_CTRL_EN_BITS);
+}
+
+const void *web_flash_uncached(const void *p) {
+    uintptr_t a = (uintptr_t)p;
+    if (a >= XIP_BASE && a < XIP_BASE + PICO_FLASH_SIZE_BYTES) {
+        a = a - XIP_BASE + XIP_NOCACHE_NOALLOC_BASE;
+    }
+    return (const void *)a;
+}
 
 static uint32_t xip_used;
 
@@ -344,7 +360,7 @@ static void update_status_string(void) {
     status_pub ^= 1;
 }
 
-static bool web_start(void) {
+static bool web_start_locked(void) {
     // The network buffers live in the XIP cache's memory (web_xip_sram.h),
     // usable as SRAM only while the cache is off, as PicoGUS always has it
     if (xip_ctrl_hw->ctrl & XIP_CTRL_EN_BITS) {
@@ -360,14 +376,10 @@ static bool web_start(void) {
     // goes to the lowest priority on this core, same as the audio interrupt.
     irq_set_priority(IO_IRQ_BANK0, PICO_LOWEST_IRQ_PRIORITY);
 
-    // Bringing up the chip reads its firmware from flash: keep core 0 from
-    // erasing flash (settings save) while that happens.
-    web_flash_acquire_blocking();
     int err = cyw43_arch_init_with_country(CYW43_COUNTRY_WORLDWIDE);
     if (!err) {
         cyw43_arch_enable_sta_mode();
     }
-    web_flash_release();
     if (err) {
         DBG_PUTS("web: cyw43 init failed");
         return false;
@@ -386,9 +398,20 @@ static bool web_start(void) {
     return true;
 }
 
+static bool web_start(void) {
+    // Hold off core 0's flash writes (settings save): bringing up the chip reads
+    // its firmware from flash, and the buffers in the XIP cache memory must not
+    // be touched while a flash write has the cache turned on
+    web_flash_acquire_blocking();
+    bool ok = web_start_locked();
+    web_flash_release();
+    return ok;
+}
+
 static void web_run(uint32_t now) {
     if (connect_requested) {
         connect_requested = false;
+        reconnect_shift = 0;
         cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
         wifi_connect();
         last_link = CYW43_LINK_DOWN;
@@ -402,6 +425,9 @@ static void web_run(uint32_t now) {
         last_link_check_us = now;
         int link = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
         if (link != last_link) {
+            if (link == CYW43_LINK_UP) {
+                reconnect_shift = 0;
+            }
             if ((link == CYW43_LINK_UP) != (last_link == CYW43_LINK_UP)) {
                 // WiFi LED on the Pico W shows whether the web UI is reachable
                 cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, link == CYW43_LINK_UP);
@@ -423,7 +449,10 @@ static void web_run(uint32_t now) {
         // Keep retrying while not connected; join failures, a vanished access
         // point and dropped links all end up here.
         if (link != CYW43_LINK_UP && link != CYW43_LINK_JOIN && link != CYW43_LINK_NOIP
-            && now - last_connect_us >= WEB_RECONNECT_US) {
+            && now - last_connect_us >= (WEB_RECONNECT_US << reconnect_shift)) {
+            if (reconnect_shift < WEB_RECONNECT_MAX_SHIFT) {
+                ++reconnect_shift;
+            }
             wifi_connect();
         }
         status_requested = false;
@@ -486,6 +515,8 @@ void web_task(void) {
         // Tell the multifw bootloader which mode to start (like pgusinit /mode).
         // Always set: the register keeps its value across reboots.
         watchdog_hw->scratch[3] = reboot_mode ? reboot_mode : running_mode;
+        // never in the middle of core 0 writing the settings to flash
+        web_flash_acquire_blocking();
         watchdog_reboot(0, 0, 0);
         for (;;) {
             tight_loop_contents();

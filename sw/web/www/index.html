@@ -127,6 +127,7 @@ code{font-family:ui-monospace,monospace;font-size:13px}
 <div class="row"><label>Panic</label><button data-act="panic">All notes off</button></div>
 <div class="row"><label for="raw">Send raw bytes</label>
 <input type="text" id="raw" placeholder="hex, e.g. 90 3C 7F" style="flex:1;font-family:ui-monospace,monospace"><button data-act="raw">Send</button></div>
+<p class="note warn hide" id="midi-held">The running program uses MPU-401 intelligent mode: these messages wait until it leaves that mode.</p>
 <h3>SysEx file</h3>
 <div class="row"><input type="file" id="syx" accept=".syx"><button data-act="syx">Send to MIDI out</button></div>
 <progress id="syx-p" value="0" max="1" class="hide"></progress>
@@ -223,6 +224,7 @@ function apply(j){
   const n=j.net;$("i-wifi").textContent=n.ssid?(n.ssid+(n.rssi?`, ${n.rssi} dBm`:"")):"-";
   $("i-ip").textContent=`${n.ip}${feats.has("mdns")?" (picogus.local)":""}, MAC ${n.mac}`;
   $("i-load").textContent=`${(n.loadPermille/10).toFixed(1)}% of core 1, longest run ${(n.pollRecentUs/1000).toFixed(1)} ms (${(n.pollMaxUs/1000).toFixed(1)} ms since boot)`;
+  $("midi-held").classList.toggle("hide",!j.midiHeld);
   if(j.cd)$("i-cd").textContent=j.cd.image?`#${j.cd.index}: ${j.cd.image}`:(j.cd.error||"none");
   for(const [k] of VOLS){const r=$("v-"+k);if(r&&document.activeElement!==r){r.value=j.s[k];$("o-"+k).textContent=j.s[k]}}
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("cur",+b.dataset.mode===j.mode));

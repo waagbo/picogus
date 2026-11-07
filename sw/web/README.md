@@ -66,15 +66,29 @@ The ISA bus and the sound emulation always come first:
 * **Flash is shared safely.** The WiFi firmware and the web page are read from
   flash, and firmware updates write it. A hardware spinlock keeps core 0 from
   saving settings (which erases flash) at the same time. The save is then done
-  on a later ISA write, exactly like `pgusinit /save`.
+  on a later ISA write, exactly like `pgusinit /save`. The boot ROM's flash
+  routines turn the XIP cache back on, so it is turned off again after every
+  flash write, and flash data is read through the cache-bypassing alias (see
+  Memory below).
+* **WiFi reconnects are rare.** Joining a network keeps core 1 busy for a few
+  milliseconds. While the network can't be reached, retries back off from
+  every 20 seconds to every ~5 minutes.
 * **Settings changes use pgusinit's code.** The web UI goes through the same
   code that handles pgusinit's control port writes (`picogus_web_write()` in
   `picogus.cpp`), and the flash write of a save happens on core 0, as for
   pgusinit.
 * **MIDI from the web UI never splits a message of the running program.**
-  Messages from the web UI (`MIDI_Inject()` in `mpu401/midi.c`) are sent only
-  when the DOS program's MIDI stream is between messages and not inside a
-  SysEx, and SysEx is paced like the MPU-401's SysEx delay.
+  Messages from the web UI (`MIDI_Inject()` in `mpu401/midi.c`) are sent from
+  the core 1 main loop only:
+  * only when the DOS program's MIDI stream is between messages and not inside
+    a SysEx;
+  * SysEx is paced like the MPU-401's SysEx delay;
+  * while a program uses MPU-401 intelligent mode, they wait. That mode also
+    sends MIDI from core 0 and from an interrupt, which must never wait for
+    web data; if it needs the line in the middle of a web message, the rest of
+    that message is dropped.
+
+  SysEx messages from files may be up to 512 bytes.
 
 The status page shows how much of core 1 the web server used over the last
 10 seconds, and its longest single run.
@@ -94,6 +108,11 @@ All network *buffers* (lwIP's heap, HTTP connections, upload buffers; 16KB in
 total) live in the RP2040's XIP cache memory. PicoGUS turns the flash cache off
 at boot, after which that memory can be used as ordinary SRAM at `0x15000000`
 (see `web_xip_sram.h`).
+
+A cached flash read would overwrite those buffers, so in these firmwares
+everything that reads flash at run time uses the cache-bypassing alias
+`0x13000000` instead: the web page, the shared WiFi firmware, and AdLib mode's
+OPL level table.
 
 The ~225KB WiFi chip firmware stays in flash. In the multi-mode `picogus.uf2`,
 all modes share a single copy, stored right after the bootloader
@@ -116,7 +135,7 @@ holding BOOTSEL.
 | CMake option | Default | |
 | --- | --- | --- |
 | `WEBSERVER` | `ON` on Pico W boards | include the web server in the sound card firmwares |
-| `WEB_MDNS` | `OFF` | also answer mDNS for `http://picogus.local/`. Costs ~9KB of RAM, which Sound Blaster mode needs for CD images made of many track files. |
+| `WEB_MDNS` | `OFF` | also answer mDNS for `http://picogus.local/`. Costs ~12KB of RAM, which Sound Blaster mode needs for CD images made of many track files. |
 
 ## HTTP API
 
@@ -128,7 +147,7 @@ The web page uses this API; scripts can too. Forms are
 | `GET /api/status` | firmware, mode, network, all settings (`s`), upload progress, CD image |
 | `POST /api/set` | any of the settings keys from `s`, e.g. `sbvol=80&sbirq=7`. Applied immediately, all or nothing. |
 | `POST /api/save` | save settings to flash |
-| `POST /api/defaults` | load default settings (not saved) |
+| `POST /api/defaults` | load default settings (not saved). The WiFi network is kept. |
 | `POST /api/reboot` | restart the card |
 | `POST /api/mode` | `mode=1..6` (GUS, AdLib, MPU, PSG, SB, USB), `save=1` to make it the default |
 | `POST /api/wifi` | `ssid=...&pass=...`: join another network (save to keep it) |
