@@ -15,9 +15,9 @@ TSSOP-20) on THT v1.3.2's test-pad TSSOP footprints (hand-solder toes and a 0.7 
 on v2.0's SOIC-8. Everything else is through hole; see
 [Parts with no through-hole version](#parts-with-no-through-hole-version).
 
-> **Status: schematic done; board placed but not routed: the placement is up for review before routing. Not built
-> or tested. Firmware: ported and built (`picogus-v21.uf2`), not tested on hardware** (see [Firmware](#firmware) and
-> [Layout status](#layout-status)).
+> **Status: schematic done; board placed and routed (4 layers, DRC clean, matches the schematic), for review. Not
+> built or tested; no Gerbers yet. Firmware: ported and built (`picogus-v21.uf2`), not tested on hardware** (see
+> [Firmware](#firmware) and [Layout status](#layout-status)).
 
 Files:
 
@@ -35,6 +35,7 @@ Files:
 | `tools/lcsc_bom.py` | Writes the three LCSC files from `BOM-THT.csv` with LCSC's live stock and prices (`python3 tools/lcsc_bom.py [cards]`) |
 | `tools/gen_core2350b.py` | Generates the Core2350B footprint and 3D model in `hw-common` and checks the pin map |
 | `PicoGUS-THT-top.png`, `PicoGUS-THT-bottom.png` | 3D renders |
+| `docs/figures/routing.png` | The routed board: tracks per layer, vias and the AGND/AVDD islands |
 
 The shared `PiGUS library` footprints are linked from `hw-common/`. **New in the shared library for v2.1:**
 `Waveshare_Core2350B` (with a generated 3D model, `hw-common/parts/Waveshare_Core2350B.wrl`),
@@ -67,7 +68,7 @@ Reference designators are v2.0's; new ones are D3, R19, R20 and C46.
 | C11 47 µF (+3V3) | C11 10 µF | MCP1826S: at most 22 µF on its output |
 | C38 100 µF ceramic | C38 100 µF electrolytic | Through hole |
 | Card outline 102.87 × 96.74 mm, v2.0 bracket | **THT v1.3.2's outline** (102.0 × 99.95 mm) and bracket: J7 (MIDI out, top), J9 (line out) and J5 (USB-A, now v1.3.2's **Molex 67643**), H1/H2 and the ISA fingers at v1.3.2's positions | Reuses the v1.3.2 bracket; the 102 mm card is v1.3.2's cheaper JLCPCB size. The bracket's volume-pot hole is unused (v2.1's Waveblaster volume is digital) |
-| 4 layers: In1 GND + AGND, In2 +3V3 + AVDD | 4 layers: In1.Cu GND plane, In2.Cu +3V3 plane; AGND/AVDD islands under the audio section to be drawn once the placement is settled | As v2.0 |
+| 4 layers: In1 GND + AGND, In2 +3V3 + AVDD | 4 layers: In1.Cu GND plane + AGND island, In2.Cu +3V3 plane + AVDD island, under the audio section | As v2.0 |
 | `+3.3V` power symbols | `+3V3` | The RP2040 sheet joined the two names; without it they would have split |
 
 Unchanged references: J1 (ISA), J3 (IRQ/DMA), J7 (MIDI out), J8 (Waveblaster), J9 (line out), H1/H2, and every
@@ -139,12 +140,14 @@ line):
   takes a 5 mm bipolar electrolytic (Rubycon 50NXA2R2MEFC5X11, in stock) on its inner holes. Nichicon's Muse ES/BP, FG
   and FW are discontinued in 5 mm cans, so AVDD bulk C38 is a Panasonic FR (EEU-FR1C101).
 
-* **Ground and supply planes** (to be drawn once the placement is settled): as on v2.0, AGND and AVDD get copper
-  islands on the inner layers (In1/In2) under the audio section: the DAC's analog pin row and its output filter, the
-  Waveblaster's audio pins, the volume control, the film capacitors, the mixer and the line-out jack. They meet GND
-  and +3V3 only at FB3 and FB4. The MIDI jack, the DAC's digital row and the Waveblaster's digital pins stay outside
-  them, and digital tracks cross them only where they must (on the routed v2.1 draft: the volume control's clock and
-  data, about 10 mm of MIDI/UART to the Waveblaster, 2 mm of the Waveblaster reset and 2 mm of BCK).
+* **Ground and supply planes**: as on v2.0, AGND (In1.Cu) and AVDD (In2.Cu) are copper islands cut out of the GND and
+  +3V3 planes under the audio section (x 140–209.6, y 47.5–81.7, see `docs/figures/routing.png`): the DAC's analog
+  pin row and output filter, the volume control, the film capacitors, the mixer and the line-out jack. They meet GND
+  and +3V3 only at FB3 and FB4, side by side across the island's lower left edge. The Waveblaster header, the MIDI
+  jack and the DAC's digital row stay outside them. Digital tracks cross the islands only where they must: the volume
+  control's clock and data (about 18 and 14 mm, to U13 on the island), MIDI (about 45 mm of UART_TX to the
+  Waveblaster and the MIDI resistors, and 16 mm from R2 to J7: both are beyond the island), 13 mm of RI/OCHRDY and 4
+  mm of DIN. The ±12 V supplies of the mixer and the +5 V of the USB-A port also run over them.
 
 ## Core2350B module
 
@@ -202,17 +205,23 @@ Core2350B1/B2 the PSRAM chip select (QMI CS1) is **GPIO47** (through a 0 Ω link
 
 * **VSYS** = +5V (ISA) through **D3** or USB VBUS (J6) through **D2**, both 1N5819 (as the Pico's VSYS). This
   replaces v2.0's AO3401A ideal diode: VSYS is about 0.3–0.4 V below +5V.
-* **U9 MCP1826S-3302E/AB** (TO-220, 1 A, 250 mV dropout) makes the card's +3V3 from VSYS: logic, bus switches,
+* **U9 MCP1826S-3302E/AB** (TO-220, 1 A, 250 mV dropout, **lying down, tab down**: `TO-220-3_Horizontal_TabDown`,
+  so it stays well under the Waveblaster daughterboard) makes the card's +3V3 from VSYS: logic, bus switches,
   DAC (AVDD through FB4) and M62429. With an AMS1117-class regulator (about 1.1 V dropout) a low ISA +5V would
   not leave enough headroom after the diode. Its pinout is VIN–GND–VOUT, tab GND (**not** the 1117 pinout, so an
   LD1117V33 does not fit). C11/C13 (10 µF) + C10 (1 µF) on its output: Microchip asks for at least 1 µF and at most
-  22 µF.
+  22 µF. C12 (10 µF, input) is about 10 mm from the VIN pin, joined by a 0.4 mm track.
 * **The module powers itself**: VSYS goes to the module's **VBUS** pin, and its own LDO (ME6217C33, 800 mA, 3V3_EN
   pulled up on the module) makes the module's 3.3 V. The module's **3V3 pin is not connected**: the ME6217 must not
   see VOUT above VIN + 0.3 V, so it cannot be back-fed from U9. Both rails are 3.3 V ± 2 %; the RP2350's GPIO0–39 are
   5 V tolerant while it is powered and 3.3 V failsafe when it is not.
 * The module's own FPC USB port (the `-Kit` adapter) also works for programming: its VBUS powers the module, and
   through the module's VBUS pin also VSYS and U9 (D2/D3 keep it off the ISA +5V and J6).
+* **Reset (RUN)**: as on v2.0, ISA RESET DRV reaches the module's RUN pin through U5 (pin 8), so a PC reset also
+  resets the RP2350, and RUN goes back into U5 (pin 5) so that a reset also clears BUSOE. U5 pin 8 now drives RUN
+  **through R4 (1 kΩ in series)** instead of v2.0's pull-up, so the **RUN button SW2** (6 × 6 mm, next to BOOTSEL SW1)
+  can pull RUN to GND without shorting the gate output (3.3 mA while pressed). C45 (0.1 µF) on RUN filters it. To
+  enter the bootloader: hold BOOTSEL, press and release RUN, release BOOTSEL.
 
 ## USB
 
@@ -269,55 +278,51 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
 * **J8 (Waveblaster)** with pin 1 where v1.3.2 has it, (158.89, 39.63), and like v1.3.2 without daughterboard
   standoff holes (`Wavetable_NoMountingHoles`; v2.0 had two, 6.35 mm right of pin 1): the daughterboard is held by
   its header. **J3 (IRQ/DMA)** at v1.3.2's position, pin 1 (136.03, 124.91).
-* **Under the Waveblaster daughterboard** (a full-size board's outline ends at x 170.32 and y 121.9): only low parts.
-  These are the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32 and the disc capacitors. The
-  module, U9 (TO-220), the electrolytics, the film capacitors, F1, the LED and the user-facing headers and switch are
-  all outside that area.
+* **Under the Waveblaster daughterboard** (a full-size board's outline ends at x 170.32 and y 121.9; its underside
+  is about 11 mm above the card): the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32, the
+  disc capacitors, U9 lying down and D3. **Two parts are too tall for a full-size daughterboard:**
+  * **C38** (100 µF, 5 × 11 mm can, at (144.5, 61.0)) stands fully under it. Fit a 5 × 7 mm 100 µF 16 V can (for
+    example JIERR ERA16V100M5X7, LCSC C49256789) or lay C38 on its side.
+  * **C39** (2.2 µF film, about 11–13 mm tall, at (169.0, 40.7)) reaches 3 mm into the outline. Small daughterboards
+    (DreamBlaster S2, X2) do not reach it. For a full-size one, move C39 right, or fit the 5 mm bipolar electrolytic
+    the footprint also takes (Rubycon 50NXA2R2MEFC5X11) and lay it on its side.
 
 ## Layout status
 
-**Placed, not routed (2026-11-03), for review: the placement will change before routing.** It follows the grouping of
-THT v1.3.2's final, routed layout (commit 258c8f8): every group the two boards share sits at v1.3.2's coordinates, and
-the parts only v2.1 has fill the gaps. DRC with schematic parity: no parity issues. The only errors are the 11 accepted
-courtyard overlaps of the logic column, and the unconnected items are the unrouted nets. The only warnings are 16
-connector silkscreen lines past the bracket edge (J5, J6, J7 and J9 hang over it, as on v1.3.2).
+**Placed and routed (2026-11-07), for review.** The placement and the silkscreen labels are the user's (the DAC
+block turned and moved under the daughterboard; regulator, module, USB-C parts and headers moved), with the changes
+listed below. **DRC with schematic parity: 0 unconnected items, no clearance, hole or parity errors.** What is left:
+the 11 accepted courtyard overlaps of the logic column (U3–U7 on v1.3.2's 12.05 mm pitch with their decoupling discs
+and R1/R5/R18 between them) and 16 warnings for connector silkscreen past the bracket edge (J5, J6, J7 and J9 hang
+over it, as on v1.3.2).
 
-![THT v1.3.2 (258c8f8) and v2.1 side by side, parts coloured by group](docs/figures/placement-groups.png)
+![The routed board: F.Cu red, B.Cu blue, In2.Cu green, AGND/AVDD islands shaded](docs/figures/routing.png)
 
-| Group | v2.1 parts | Where (as on v1.3.2 unless noted) |
-|---|---|---|
-| Logic column | U6, U4, U5, U3 (DIP-14), U7 (DIP-20), C46, C5, C6, C4, C7, R1, R18, R5 | Left edge, pin 1 at x 120.07, y 65.62 / 77.67 / 89.71 / 101.76 / 113.81; discs above each VCC pin; resistors at x 138.60 |
-| Bus switches | U1, U2 (TSSOP-16, test pads), C2, C3 | v1.3.2's U3/U4 at 90°, at v1.3.2's coordinates: (150.22, 110.10) / (161.44, 110.12); C2/C3 at y 102.29 |
-| DAC block | U10 (TSSOP-20, test pads), C14–C22, R10, R11, FB4 | U10 at (156.10, 84.53), 180°: I2S/DVDD/LDOO on the west side, analog pins east, facing the output filter and the mixer. C16 (CPVDD) and C15 (AVDD) in the slots of v1.3.2's C36 and C13 |
-| Mixer | U11, R21–R30, C24–C29 | U11 at (173.00, 61.00), 0°, feedback discs on its pins, ±12 V filters around it; the resistor columns at x 189.43 / 199.58 |
-| Waveblaster audio + volume | R31/R32, C39/C40, U13, C41/C42, C23 | R31/R32 next to the header's audio pins (v1.3.2's R14/R15); C39/C40 where v1.3.2 has C22/C23; U13 with C41/C42 and C23 in RV1's slot behind the WT VOL hole, next to R21/R22 |
-| MIDI out | R2, R3, FB1, FB2, J7 | Along the top edge to J7, as v1.3.2's R3/R4/FB1/FB2 |
-| USB-A | J5, F1 | J5 as before; F1 standing left of it, where v1.3.2 has its F1 |
-| Module | U12 (Core2350B) | Where v1.3.2 has the Pico: (187.96, 107.14), 0°, courtyard 175.0–201.0 × 94.1–120.1. Bus pins face U1/U2, I2S and the ISA-side signals face the fingers, USB/SWD/RUN/BOOTSEL/VSYS face up |
-| Above the module | U9 (LDO), C12, C13, C38, SW1, J10 | U9's VSYS pin over the module's VSYS pin; C38 (AVDD bulk) at the DAC block's east end; BOOTSEL and RUN within reach of their pins |
-| USB-C column | J6, R19, R20, D2, J2 | Between the module and the bracket: CC resistors and the VBUS diode next to J6, SWD header below them |
-| Bottom strip | C1, D3, J4, R13, D1, C10, C11, R4, C45 | As v1.3.2: C1 (+5V bulk) at v1.3.2's C2, D3 (ISA +5V to VSYS) over the +5V finger at v1.3.2's D1, J4 (UART) at v1.3.2's J6; LED, RUN pull-up/capacitor left of the module |
-| Ground star | FB3 (GND to AGND) | In the free area under the daughterboard above the DAC block |
-
-* **R21–R32 (mixer) are now on 10.16 mm pitch** like every other resistor on the card (they were 7.62 mm), so the
-  mixer columns are v1.3.2's to the coordinate. Schematic and BOM updated.
-* **References**: the parts at v1.3.2's coordinates carry v1.3.2's hand-placed references (shown or hidden as there).
-* **Planes**: In1.Cu GND and In2.Cu +3V3 over the whole card; the AGND/AVDD islands come back once the placement is
-  settled (see [Audio](#audio)).
-* **PicoGUS logo in copper, as on v1.3.2**: v1.3.2's eight solder-mask openings (the letters) with copper letters
-  0.15 mm larger under them, so the letters show bare metal with no fab-registration edge, and a rule area that keeps
-  tracks and vias off them. It sits along the top edge as on v1.3.2 but 2 mm further right (x 187.9–213.6, y
-  37.8–40.6): v1.3.2's spot would put the "P" under C40's film capacitor. `v2.1` stands right of it as `v1.3.2` does
-  (Jost 1.2 mm). The silkscreen title is gone. v1.3.2's logo shows the front GND pour through the openings; v2.1 has
-  no front pour yet, so if one is added when routing, the copper letters can go and the pour shows through instead.
-* **Silkscreen labels** (Jost, embedded in the board file as on v1.3.2): `MIXER` and `DAC` at v1.3.2's positions (the
-  two blocks are at v1.3.2's coordinates), `WT VOL` beside U13 (the digital Waveblaster volume, behind the bracket's
-  unused WT VOL hole), `MIDI OUT` above J7 as on v1.3.2, `LINE OUT` beside J9; on the back, the title, copyright,
-  licence, project URL and thanks in the free area under the daughterboard.
+* **Stack-up**: F.Cu and B.Cu signals; **In1.Cu GND** with the **AGND island**, **In2.Cu +3V3** with the **AVDD
+  island** (see [Audio](#audio)); FB3 (GND–AGND) and FB4 (+3V3–AVDD) are the only ties. 0.2 mm signal tracks, 0.4 mm
+  for +5V, VSYS, the USB VBUS nets and ±12 V; the plane nets reach their planes through short stubs and vias. 0.6/0.3
+  mm vias. About 2.5 m of track on each outer layer and 139 vias.
+* **In2.Cu carries eight short signal hops** (52 mm in all, the longest 12 mm: D5, ADS, D4, D7, GPIO23, D2, AD3, AD1)
+  where the band above the ISA fingers is full on both outer layers. They cut slots in the +3V3 plane, not in GND.
+* **Routing rules**: no copper between the gold fingers (rule areas between them; tracks leave each finger straight
+  up) and no vias over the fingers (rule area from y 128.3); digital tracks kept off the analog islands where possible
+  (see [Audio](#audio) for what crosses). No track or via runs on F.Cu under U9, whose metal back (GND) lies on the
+  board.
+* **TSSOP escape**: U1, U2 and U10 are routed through their 0.7 mm test pads, with vias in most test pads, so their
+  pins reach both outer layers without fanning out past the toes.
+* **Changes to the user's placement**: R4 in series on RUN and the RUN button SW2 next to BOOTSEL SW1 (J10's 1×2
+  header is gone; see [Power](#power)); U9 lying down, tab down; `v2.1.0` at (211.82, 40.58) with the copper logo
+  moved with it; H1/H2 without silkscreen; on the back, the title, copyright, licence, project URL and thanks in one
+  framed group behind U1/U2.
+* **Labels to look at** (visible references over a neighbour's courtyard): C23 under J9's body and U13 under C41
+  (both hidden once the parts are fitted), J6 over D2, F1 over SW1, D1 over R13, C16 over C14.
+* **PicoGUS logo in copper, as on v1.3.2**: the eight solder-mask openings (the letters) with copper letters 0.15 mm
+  larger under them, and a rule area that keeps tracks and vias off them. `v2.1.0` stands right of it (Jost 1.2 mm).
+* **Silkscreen labels** (Jost, embedded in the board file as on v1.3.2): `WAVEBLASTER`, `MIXER`, `DAC`, `WT VOL`,
+  `MIDI OUT`, `LINE OUT`, `USB HOST`, `USB-C FLASH`, `RUN`, `BOOTSEL`, `UART`, `SWD`, and `IRQ`/`DMA` over J3.
 * **Groups, as on v1.3.2**, so a block moves as one: `74AHCT126 (U6)`, `74AHC00 (U4)`, `74AHC00 (U5)`,
-  `74AHC14 (U3)` (with the column resistors R1/R18/R5), `74AHC244 (U7)`, `ISA bus switches (U1, U2)`,
+  `74AHC14 (U3)` (with the column resistors), `74AHC244 (U7)`, `ISA bus switches (U1, U2)`,
   `Waveblaster header (J8)`, `DAC (U10)`, `Mixer + line out (U11, J9)`, `WT volume (U13)`, `MIDI out (J7)`,
-  `USB host (J5)`, `USB-C (J6)`, `Core2350B + power (U12)`, `IRQ/DMA jumpers (J3)`, `PicoGUS logo` and the bracket
-  drawing; each group holds its labels. Only H1, H2 and the ISA fingers (J1) are outside a group.
-* An earlier draft on the v2.0 outline was routed (commit `1028cb0`); its routing rules (nothing between the gold
-  fingers, digital tracks off the analog islands) carry over.
+  `USB host (J5)`, `USB-C (J6)`, `Core2350B + power (U12)`, `IRQ/DMA jumpers (J3)`, `PicoGUS logo`,
+  `Copyright and attribution (back)` and the bracket drawing.
+* **R21–R32 (mixer) are on 10.16 mm pitch** like every other resistor on the card.
