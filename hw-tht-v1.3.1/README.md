@@ -395,7 +395,7 @@ the two, **never both** (two DAC outputs would drive the same line).
 
 ### Back silkscreen
 
-The back carries the princess artwork (hw-common/art/mila-alisa.svg: a big and a small princess, both
+The back carries the princess artwork (hw-common/art/princess.svg: a big and a small princess, both
 crowned, with sparkles and a castle, over the PicoGUS logo), 72.5 × 37 mm, its lower edge 3 mm above the
 Pico's pin holes. It sits 6 mm off the card's centre, toward the bracket: centred, the J10 header and the
 resistor pads would go through the princesses' faces.

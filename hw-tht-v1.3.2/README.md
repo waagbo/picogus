@@ -276,7 +276,7 @@ than J5/J8 did not.
   Futura-style face and looks almost the same at this size. Embedding adds about 120 KB to the board file. The
   v1.3.1 and v1.3.0 boards still use un-embedded Futura.
 * **No princess artwork on the board.** It is removed from the back silkscreen and is to be UV printed on the back
-  instead (source: `hw-common/art/mila-alisa.svg`; the routed v1.3.2 layout had it at 52.8 × 27.0 mm, v1.3.1 at
+  instead (source: `hw-common/art/princess.svg`; the routed v1.3.2 layout had it at 52.8 × 27.0 mm, v1.3.1 at
   71.6 × 37.0 mm). The back text block (version, copyright, licence, URL, thanks, dedication) and `< REAR` stay.
 * **Front copper logo moved.** The exposed-copper PicoGUS logo (F.Mask openings over the front GND pour, with a rule
   area that keeps tracks and vias out) is turned horizontal and sits along the top edge above `LINE OUT`, x
@@ -755,7 +755,7 @@ v1.3.0 and v1.3.1 also had a footprint for a GY-PCM5102 DAC module (J10) as an a
 
 ### Back silkscreen
 
-The back carries the princess artwork (hw-common/art/mila-alisa.svg: a big and a small princess, both crowned, with
+The back carries the princess artwork (hw-common/art/princess.svg: a big and a small princess, both crowned, with
 sparkles and a castle, over the PicoGUS logo): on rev B 71.6 × 37.0 mm, its lower edge 3 mm above the Pico's pin
 holes, 6 mm off the card's centre toward the bracket. The back is full of through-hole pads, so the artwork is cut
 out 0.3 mm around every pad and hole (silkscreen never lands on copper). **v1.3.2 has no artwork on the board**: it
