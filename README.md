@@ -1,8 +1,47 @@
-# PicoGUS
+# PicoGUS THT
 
-![PicoGUS Logo](picogus-logo.svg)
+<img src="picogus-logo.svg" width="500" alt="PicoGUS">
 
-[![Build Status](https://github.com/polpo/picogus/actions/workflows/build.yml/badge.svg)](https://github.com/polpo/picogus/actions/workflows/build.yml)
+PicoGUS is a Raspberry Pi Pico based ISA sound card for DOS and Win9x retro computers.
+The brilliant firmware makes it a highly versatile clone card that provides near perfect emulation of the major sound cards from that era.
+
+Additional features like CD-ROM (Panasonic MKE), MPU-401 and USB game controllers build further on the cards versatility and the wavetable header will further extend the capacity with a card like [X2GS from Serdaco](https://serdashop.com/products/x2gs-te) to get the original Roland magic or even a [WavetablePi](https://github.com/scrapcomputing/WavetablePiHoriz) for the ultimate all-in-one experience for MS-DOS games. 
+
+**PicoGUS THT is a through-hole conversion of the [PicoGUS project](https://github.com/polpo/picogus).**<br />
+It provides versions with as many Through-Hole components as possible and adding convenience where possible.
+The design goal is to make the project be easier to solder by hand as well as giving it a higher level of retro asthetics.
+
+The designs still have some SMD components as they do not have THT equivalents. The only TSSOP package is the two *SN74CB3T3257PWR* level shifters (U3/U4). They do however feature a redesigned footprint to help with debugging.
+
+
+
+**Version 1.3** is an extension of the PicoGUS 1.2 design implementing the v1.3 features from the *hw-hand386* branch.
+The addition of a *Wavetable* header and a full size USB-A connector accessible from the back gives the 1.2 design some sought after upgrades.
+
+The board has also been resized to optimize for component placement and JCLPCB pricing.<br/>
+The initial design idea has been built and tested. The release version v1.3.2 is still pending build/test.
+<br/>
+
+**Version 2.1** is an experimental extension of the PicoGUS 2.0 SMD design, made possible using a Waveshare Core2350B board to free enough I/O ports for the 2.0 feature set. This is still in the design phase.
+<br/>
+
+**Experimental Software Features** that adds upon community ideas:
+* DFS drive support inspired by PicoMEM so the USB drive can be accessed from MS-DOS.
+
+<br/>
+
+
+
+
+**A big thank you to [Ian Scott (polpo)](https://github.com/polpo/) for the PicoGUS design and his contributions to the retro community.**<br/>**May his work set an example for future open-source hardware projects.**
+
+--<br/>
+Vidar Waagbø, Retro City AS
+
+## PicoGUS
+
+The original PicoGUS project is found at [polpo/pigocus](https://github.com/polpo/picogus) or www.picogus.com.<br/>
+Here are the original README.md to give some more information about the great features of the PicoGUS:
 
 ISA sound card and CD-ROM drive emulation on the Raspberry Pi Pico's RP2040 microcontroller. PicoGUS can emulate:
 
