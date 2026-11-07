@@ -140,6 +140,11 @@ silkscreen. Each round found real faults. Apply these from the start on the next
   - PCM5102APWR was out of stock at DigiKey until 2027, but PCM5102AQPWRQ1 was in stock.
   - The difference is not audible with the firmware's 16-bit output.
 - **J9 in gold**: Amphenol 77313-118-26LF has 30 µin gold and the same dimensions as the tin Sullins PEC13DAAN.
+- **Check a part's drawing, not its listing title.** LCSC C9040 is listed as a gold 2x13 pin header but is a shrouded
+  box header with latches, which a Waveblaster daughterboard cannot plug into.
+- **Generate the upload files from the BOM** (`hw-common/tools/bom_uploads.py`) instead of editing them by hand, and
+  re-read stock before an order: between September and November the PCM5102APWR, Panasonic ECE-A1HN100U and
+  LCSC's Yageo 100 k / 100 Ω lines ran out, and Murata replaced the RCER71H106MWM1H03A.
 - **RV1**:
   - The Bourns PTD902-2020K-A103 is about half the Alps price, with the same pin grid and bushing.
   - LCSC only has the Alps: RK09712200HA C470545 (20 mm shaft), or RK09712200MC C444934 (15 mm shaft).

@@ -46,7 +46,7 @@ Files:
 | `docs/BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers, stock (2026-11-07) and a digikey.no link per line |
 | `docs/BOM-THT-digikey.csv`, `docs/BOM-THT-lcsc.csv` (+ `-optional`) | DigiKey and LCSC upload files for one board, made from `BOM-THT.csv` (see [Ordering](#ordering)); optional: sockets, U12 |
 | `docs/BOM-THT-sockets.csv` (+ `-digikey-optional`, `-lcsc-optional`) | Socket build: every DIP IC and the Pico socketed, with heights (see [Socket build](#socket-build)) |
-| `docs/renders/` | 3D renders of the routed card from the front and the back, in red, purple, black and blue solder mask (ENIG, white silkscreen) |
+| `docs/renders/` | 3D renders of the routed card: red from the front and the back, green, purple, white and black from the front (ENIG; white silkscreen, black on white). Made with `hw-common/tools/render.sh` |
 | `docs/figures/` | Figures for the README's exceptions and design choices (e.g. the test pads, the placement options, the accepted courtyard overlaps), with the scripts that make them in `docs/figures/src/` |
 
 The shared `PiGUS library` symbols and footprints are linked from `hw-common/`, like the other boards. **New in the
@@ -866,7 +866,7 @@ ALLOW_DRC=courtyards_overlap hw-common/tools/jlcpcb.sh hw-tht-v1.3/PicoGUS-THT.k
 The script stops if DRC (including the schematic-parity check) finds errors. On this board DRC finds only the 12
 accepted courtyard overlaps (see [Layout status](#layout-status)), which are errors in this project's rules.
 `ALLOW_DRC=courtyards_overlap` lets exactly that type through and still stops on any other error. `build/jlcpcb/` holds the export of the
-routed board made that way (2026-11-01; not in git: the repository ignores `build/` and `*.zip`, so a clone has to
+routed board made that way (2026-11-07, with the waagbo/picogus-tht link on the back; not in git: the repository ignores `build/` and `*.zip`, so a clone has to
 run the script): outline to x 218.29 (102.0 mm), 422 vias, 756 plated holes. It writes:
 
 * `PicoGUS-THT-gerbers.zip`: upload this to jlcpcb.com. It holds the Gerbers (Protel extensions, no X2)
