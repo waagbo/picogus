@@ -1,6 +1,6 @@
 # PicoGUS THT (through-hole) v1.3.2 – based on PicoGUS v1.2
 
-Board revision **v1.3.2**: the [v1.3.1 (rev B) THT board](../hw-tht-v1.3.1/README.md) on a 102 mm outline, with
+Board revision **v1.3.2**: the v1.3.1 (rev B) THT board on a 102 mm outline, with
 the fine-pitch chips soldered straight to the card and a test pad on every one of their pins.
 
 * **U3/U4** (SN74CB3T3257, TSSOP-16) and **U9** (PCM5100A, TSSOP-20) only exist as TSSOPs. They are soldered to
@@ -27,7 +27,7 @@ v1.3.1's: USB-A host port, Waveblaster header, op-amp mixer.
 > routed on two layers (2026-11-01).
 > The schematic's ERC is the same as v1.3.1's (280 warnings, 0 errors). DRC with schematic parity finds 0
 > unconnected items and, as errors, only the 12 accepted courtyard overlaps in the logic column, so
-> `hw-common/tools/jlcpcb.sh` exports with `FORCE=1`; `build/jlcpcb/` holds that export (not in git: the repository
+> `hw-common/tools/jlcpcb.sh` exports with `ALLOW_DRC=courtyards_overlap`; `build/jlcpcb/` holds that export (not in git: the repository
 > ignores `build/`). The first routed TSSOP layout (commit 298e993) was reviewed independently; this placement
 > shortens the DAC outputs and the mixer's summing nodes that review pointed at, and its route applies the review's
 > rules from the start. Compared with the routed DIP-adapter layout (commit d5c4a85) it is better on I2S, the
@@ -354,7 +354,7 @@ measured with the same scripts; d5c4a85's README (`git show d5c4a85:hw-tht-v1.3.
   short jogs at pads are narrower than their class.
 * 5494 mm of track and 422 vias: 205 GND, 26 power, 191 signal (756 plated holes with the THT pads).
 * DRC with schematic parity: 0 unconnected items, and as errors only the 12 accepted courtyard overlaps below, so
-  `jlcpcb.sh` needs `FORCE=1`. Warnings: 3 `lib_footprint_mismatch` (J3, J11, RV1; expected, see
+  `jlcpcb.sh` runs with `ALLOW_DRC=courtyards_overlap`. Warnings: 3 `lib_footprint_mismatch` (J3, J11, RV1; expected, see
   [Kept from v1.3.1](#kept-from-v131)), 19 `silk_edge_clearance`, 8 `starved_thermal` and 83 schematic-parity field
   warnings (footprints without the symbols' Manufacturer/MPN fields, J3's BOM flag). The starved thermals are J9's
   GND pins 7, 11, 15 and 25, U7 pin 10 and U2 pin 10 (GND) and the Pico's GND pin 33 on both its pads: each has one
@@ -762,8 +762,10 @@ out 0.3 mm around every pad and hole (silkscreen never lands on copper). **v1.3.
 is to be UV printed on the back instead (the routed v1.3.2 layout, commit 8dbb6c6, had it re-placed at 52.8 ×
 27.0 mm; see [Silkscreen and back artwork](#silkscreen-and-back-artwork)).
 
-The version and licence block sits between the Pico's pin rows, one text per line, ending with the thanks and the
-dedication: *Thanks to polpo and all the PicoGUS contributors. This revision is dedicated to my wonderful family, Mila
+The version and licence block sits between the Pico's pin rows, one text per line. Its link line reads
+`https://github.com/waagbo/picogus-tht`, the home of this board, as agreed with polpo (v1.3.1 linked
+github.com/polpo/picogus); its letters are 0.78 mm wide, like the thanks line, so it clears the via holes. The
+block ends with the thanks and the dedication: *Thanks to polpo and all the PicoGUS contributors. This revision is dedicated to my wonderful family, Mila
 and Alisa.* On v1.3.1 each line was nudged (at most 0.9 mm) so that no via hole lands in a letter; on the routed
 v1.3.2 layout the lines were re-spaced so that no via hole was within 0.10 mm of a letter. This board keeps those
 positions, and its via holes are at least 0.14 mm from every letter of the text block and 0.13 mm from `< REAR`.
@@ -835,12 +837,12 @@ C2905423 is a female header, not the Pico. C2935925 is DEALON, not Amphenol. C69
 ## JLCPCB files
 
 ```
-FORCE=1 hw-common/tools/jlcpcb.sh hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb   # -> hw-tht-v1.3.2/build/jlcpcb/
+ALLOW_DRC=courtyards_overlap hw-common/tools/jlcpcb.sh hw-tht-v1.3/PicoGUS-THT.kicad_pcb   # -> hw-tht-v1.3/build/jlcpcb/
 ```
 
 The script stops if DRC (including the schematic-parity check) finds errors. On this board DRC finds only the 12
-accepted courtyard overlaps (see [Layout status](#layout-status)), which are errors in this project's rules, so
-export with `FORCE=1` after checking that the report lists nothing else. `build/jlcpcb/` holds the export of the
+accepted courtyard overlaps (see [Layout status](#layout-status)), which are errors in this project's rules.
+`ALLOW_DRC=courtyards_overlap` lets exactly that type through and still stops on any other error. `build/jlcpcb/` holds the export of the
 routed board made that way (2026-11-01; not in git: the repository ignores `build/` and `*.zip`, so a clone has to
 run the script): outline to x 218.29 (102.0 mm), 422 vias, 756 plated holes. It writes:
 
@@ -852,8 +854,8 @@ run the script): outline to x 218.29 (102.0 mm), 422 vias, 756 plated holes. It 
   carry over. The TSSOPs' test pads are part of their footprints, so JLCPCB can place U3/U4/U9 too.
 * `PicoGUS-THT-drc.rpt`: the DRC report.
 
-The **Hardware (JLCPCB files)** GitHub Action runs the same script for `hw-tht` (v1.3.0) and `hw-smd`. v1.3.1 and
-v1.3.2 are not in it.
+The **Hardware (JLCPCB files)** GitHub Action runs the same script for this board (with
+`ALLOW_DRC=courtyards_overlap`) and for `hw-smd`.
 
 Order options: 2 layers, **1.6 mm**, **Surface finish: ENIG** and **Gold fingers: Yes** with the **45° finger
 chamfer** (the ISA edge connector). ENIG is required: JLCPCB only gold-plates the fingers on ENIG boards; with HASL

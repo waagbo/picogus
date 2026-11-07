@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # JLCPCB fabrication (and assembly) files for a KiCad board, with kicad-cli (KiCad 10).
 #
-#   hw-common/tools/jlcpcb.sh hw-tht/PicoGUS-THT.kicad_pcb [OUT_DIR]
+#   hw-common/tools/jlcpcb.sh hw-tht-v1.3/PicoGUS-THT.kicad_pcb [OUT_DIR]
 #
 # Output (default OUT_DIR: <board dir>/build/jlcpcb):
 #   <name>-gerbers.zip     upload this to jlcpcb.com (gerbers + Excellon drill files)
@@ -10,7 +10,8 @@
 #   <name>-cpl-jlc.csv     JLCPCB placement list (Designator, Mid X, Mid Y, Layer, Rotation), SMD parts only
 #                          (plus SMD parts on nested dual footprints, *_Nested)
 #
-# The script stops when DRC finds errors; FORCE=1 exports anyway.
+# The script stops when DRC finds errors. ALLOW_DRC=type1,type2 (DRC report types such as
+# courtyards_overlap) lets those types through but still stops on any other; FORCE=1 exports anyway.
 set -euo pipefail
 
 pcb=$(realpath "$1")
@@ -25,8 +26,16 @@ echo "== DRC ($name)"
 if ! kicad-cli pcb drc --severity-error --schematic-parity --exit-code-violations \
         -o "$out/$name-drc.rpt" "$pcb" >/dev/null; then
     grep -E '^\*\* Found' "$out/$name-drc.rpt" || true
-    if [ "${FORCE:-0}" != 1 ]; then
-        echo "DRC errors: see $out/$name-drc.rpt (FORCE=1 to export anyway)" >&2
+    # violation types in the report, e.g. courtyards_overlap, unconnected_items
+    found=$(grep -oE '^\[[a-z_]+\]' "$out/$name-drc.rpt" | tr -d '[]' | sort -u | tr '\n' ' ')
+    other=""
+    for t in $found; do
+        case ",${ALLOW_DRC:-}," in *",$t,"*) ;; *) other="$other $t" ;; esac
+    done
+    if [ -n "${ALLOW_DRC:-}" ] && [ -z "$other" ]; then
+        echo "DRC errors are all of the accepted types ($ALLOW_DRC)"
+    elif [ "${FORCE:-0}" != 1 ]; then
+        echo "DRC errors:${other:- $found} - see $out/$name-drc.rpt (ALLOW_DRC=<types> or FORCE=1 to export anyway)" >&2
         exit 1
     fi
 fi

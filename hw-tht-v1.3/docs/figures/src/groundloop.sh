@@ -1,6 +1,6 @@
 #!/bin/bash
 # usage: groundloop.sh <board>.kicad_pcb OUT.png [WORKDIR]
-#   e.g. (from hw-tht-v1.3.2/):  bash docs/figures/src/groundloop.sh PicoGUS-THT.kicad_pcb docs/figures/groundloop.png /tmp/gl
+#   e.g. (from hw-tht-v1.3/):  bash docs/figures/src/groundloop.sh PicoGUS-THT.kicad_pcb docs/figures/groundloop.png /tmp/gl
 # Makes the line-out ground-loop figure: extracts the GND copper with refilled pours (the board's .kicad_pro must sit
 # next to it; the board file is only read), solves the DC model (about 2 minutes) and draws the PNG.
 # Intermediate files (geom.pkl, gl.npz, gl.json with the node potentials and line-out errors) go to WORKDIR

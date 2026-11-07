@@ -1,7 +1,7 @@
 # Usage: kipython bracket_trim_figure.py NEW.json OLD.json OLD131.json OUT.png
 #   NEW.json     dump of the 102 mm board (v1.3.2)
 #   OLD.json     dump of the routed 103.74 mm layout (git show 8dbb6c6:hw-tht-v1.3.2/PicoGUS-THT.kicad_pcb)
-#   OLD131.json  dump of hw-tht-v1.3.1/PicoGUS-THT.kicad_pcb (same outline as 8dbb6c6; only the Pico's own move differs)
+#   OLD131.json  dump of git show 9e6007f:hw-tht-v1.3.1/PicoGUS-THT.kicad_pcb (same outline as 8dbb6c6; only the Pico's own move differs)
 #   each from 'kipython misc_dump.py BOARD.kicad_pcb X.json --no-zones'
 # Needs misc_figlib.py next to this script.
 #

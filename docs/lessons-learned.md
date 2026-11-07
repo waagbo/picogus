@@ -4,7 +4,7 @@ The branch that made the through-hole board (v1.3.0 → v1.3.1 rev B → v1.3.2)
 NE2000 card ran from 2026-09-28 to 2026-11-01 (98 commits). It was squash-merged, so its commit messages are
 gone. This file keeps what they recorded that the board READMEs don't: what was tried and dropped and why,
 the layout rules the reviews produced, and the tool and sourcing pitfalls. The details of each board are in
-its own README (`hw-tht-v1.3.2/README.md` and so on).
+its own README (`hw-tht-v1.3/README.md`, `hw-smd/README.md`, `hw-ne2k/README.md`).
 
 v1.3.2 had not been built or tested when this was written. Add what the first build teaches.
 
@@ -104,7 +104,7 @@ silkscreen. Each round found real faults. Apply these from the start on the next
   - NPTH slots (the Pico's USB-shell relief) must also be drawn on `Edge.Cuts`.
   - JLCPCB no longer prints an order number by default, so the placeholder text lives on B.Fab.
   - `hw-common/tools/jlcpcb.sh` gates on DRC with schematic parity. The 12 accepted courtyard overlaps in the
-    logic column need `FORCE=1`.
+    logic column pass with `ALLOW_DRC=courtyards_overlap`, which still stops on any other error type.
 - **Routing**:
   - Lock the critical pre-routes first: the finger corridor (IRQ2, D5), the USB pair between the Pico's shell
     holes, and the DAC GND/VNEG/XSMT stubs.
@@ -158,7 +158,8 @@ silkscreen. Each round found real faults. Apply these from the start on the next
 - **Review every route independently**, and check the README against the board the same way. One check
   (a2e1d6a) found README sections still describing the earlier blank board, and measurements that had drifted.
 - **Explain each exception or design choice in the README with a figure next to the text.** The scripts that
-  make the figures are in `hw-tht-v1.3.2/docs/figures/src/`, so the figures can be regenerated when the board
+  make the figures are in `hw-tht-v1.3/docs/figures/src/`, so the figures can be regenerated when the board
   changes.
-- **Keep each variant in its own folder** (`hw-tht`, `hw-tht-v1.3.1`, `hw-tht-v1.3.2`), so an ordered revision
-  stays reproducible.
+- **One folder per board, at the version to build.** During the branch each revision had its own folder (`hw-tht`
+  for v1.3.0, `hw-tht-v1.3.1`, `hw-tht-v1.3.2`); at the merge only v1.3.2 was kept, as `hw-tht-v1.3`. The older
+  revisions are in the history of the `hw1.3-tht` branch (last at 9e6007f).
