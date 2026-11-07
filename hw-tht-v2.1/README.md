@@ -282,8 +282,8 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
   is about 11 mm above the card): the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32, the
   disc capacitors, U9 lying down and D3. C38 (AVDD bulk, 5 × 11 mm) was under it and has moved out (see [Layout
   status](#layout-status)). **C39** (2.2 µF film, about 11 mm tall) was 3 mm inside the outline; C39 and C40 moved
-  2.19 mm right together, as far as the copper logo allows (C40's outer pad keeps the audio net class's 0.35 mm from
-  the "P"). C39's 7.2 mm film body now ends at x 170.09, 0.23 mm short of the outline (its 7.8 mm footprint envelope
+  2.19 mm right together, as far as the copper logo then allowed (C40's outer pad keeps the audio net class's 0.35 mm
+  from the "P"). C39's 7.2 mm film body now ends at x 170.09, 0.23 mm short of the outline (its 7.8 mm footprint envelope
   0.5 mm): a full-size daughterboard sitting low could just touch its top corner. Small daughterboards (DreamBlaster
   S2, X2) are nowhere near it.
 
@@ -311,8 +311,8 @@ over it, as on v1.3.2).
 * **TSSOP escape**: U1, U2 and U10 are routed through their 0.7 mm test pads, with vias in most test pads, so their
   pins reach both outer layers without fanning out past the toes.
 * **Changes to the user's placement**: R4 in series on RUN and the RUN button SW2 next to BOOTSEL SW1 (J10's 1×2
-  header is gone; see [Power](#power)); U9 lying down, tab down; `v2.1.0` at (211.82, 40.58) with the copper logo
-  moved with it; H1/H2 without silkscreen; on the back, the title, copyright, licence, project URL and thanks in one
+  header is gone; see [Power](#power)); U9 lying down, tab down; `v2.1.0` at (212.84, 40.58) with the copper logo
+  (see below); H1/H2 without silkscreen; on the back, the title, copyright, licence, project URL and thanks in one
   framed group behind U1/U2. **C38 moved out from under the Waveblaster daughterboard** (its 5 × 11 mm can was
   taller than the daughterboard's 11 mm clearance) to (184.75, 77.0), between the mixer and RUN, still on the
   AVDD/AGND islands: its pads go straight into the In2 AVDD and In1 AGND islands, so it needs no tracks. For the
@@ -320,8 +320,9 @@ over it, as on v1.3.2).
   join it to the DAC with milliohms, while C17 (10 µF) and C15/C16 (0.1 µF) stay at U10's pins for the local
   decoupling. C38 is now in the `Mixer + line out` group; the C29 label moved above C29, as C28's is. **C39 and C40
   moved 2.19 mm right together** (to x 171.19 / 179.69, pad 1), to get C39 out from under the daughterboard; their
-  four track ends were stretched onto the moved pads. C40's silkscreen box now ends 0.25 mm inside the "P"'s mask
-  opening, where the fab clips it.
+  four track ends were stretched onto the moved pads. **The PicoGUS logo and `v2.1.0` then moved 1.02 mm right as
+  one group**, so they sit centred between C40 and the board edge: 0.77 mm from C40's silkscreen outline to the "P"
+  and from the end of `v2.1.0` to the edge (letters x 186.92–212.69, `v2.1.0` at (212.84, 40.58)).
 * **Labels to look at** (visible references over a neighbour's courtyard): C23 under J9's body and U13 under C41
   (both hidden once the parts are fitted), J6 over D2, F1 over SW1, D1 over R13, C16 over C14.
 * **PicoGUS logo in copper, as on v1.3.2**: the eight solder-mask openings (the letters) with copper letters 0.15 mm
