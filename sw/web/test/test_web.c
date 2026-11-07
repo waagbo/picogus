@@ -34,6 +34,7 @@ uint64_t test_now_us = 1000000;
 unsigned char test_lwip_heap[MEM_SIZE + 64] __attribute__((aligned(8)));
 u32_t sys_now(void) { return (u32_t)(test_now_us / 1000); }
 u32_t lwip_port_rand(void) { return (u32_t)rand(); }
+unsigned int web_rand(void) { return (unsigned int)rand(); }
 
 // larger than on the RP2040: pointers take 8 bytes here
 static uint8_t xip_web[2 * WEB_XIP_WEB_SIZE] __attribute__((aligned(8)));

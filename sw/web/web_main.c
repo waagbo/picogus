@@ -41,6 +41,7 @@
 #include "web_internal.h"
 #include "web_xip_sram.h"
 #include "hardware/structs/xip_ctrl.h"
+#include "hardware/structs/rosc.h"
 
 extern Settings settings;
 
@@ -129,6 +130,22 @@ char web_wifi_read_status_char(void) {
 
 void web_wifi_request_connect(void) {
     connect_requested = true;
+}
+
+// ---- random numbers for lwIP ---------------------------------------------------
+
+unsigned int web_rand(void) {
+    // xorshift32, stirred with the ring oscillator's random bit and the time
+    static uint32_t state = 0x9e3779b9u;
+    uint32_t noise = time_us_32();
+    for (int i = 0; i < 8; ++i) {
+        noise = (noise << 1) | (rosc_hw->randombit & 1);
+    }
+    state ^= noise;
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    return state;
 }
 
 // ---- XIP cache SRAM ----------------------------------------------------------

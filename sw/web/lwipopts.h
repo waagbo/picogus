@@ -64,6 +64,16 @@
 // on a local network - or the UI's status polling would tie up the heap.
 #define TCP_MSL                     1000
 
+// Random numbers for TCP sequence numbers, DHCP transaction IDs and ports.
+// Not the SDK's pico_rand: its state lands in .uninitialized_data, which the
+// multifw linker script places differently from the one used to size the
+// image, making the firmwares not fit their slots in flash.
+#ifdef __cplusplus
+extern "C"
+#endif
+unsigned int web_rand(void);
+#define LWIP_RAND()                 web_rand()
+
 // netif
 #define LWIP_NETIF_STATUS_CALLBACK  1
 #define LWIP_NETIF_LINK_CALLBACK    1

@@ -81,14 +81,14 @@ The status page shows how much of core 1 the web server used over the last
 
 ### Memory
 
-PicoGUS runs entirely from RAM. The web server adds about 56KB of code and data
-to each mode:
+PicoGUS runs entirely from RAM. The web server adds about 55KB of code and data
+to each mode (Sound Blaster mode keeps ~39KB free):
 
 | Part | RAM |
 | --- | --- |
-| lwIP (TCP, UDP, DHCP, ARP, ICMP) | ~27KB |
-| CYW43 WiFi driver | ~12KB |
-| web server | ~10KB |
+| lwIP (TCP, UDP, DHCP, ARP, ICMP) | ~22KB |
+| CYW43 WiFi driver and SDK glue | ~20KB |
+| web server and MIDI queue | ~13KB |
 
 All network *buffers* (lwIP's heap, HTTP connections, upload buffers; 16KB in
 total) live in the RP2040's XIP cache memory. PicoGUS turns the flash cache off
