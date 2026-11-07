@@ -281,10 +281,11 @@ or `cmake -DPICO_PLATFORM=rp2350 -DPICO_BOARD=picogus21`. Details are in [sw/doc
 * **Under the Waveblaster daughterboard** (a full-size board's outline ends at x 170.32 and y 121.9; its underside
   is about 11 mm above the card): the logic DIPs, the SMD chips (U1, U2, U10), the DAC block, FB3/FB4, R31/R32, the
   disc capacitors, U9 lying down and D3. C38 (AVDD bulk, 5 × 11 mm) was under it and has moved out (see [Layout
-  status](#layout-status)). **One part is too tall for a full-size daughterboard: C39** (2.2 µF film, about 11–13 mm
-  tall, at (169.0, 40.7)) reaches 3 mm into the outline. Small daughterboards (DreamBlaster S2, X2) do not reach it.
-  For a full-size one, move C39 right, or fit the 5 mm bipolar electrolytic the footprint also takes (Rubycon
-  50NXA2R2MEFC5X11) and lay it on its side.
+  status](#layout-status)). **C39** (2.2 µF film, about 11 mm tall) was 3 mm inside the outline; C39 and C40 moved
+  2.19 mm right together, as far as the copper logo allows (C40's outer pad keeps the audio net class's 0.35 mm from
+  the "P"). C39's 7.2 mm film body now ends at x 170.09, 0.23 mm short of the outline (its 7.8 mm footprint envelope
+  0.5 mm): a full-size daughterboard sitting low could just touch its top corner. Small daughterboards (DreamBlaster
+  S2, X2) are nowhere near it.
 
 ## Layout status
 
@@ -317,7 +318,10 @@ over it, as on v1.3.2).
   AVDD/AGND islands: its pads go straight into the In2 AVDD and In1 AGND islands, so it needs no tracks. For the
   audio this is the same capacitor: it is the AVDD reservoir behind FB4, and at audio frequencies the island planes
   join it to the DAC with milliohms, while C17 (10 µF) and C15/C16 (0.1 µF) stay at U10's pins for the local
-  decoupling. C38 is now in the `Mixer + line out` group; the C29 label moved above C29, as C28's is.
+  decoupling. C38 is now in the `Mixer + line out` group; the C29 label moved above C29, as C28's is. **C39 and C40
+  moved 2.19 mm right together** (to x 171.19 / 179.69, pad 1), to get C39 out from under the daughterboard; their
+  four track ends were stretched onto the moved pads. C40's silkscreen box now ends 0.25 mm inside the "P"'s mask
+  opening, where the fab clips it.
 * **Labels to look at** (visible references over a neighbour's courtyard): C23 under J9's body and U13 under C41
   (both hidden once the parts are fitted), J6 over D2, F1 over SW1, D1 over R13, C16 over C14.
 * **PicoGUS logo in copper, as on v1.3.2**: the eight solder-mask openings (the letters) with copper letters 0.15 mm
