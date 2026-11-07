@@ -8,8 +8,7 @@ It is a highly versatile clone card that provides near perfect emulation of the 
 Additional features like CD-ROM (Panasonic MKE), MPU-401 and USB game controllers build further on the cards versatility and the wavetable header will further extend the capacity with a card like [X2GS from Serdaco](https://serdashop.com/products/x2gs-te) to get the original Roland magic or even a [WavetablePi](https://github.com/scrapcomputing/WavetablePiHoriz) for the ultimate all-in-one experience for MS-DOS games. 
 
 **PicoGUS THT is a through-hole conversion of the [PicoGUS project](https://github.com/polpo/picogus).**<br />
-It provides versions with as many Through-Hole components as possible and adding convenience where possible.
-The design goal is to make the project be easier to solder by hand as well as giving it a higher level of retro asthetics.
+The conversion introduces through-hole components where possible in addition to embedding new features and ideas while still keeping the card compatible with the upstream project. The design goal is to make the project be easier to solder by hand as well as giving it a higher level of retro asthetics.
 
 PicoGUS THT exists in multiple variants based on different PicoGUS revisions. Each variant is found in their separate folder (or branch if still experimental). The different *hw* designs feature additional documentation including ready to order BOM CSVs in their respective *docs* folders.
 
