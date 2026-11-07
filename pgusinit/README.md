@@ -14,6 +14,10 @@ Firmware files that comes with release:
 
 * `picogus.uf2` - All modes are now in a single firmware. To switch between
   modes, use the `/mode x` option in pgusinit.
+* `picogus-picow.uf2` - All modes, for PicoGUS Femto and PicoGUS v1.x boards
+  with a Pico W installed. Adds a web page for status, volume, settings, mode
+  switching, mt32-pi control and firmware updates over WiFi. Set up WiFi with
+  `/wifissid` and `/wifipass`, then `/wifistatus` shows the address of the page.
 * `pg-ne2k.uf2` - Special firmware for NE2000/WiFi. Only works on PicoGUS
   Femto and PicoGUS v1.x boards with a Pico W installed.
 
@@ -151,6 +155,16 @@ that do not require an IRQ: AdLib, CMS, Tandy, and USB.
 * `/cdloadname x` - load CD image by name. Names with spaces can be quoted
 * `/cdauto 1|0` - auto-advance loaded image when same USB drive is reinserted
 * `/cdvol x` - sets the volume of the CD audio output to x percent.
+
+### WiFi options (Pico W boards)
+
+Used by the `picogus-picow.uf2` web page and by the NE2000 firmware. Save them
+with `/save`.
+
+* `/wifissid abc` - set the WiFi network name to abc.
+* `/wifipass xyz` - set the WiFi WPA/WPA2 password to xyz.
+* `/wifinopass` - unset the password to connect to an open network.
+* `/wifistatus` - show the WiFi status, including the address of the web page.
 
 ## Compiling
 

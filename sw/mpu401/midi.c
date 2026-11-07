@@ -254,8 +254,102 @@ void MIDI_RawOutByte(Bit8u data) {
     }
 }
 
+#ifdef WEBSERVER
+/* PicoGUS web UI: MIDI messages injected from the web server (core 1 only).
+   They are sent only between complete messages of the host's MIDI stream, so
+   a message from a DOS program is never split. Every queued message is
+   complete (checked by the web server before queueing). */
+#define INJECTBUF      1024
+#define INJECTBUF_BITS 1023
+static struct {
+    uint8_t buffer[INJECTBUF];
+    uint32_t head;
+    uint32_t tail;
+    uint32_t remaining;     // bytes left of the message being sent, 0 = between messages
+    bool in_sysex;
+    uint32_t sysex_len;
+    uint8_t sysex_addr_hi;  // byte 5 of a Roland sysex (address MSB)
+    uint32_t delay_start;
+    uint32_t delay;
+} inject;
+
+uint32_t MIDI_InjectFree(void) {
+    return (INJECTBUF - 1) - ((inject.head - inject.tail) & INJECTBUF_BITS);
+}
+
+bool MIDI_Inject(const uint8_t *msg, uint32_t len) {
+    if (len > MIDI_InjectFree()) {
+        return false;
+    }
+    for (uint32_t i = 0; i < len; ++i) {
+        inject.buffer[inject.head] = msg[i];
+        inject.head = (inject.head + 1) & INJECTBUF_BITS;
+    }
+    return true;
+}
+
+// Returns true if a byte from the inject queue was sent
+__force_inline static bool send_inject_byte(void) {
+    if (inject.head == inject.tail) return false;
+    if (inject.remaining == 0) {
+        // Only start a new message when the host has nothing queued and is not
+        // in the middle of a sysex, and after any pending sysex delay
+        if (midi_out_buff.head != midi_out_buff.tail) return false;
+        if (midi.sysex.status == 0xf0) return false;
+        if (midi.sysex.start && (time_us_32() - midi.sysex.start) < midi.sysex.delay) return false;
+        if (inject.delay && (time_us_32() - inject.delay_start) < inject.delay) return false;
+        inject.delay = 0;
+        uint8_t status = inject.buffer[inject.tail];
+        if (status == 0xf0) {
+            inject.in_sysex = true;
+            inject.sysex_len = 0;
+            inject.remaining = 1;   // extended byte by byte until 0xf7
+        } else {
+            inject.in_sysex = false;
+            inject.remaining = MIDI_evt_len[status] ? MIDI_evt_len[status] : 1;
+        }
+    }
+    uint8_t data = inject.buffer[inject.tail];
+    inject.tail = (inject.tail + 1) & INJECTBUF_BITS;
+    output_to_uart(data);
+    if (inject.in_sysex) {
+        if (++inject.sysex_len == 6) {
+            inject.sysex_addr_hi = data;
+        }
+        if (data == 0xf7) {
+            inject.remaining = 0;
+            inject.in_sysex = false;
+            // Give the synth time to process the sysex, like the MPU sysex delay
+            // (same rules as below: MT-32 "all parameters reset" needs 290ms)
+            if (inject.sysex_addr_hi == 0x7f && inject.sysex_len >= 10) {
+                inject.delay = 290000;
+            } else {
+                uint32_t min_delay = midi.sysex.extra_delay ? 40000 : 20000;
+                inject.delay = inject.sysex_len * 400 + 2000;
+                if (inject.delay < min_delay) inject.delay = min_delay;
+            }
+            inject.delay_start = time_us_32();
+        }
+    } else {
+        --inject.remaining;
+    }
+    return true;
+}
+#endif
+
 __force_inline static bool send_midi_byte() {
     if (uart_tx_status()) return false;   // can't send yet
+#ifdef WEBSERVER
+    if (inject.remaining || (inject.head != inject.tail && midi_out_buff.head == midi_out_buff.tail)) {
+        if (send_inject_byte()) return true;
+        if (inject.remaining) return false; // finish the injected message first
+    }
+    if (inject.delay) {
+        // the synth is still processing an injected sysex
+        if ((time_us_32() - inject.delay_start) < inject.delay) return false;
+        inject.delay = 0;
+    }
+#endif
     if (midi_out_buff.head == midi_out_buff.tail) return false; // nothing to send
     /* putchar('s'); */
     critical_section_enter_blocking(&midi_crit);

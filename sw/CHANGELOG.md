@@ -1,3 +1,20 @@
+# Unreleased
+
+## New features
+
+### Web page for Pico W boards
+
+PicoGUS v1.x and Femto boards with a Pico W get a small web page:
+- Status of the card.
+- Live volume control.
+- Settings, and switching modes.
+- Choosing CD images.
+- Controls for an mt32-pi on the MIDI out: synth, ROM set, SoundFont, MT-32 display text, resets.
+- Sending SysEx files to MIDI out.
+- Firmware updates.
+
+Set up WiFi with `pgusinit /wifissid` and `/wifipass`; `pgusinit /wifistatus` shows the address. The web server runs only on the second core, at the lowest priority, and stays out of the way of the ISA bus and audio. See `sw/web/README.md`. Release file: `picogus-picow.uf2`.
+
 # v4.1.1
 
 ## Fixes/improvements

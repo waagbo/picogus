@@ -29,6 +29,10 @@ extern Settings settings;
 
 #include "mpu401/export.h"
 
+#ifdef WEBSERVER
+#include "web/web.h"
+#endif
+
 void play_mpu() {
     DBG_PUTS("starting core 1 MPU");
     // flash_safe_execute_core_init();
@@ -48,6 +52,9 @@ void play_mpu() {
 #ifdef USB_STACK
         // Service TinyUSB events
         tuh_task();
+#endif
+#ifdef WEBSERVER
+        web_task();
 #endif
     }
 }

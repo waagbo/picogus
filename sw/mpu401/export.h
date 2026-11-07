@@ -46,6 +46,11 @@ Bit8u QueueUsed();
 void send_midi_bytes(int maxbytes);
 uint32_t MIDI_BufferFree(void);
 void MIDI_RawOutByte(Bit8u data);
+#ifdef WEBSERVER
+/* Queue complete MIDI message(s) from the web UI. All or nothing. */
+bool MIDI_Inject(const uint8_t *msg, uint32_t len);
+uint32_t MIDI_InjectFree(void);
+#endif
 
 #ifdef __cplusplus
 }

@@ -37,6 +37,10 @@
 
 #include "../common/picogus.h"
 
+#ifdef WEBSERVER
+#include "web/web.h"
+#endif
+
 board_type_t BOARD_TYPE;
 
 #ifdef PSRAM
@@ -160,7 +164,11 @@ static bool control_active = false;
 static uint8_t sel_reg = 0;
 static uint32_t cur_read = 0;
 static uint32_t cur_write = 0;
+#ifdef WEBSERVER
+static volatile bool queueSaveSettings = false; // also set by the web UI on core 1
+#else
 static bool queueSaveSettings = false;
+#endif
 static bool queueReboot = false;
 
 Settings settings;
@@ -303,7 +311,14 @@ __force_inline void write_picogus_low(uint8_t value) {
     }
 }
 
+#ifdef WEBSERVER
+// The web UI applies settings through this same code (see picogus_web_write()),
+// passing in the register and the low bytes of 16 bit values, which the
+// parameters below take in place of the ISA control channel's state.
+__force_inline void write_setting(uint8_t sel_reg, uint8_t value, uint8_t basePort_low, uint8_t mouseSensitivity_low) {
+#else
 __force_inline void write_picogus_high(uint8_t value) {
+#endif
     switch (sel_reg) {
     case CMD_GUSPORT: // GUS Base port
         settings.GUS.basePort = (value || basePort_low) ? ((value << 8) | basePort_low) : 0xFFFF;
@@ -427,13 +442,18 @@ __force_inline void write_picogus_high(uint8_t value) {
         break;
     case CMD_WIFIAPPLY:
         DBG_PRINTF("Applying wifi settings: %s %s\n", settings.WiFi.ssid, settings.WiFi.password);
-#ifdef PICOW
+#if defined(NE2000)
         PG_Wifi_Connect(settings.WiFi.ssid, settings.WiFi.password);
+#elif defined(WEBSERVER)
+        // WiFi is owned by core 1; just flag the request
+        web_wifi_request_connect();
 #endif
         break;
     case CMD_WIFISTAT:
-#ifdef PICOW
+#if defined(NE2000)
         multicore_fifo_push_blocking(FIFO_WIFI_STATUS);
+#elif defined(WEBSERVER)
+        web_wifi_request_status();
 #endif
         break;
     case CMD_CDPORT: // CD Base port
@@ -526,6 +546,48 @@ __force_inline void write_picogus_high(uint8_t value) {
         break;
     }
 }
+
+#ifdef WEBSERVER
+__force_inline void write_picogus_high(uint8_t value) {
+    write_setting(sel_reg, value, basePort_low, mouseSensitivity_low);
+}
+
+// Settings changes from the web UI (core 1). Uses the same code as pgusinit so
+// both behave identically, without touching the ISA control channel state.
+bool picogus_web_write(uint8_t reg, uint16_t value) {
+    switch (reg) {
+    case CMD_GUSPORT: case CMD_OPLPORT: case CMD_SBPORT: case CMD_MPUPORT:
+    case CMD_TANDYPORT: case CMD_CMSPORT: case CMD_MOUSEPORT: case CMD_CDPORT:
+    case CMD_MOUSESEN:
+        write_setting(reg, value >> 8, value & 0xff, value & 0xff);
+        return true;
+    case CMD_BOOTMODE: case CMD_JOYEN: case CMD_GUSBUF: case CMD_GUSDMA: case CMD_GUS44K:
+    case CMD_MPUDELAY: case CMD_MPUFAKE: case CMD_OPLWAIT:
+    case CMD_SBTYPE: case CMD_SBIRQ: case CMD_SBDMA: case CMD_SBOPTS:
+    case CMD_MOUSEPROTO: case CMD_MOUSERATE: case CMD_CDAUTOADV:
+    case CMD_MAINVOL: case CMD_OPLVOL: case CMD_SBVOL: case CMD_CDVOL: case CMD_GUSVOL: case CMD_PSGVOL:
+        write_setting(reg, value & 0xff, 0, 0);
+        return true;
+    default:
+        return false;
+    }
+}
+
+// The actual flash write happens on core 0 at the end of handle_iow(), exactly
+// like pgusinit's /save
+void picogus_request_save(void) {
+    queueSaveSettings = true;
+}
+
+bool picogus_save_pending(void) {
+    return queueSaveSettings;
+}
+
+void picogus_load_defaults(void) {
+    getDefaultSettings(&settings);
+    processSettings();
+}
+#endif
 
 __force_inline uint8_t read_picogus_low(void) {
     switch (sel_reg) {
@@ -622,8 +684,10 @@ __force_inline uint8_t read_picogus_high(void) {
         break;
     */
     case CMD_WIFISTAT:
-#ifdef PICOW
+#if defined(NE2000)
         return PG_Wifi_ReadStatusStr();
+#elif defined(WEBSERVER)
+        return web_wifi_read_status_char();
 #else
         return 0;
 #endif
@@ -1028,8 +1092,18 @@ __force_inline void handle_iow(void) {
     // Fallthrough if no match, or for slow write, reset PIO
     pio_sm_put(pio0, IOW_PIO_SM, IO_END);
     if (queueSaveSettings) {
+#ifdef WEBSERVER
+        // Core 1 may be reading (WiFi firmware) or writing (firmware upload)
+        // flash: if so, try again on a later IOW
+        if (!web_flash_try_lock()) {
+            return;
+        }
+#endif
         saveSettings(&settings);
         queueSaveSettings = false;
+#ifdef WEBSERVER
+        web_flash_unlock();
+#endif
     }
 }
 
@@ -1241,6 +1315,9 @@ int main()
     // Load settings from flash
     loadSettings(&settings, true /* migrate */);
     hw_clear_bits(&xip_ctrl_hw->ctrl, XIP_CTRL_EN_BITS);
+#ifdef WEBSERVER
+    web_init_core0();
+#endif
 
     // Determine board type. GPIO 29 is grounded on PicoGUS v2.0, and on a Pico, it's VSYS/3 (~1.666V)
     // GPIO 25 must be high to read GPIO 29 on the Pico W
@@ -1464,6 +1541,12 @@ extern void PIC_DeActivateIRQ(void);
 #endif
 
     processSettings();
+
+#ifdef WEBSERVER
+    // All PIO state machines and DMA channels used by this mode are claimed:
+    // core 1 may now bring up the WiFi chip
+    web_core0_ready();
+#endif
 
     for (;;) {
 #ifndef USE_IRQ

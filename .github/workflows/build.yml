@@ -76,6 +76,19 @@ jobs:
           cmake --build . --config $BUILD_TYPE --parallel $(nproc)
           cp picogus.uf2 $OUTPUT_DIR/picogus.uf2
 
+      - name: Test web server (host)
+        shell: bash
+        run: make -C sw/web/test PICO_SDK_PATH=$PICO_SDK_PATH test
+
+      - name: Build Pico W Mega Firmware (with web server)
+        shell: bash
+        run: |
+          mkdir -p $OUTPUT_DIR ${{github.workspace}}/build-picow
+          cd ${{github.workspace}}/build-picow
+          cmake $GITHUB_WORKSPACE/sw -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DPROJECT_TYPE="MULTIFW" -DPICO_BOARD=picow_fast
+          cmake --build . --config $BUILD_TYPE --parallel $(nproc)
+          cp picogus.uf2 $OUTPUT_DIR/picogus-picow.uf2
+
       - name: Build NE2000 Firmware
         shell: bash
         working-directory: ${{github.workspace}}/build
