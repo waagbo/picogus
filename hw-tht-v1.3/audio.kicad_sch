@@ -8,7 +8,7 @@
 		(title "PicoGUS THT - PCM510x DAC")
 		(date "2026-10-23")
 		(rev "v1.3.2")
-		(comment 1 "U9 PCM5100A (TSSOP-20) soldered to the card, with one test pad per pin")
+		(comment 1 "U9 PCM5102A (TSSOP-20; PCM5100A/5101A fit too) soldered to the card, with one test pad per pin")
 	)
 	(lib_symbols
 		(symbol "Audio:PCM5100"
@@ -2804,7 +2804,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RCER71H106MWM1H03A"
+		(property "MPN" "RCER71H106MWK1H03B"
 			(at 36.195 47.625 0)
 			(hide yes)
 			(effects
@@ -2814,7 +2814,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey" "490-7518-1-ND"
+		(property "DigiKey" "490-11888-ND"
 			(at 36.195 47.625 0)
 			(hide yes)
 			(effects
@@ -2824,7 +2824,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C3690252"
+		(property "LCSC" "C3690252 (RCER71H106MWM1H03A)"
 			(at 36.195 47.625 0)
 			(hide yes)
 			(effects
@@ -3148,7 +3148,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "PCM5100A"
+		(property "Value" "PCM5102A"
 			(at 69.5041 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3202,7 +3202,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "PCM5100APWR"
+		(property "MPN" "PCM5102AQPWRQ1"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(effects
@@ -3212,7 +3212,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey" "296-36705-1-ND"
+		(property "DigiKey" "296-37277-1-ND"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(effects
@@ -3222,7 +3222,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C131154"
+		(property "LCSC" "C107671 (PCM5102APWR)"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(effects
@@ -3232,7 +3232,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternatives" "Pin-compatible PCM5102APWR (DK 296-36707-1-ND 619, LCSC C107671 6471) or PCM5101APWR."
+		(property "Alternatives" "Pin-compatible: PCM5100APWR (100 dB; DK 296-36705-1-ND, LCSC C131154), PCM5102APWR (DK 296-36707-1-ND), PCM5102APW (tube, DK 296-41603-5-ND), PCM5101APWR"
 			(at 64.77 55.88 0)
 			(hide yes)
 			(effects

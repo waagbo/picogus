@@ -3,7 +3,7 @@
 Board revision **v1.3.2**: the v1.3.1 (rev B) THT board on a 102 mm outline, with
 the fine-pitch chips soldered straight to the card and a test pad on every one of their pins.
 
-* **U3/U4** (SN74CB3T3257, TSSOP-16) and **U9** (PCM5100A, TSSOP-20) only exist as TSSOPs. They are soldered to
+* **U3/U4** (SN74CB3T3257, TSSOP-16) and **U9** (PCM5102A, TSSOP-20; the PCM5100A/5101A fit too) only exist as TSSOPs. They are soldered to
   the card on hand-solder footprints, and **every pin has its own 0.7 mm round test pad** in line with it, for a
   probe, a meter or a scope (see [U3/U4 and U9 with a test pad per pin](#u3u4-and-u9-with-a-test-pad-per-pin)).
   The TSSOP-to-DIP adapter boards of the earlier v1.3.2 layout are gone, and so are their sockets.
@@ -43,9 +43,9 @@ Files:
 | `wavetable.kicad_sch` | Waveblaster header, WT volume, op-amp mixer, line-out jack (as v1.3.1) |
 | `usb.kicad_sch` | USB host port (J11 USB-A, F1, C34/C35, U12) (as v1.3.1) |
 | `PicoGUS-THT-schematic.pdf` | Schematic PDF |
-| `BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers and a digikey.no link per line (v1.3.0 lines checked 2026-09-28, rev B lines 2026-10-18, v1.3.2 lines 2026-10-23) |
-| `BOM-THT-digikey-upload.csv` (+ `-optional`, `-10x`) | DigiKey cart/BOM upload with the reference designators as Customer Reference; optional: sockets, U12 |
-| `BOM-THT-sockets.csv` (+ `-digikey-upload`, `-10x`) | Socket build: every DIP IC and the Pico socketed, with heights (see [Socket build](#socket-build)) |
+| `docs/BOM-THT.csv` | BOM with DigiKey **and** LCSC part numbers, stock (2026-11-07) and a digikey.no link per line |
+| `docs/BOM-THT-digikey.csv`, `docs/BOM-THT-lcsc.csv` (+ `-optional`) | DigiKey and LCSC upload files for one board, made from `BOM-THT.csv` (see [Ordering](#ordering)); optional: sockets, U12 |
+| `docs/BOM-THT-sockets.csv` (+ `-digikey-optional`, `-lcsc-optional`) | Socket build: every DIP IC and the Pico socketed, with heights (see [Socket build](#socket-build)) |
 | `docs/renders/` | 3D renders of the routed card from the front and the back, in red, purple, black and blue solder mask (ENIG, white silkscreen) |
 | `docs/figures/` | Figures for the README's exceptions and design choices (e.g. the test pads, the placement options, the accepted courtyard overlaps), with the scripts that make them in `docs/figures/src/` |
 
@@ -66,7 +66,7 @@ board.
 
 ### U3/U4 and U9 with a test pad per pin
 
-| | U3, U4 (SN74CB3T3257, TSSOP-16) | U9 (PCM5100A, TSSOP-20) |
+| | U3, U4 (SN74CB3T3257, TSSOP-16) | U9 (PCM5102A, TSSOP-20) |
 |---|---|---|
 | Footprint | `PiGUS library:TSSOP-16_4.4x5mm_P0.65mm_HandSolder_TestPads` | `PiGUS library:TSSOP-20_4.4x6.5mm_P0.65mm_HandSolder_TestPads` |
 | Courtyard | 11.4 × 5.75 mm | 11.4 × 7.05 mm |
@@ -490,8 +490,8 @@ line-out cable (868 against 285 µV/A without a Waveblaster).
 
 ## Socket build
 
-`BOM-THT-sockets.csv` (with `BOM-THT-sockets-digikey-upload.csv` and `-10x`) lists everything needed to build the
-card with every DIP IC and the Pico socketed. The same parts are the optional socket lines of `BOM-THT.csv`. U3, U4
+`docs/BOM-THT-sockets.csv` (with its DigiKey and LCSC upload files) lists everything needed to build the
+card with every DIP IC and the Pico socketed. The same parts are the optional socket lines of `docs/BOM-THT.csv`. U3, U4
 and U9 are soldered TSSOPs and U8/U12 SMD parts: they are never socketed.
 
 | Socket for | Part (DigiKey) | Height above the board | Top of the part |
@@ -814,20 +814,43 @@ The **SMD** version of this board is in [`hw-smd/`](../hw-smd/README.md).
 
 ## Ordering
 
-`BOM-THT.csv` lists, for every line, the DigiKey part (with DigiKey stock) and the LCSC part (with LCSC stock),
-plus alternatives: v1.3.0 lines as of 2026-09-28, rev B lines 2026-10-18, v1.3.2 lines 2026-10-23. DigiKey numbers
-were checked against findchips distributor data or DigiKey itself, and LCSC numbers against the LCSC product API.
+`docs/BOM-THT.csv` lists, for every line, the DigiKey part (with DigiKey stock) and the LCSC part (with LCSC stock),
+plus alternatives. Stock was re-read on 2026-11-07: LCSC from its product API, DigiKey from digikey.no (a `*` marks
+the few DigiKey figures that could not be re-read and are from the earlier checks of 2026-09-28 to 2026-10-23).
 
-* **Logic ICs (U2, U5, U6, U7, U10): order from DigiKey.** LCSC lists the DIPs, but has 0–74 in stock.
+**Upload files.** `docs/BOM-THT-digikey.csv` (DigiKey cart upload) and `docs/BOM-THT-lcsc.csv` (LCSC BOM tool) hold
+one board; `-optional` adds the sockets and U12. Each line's Customer Reference is the board and its positions,
+e.g. `PicoGUS-THT-1.3.2: C30,C31`, so every bag arrives labelled for sorting. The quantities are for one board: set
+the number of boards in the shop's BOM tool. LCSC raises lines to its minimum order quantities (50 for some
+resistors). After changing `BOM-THT.csv`, regenerate them (from this folder):
+
+```
+python3 ../hw-common/tools/bom_uploads.py docs/BOM-THT.csv docs/BOM-THT --prefix 'PicoGUS-THT-1.3.2: ' \
+    --label '(jumpers)=J1,J7 shunts' --label '(U1-socket)=U1 sockets' --label '(DIP14-socket)=U5,U6,U7,U10 sockets' \
+    --label '(DIP20-socket)=U2 socket' --label '(DIP8-socket)=U11 socket'
+python3 ../hw-common/tools/bom_uploads.py docs/BOM-THT-sockets.csv docs/BOM-THT-sockets \
+    --prefix 'PicoGUS-THT-1.3.2: ' --all-optional
+```
+
+* **Logic ICs (U2, U5, U6, U7, U10): order from DigiKey.** LCSC lists the DIPs, but had 0 of U2, U5 and U10 and
+  60 of U6/U7 on 2026-11-07. **The Pico (U1)** is not sold in the LCSC shop, so the LCSC file leaves it out.
+* **U9 is the PCM5102A** (112 dB). DigiKey's line is the automotive PCM5102AQPWRQ1, in stock when the PCM5102APWR
+  was not; LCSC's line is the PCM5102APWR. The PCM5100A (100 dB) is the budget choice: with the firmware's 16-bit
+  output the grades sound the same. All three are pin-compatible.
+* **J9 is gold-plated** (Amphenol 77313-118-26LF, 30 µin) with the same pin lengths as the tin Sullins PEC13DAAN,
+  which stays as the cheaper alternative. LCSC's "gold 2x13 header" C9040 is a shrouded box header: don't use it.
+* **C15/C24**: DigiKey now sells Murata's direct replacement RCER71H106MWK1H03B; LCSC still has the
+  RCER71H106MWM1H03A. **C22/C23** (Panasonic ECE-A1HN100U): DigiKey had none on 2026-11-07 (200 due 2026-11-16,
+  orderable as a backorder); LCSC had stock. **R14/R15/R18, R21/R22**: LCSC's Yageo lines were out of stock, so
+  the LCSC column uses UNI-ROYAL MFR0W4F metal film (as R1 and R7/R8 already did).
 * **SMD parts on the card**: U3, U4 (TSSOP-16), U9 (TSSOP-20), U8 (SOIC-8) and the optional U12 (SOT-23-6), all on
   the front. Solder them before the through-hole parts, the TSSOPs first; then check each pin against its neighbours
   on the test pads (a bridge shows as a short between two pads) and ring each test pad through to the part it
   connects to.
-* **DigiKey BOM cost**: the v1.3.0/v1.3.1 estimate (2026-09-28, parts only, no PCB, no shipping, from DigiKey's price
-  breaks) was ~474 kr excl. MVA (~$50) for one board and ~356 kr (~$37) per board in a 10-board order (NOK at 9.53
-  NOK/USD; digikey.no can differ by a few percent). The TSSOPs are the same chips as on v1.3.1; C8/C10 are the
-  v1.3.1 discs again, and the disc C36 (an 0603 on v1.3.1) changes the total by less than 10 kr. The optional
-  machined socket set was ~80 kr on rev B, plus ~21 kr for the Pico sockets.
+* **DigiKey BOM cost**: about 562 kr excl. MVA for one board at digikey.no's single-piece prices of 2026-11-07
+  (parts only, no PCB, no shipping; price breaks lower it a little). The PCM5102A-Q1 is 60 kr of that: with the
+  PCM5100A the board is about 526 kr. The optional machined socket set was ~80 kr on rev B, plus ~21 kr for the
+  Pico sockets.
 * **Ceramic capacitors must have 5.0 mm (or 5.08 mm) lead pitch.** 2.5 mm parts don't fit (e.g. TDK FG1x, Vishay K…L2).
 
 Mistakes found in the v1.2 BOM/JLCPCB data (don't copy these from the v1.2 files):
@@ -889,12 +912,12 @@ location", move it to B.Silkscreen first, or JLCPCB prints the placeholder text 
 6. **Fine-pitch soldering.** U3, U4 and U9 are 0.65 mm-pitch TSSOPs soldered to the card. The hand-solder land
    pattern leaves room for an iron, and every pin has a test pad, but it needs flux, a fine tip and a magnifier.
    Check for bridges on the test pads before fitting the through-hole parts around them.
-7. **RV1.** The BOM uses the Bourns PTD902-2020K-A103 (DigiKey 426, 24 kr). It has the same 2.5 mm
-   pin grid and M7 bushing as the Alps RK097 the footprint was drawn for; test-fit one in the bracket
-   before a large order. LCSC doesn't list it, so the LCSC column keeps the Alps RK09712200HA
-   (C470545). The Alps parts (RK09712200HA: DigiKey 210 / LCSC 175, 45 kr; the switched RK0971221Z0X
-   also fits) have low stock, and Alps North America has published a discontinuation notice that
-   covers parts of the range.
+7. **RV1.** The BOM uses the Bourns PTD902-2020K-A103 (24 kr; DigiKey had 426 in October, and on 2026-11-07 its
+   page showed no stock figure and suggested the Alps RK09712200HA instead). It has the same 2.5 mm pin grid and
+   M7 bushing as the Alps RK097 the footprint was drawn for; test-fit one in the bracket before a large order.
+   LCSC doesn't list it, so the LCSC column keeps the Alps RK09712200HA (C470545, 158 in stock); the same pot
+   with a 15 mm shaft, RK09712200MC (C444934, 572 in stock), is about half the price if a knob fits on 5 mm
+   less shaft. Alps North America has published a discontinuation notice that covers parts of the RK097 range.
 8. **ISA bracket.** No stock bracket fits: the tabs must be 1.70 mm longer than a Keystone 9202's, and no bracket
    made for v1.2, v1.3.0, v1.3.1 or the routed v1.3.2 layout fits. Cut the four openings in the
    [Bracket](#bracket) table (and counterbore the J5/J8 holes).
